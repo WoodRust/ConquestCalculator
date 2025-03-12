@@ -1,0 +1,7 @@
+Include:
+
+**/*.dart, **/lib/**/, **/pubspec.yaml, **/analysis_options.yaml, **/android/app/src/main/**/, **/ios/Runner/**/, **/assets/**/, **/l10n/**/, **/*.md, **/models/**/, **/providers/**/, **/blocs/**/*
+
+Ignore:
+
+**/.dart_tool/**/, **/build/**/, **/.idea/**/, **/.vscode/**/, **/.flutter-plugins*, **/.packages, **/generated_plugin*, **/*.g.dart, **/*.freezed.dart, **/ios/Pods/**/, **/.symlinks/**/

@@ -1,0 +1,56 @@
+[
+    {
+        "name": "Flame Berserkers",
+        "faction": "Dweghom",
+        "type": "infantry",
+        "regimentClass": "light",
+        "characteristics": {
+            "march": 6,
+            "volley": 1,
+            "clash": 3,
+            "attacks": 6,
+            "wounds": 5,
+            "resolve": 4,
+            "defense": 3,
+            "evasion": 0
+        },
+        "specialRules": [
+            {
+                "name": "Aura of Death (4)",
+                "description": "Enemy stands in base contact with this stand suffer 4 hits when activated"
+            }
+        ],
+        "drawEvents": [],
+        "points": 160,
+        "pointsPerAdditionalStand": 50
+    },
+    {
+        "name": "Hold Ballistae",
+        "faction": "Dweghom",
+        "type": "infantry",
+        "regimentClass": "light",
+        "characteristics": {
+            "march": 5,
+            "volley": 2,
+            "clash": 1,
+            "attacks": 4,
+            "wounds": 5,
+            "resolve": 2,
+            "defense": 2,
+            "evasion": 0
+        },
+        "specialRules": [
+            {
+                "name": "Barrage (3) (18\", Armor Piercing (1))",
+                "description": "This unit can shoot at a range of 18\" with 3 shots per stand. Shots have Armor Piercing (1)."
+            },
+            {
+                "name": "Shield",
+                "description": "This unit gains +1 to Defense."
+            }
+        ],
+        "drawEvents": [],
+        "points": 140,
+        "pointsPerAdditionalStand": 40
+    }
+]
