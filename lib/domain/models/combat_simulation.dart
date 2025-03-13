@@ -39,6 +39,9 @@ class CombatSimulation {
   final bool isImpact;
   final bool isFlank;
   final bool isRear;
+  final bool isVolley; // New - is this a ranged attack?
+  final bool
+      isWithinEffectiveRange; // New - is the attack within effective range?
   final Map<String, bool> specialRulesInEffect;
 
   // Results
@@ -55,9 +58,38 @@ class CombatSimulation {
     this.isImpact = false,
     this.isFlank = false,
     this.isRear = false,
+    this.isVolley = false,
+    this.isWithinEffectiveRange = true,
     this.specialRulesInEffect = const {},
     required this.hitRoll,
     required this.defenseRoll,
     required this.resolveRoll,
   });
+
+  // Helper methods to get meaningful results
+  int getExpectedWounds() {
+    return defenseRoll.failures + resolveRoll.failures;
+  }
+
+  int getExpectedStandsLost() {
+    return getExpectedWounds() ~/ defender.wounds;
+  }
+
+  bool willLikelyBreak() {
+    // A regiment is likely to break if it loses half or more of its stands
+    return getExpectedStandsLost() >= (numDefenderStands / 2).ceil();
+  }
+
+  // Calculate probability of breaking (simplified)
+  double getBreakProbability() {
+    final standsRequired = (numDefenderStands / 2).ceil();
+    final standsLost = getExpectedStandsLost();
+
+    if (standsLost >= standsRequired) {
+      return 100.0;
+    } else {
+      // This is simplified - real implementation would use probability distributions
+      return (standsLost / standsRequired * 100).clamp(0.0, 100.0);
+    }
+  }
 }

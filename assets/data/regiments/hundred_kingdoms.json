@@ -1,0 +1,844 @@
+[
+    {
+        "name": "Imperial Ranger Corps",
+        "faction": "Hundred Kingdoms",
+        "type": "Infantry",
+        "regimentClass": "Light",
+        "characteristics": {
+            "march": 6,
+            "volley": 3,
+            "clash": 1,
+            "attacks": 4,
+            "wounds": 4,
+            "resolve": 2,
+            "defense": 1,
+            "evasion": 1
+        },
+        "specialRules": [
+            {
+                "name": "Fluid Formation",
+                "description": "This Regiment may form with any number of ranks or files, as long as all Stands are in base contact"
+            },
+            {
+                "name": "Vanguard (3)",
+                "description": "This Regiment may deploy up to 3\" outside your Deployment Zone"
+            },
+            {
+                "name": "Barrage (3) (16\")",
+                "description": "This Stand may perform a Volley Action with 3 dice at up to 16\" range"
+            }
+        ],
+        "drawEvents": [],
+        "points": 120,
+        "pointsPerAdditionalStand": 40
+    },
+    {
+        "name": "Mercenary Crossbowmen",
+        "faction": "Hundred Kingdoms",
+        "type": "Infantry",
+        "regimentClass": "Light",
+        "characteristics": {
+            "march": 5,
+            "volley": 2,
+            "clash": 1,
+            "attacks": 4,
+            "wounds": 4,
+            "resolve": 2,
+            "defense": 1,
+            "evasion": 0
+        },
+        "specialRules": [
+            {
+                "name": "Barrage (3) (16\", Armor Piercing (1))",
+                "description": "This Stand may perform a Volley Action with 3 dice at up to 16\" range with Armor Piercing (1)"
+            }
+        ],
+        "drawEvents": [],
+        "points": 110,
+        "pointsPerAdditionalStand": 35
+    },
+    {
+        "name": "Hunter Cadre",
+        "faction": "Hundred Kingdoms",
+        "type": "Infantry",
+        "regimentClass": "Medium",
+        "characteristics": {
+            "march": 6,
+            "volley": 2,
+            "clash": 3,
+            "attacks": 4,
+            "wounds": 4,
+            "resolve": 3,
+            "defense": 1,
+            "evasion": 2
+        },
+        "specialRules": [
+            {
+                "name": "Barrage (3) (16\", Armor Piercing (1))",
+                "description": "This Stand may perform a Volley Action with 3 dice at up to 16\" range with Armor Piercing (1)"
+            },
+            {
+                "name": "Cleave (1)",
+                "description": "The opponent must re-roll successful Defense rolls of '1' against this Stand's attacks"
+            },
+            {
+                "name": "Fearless",
+                "description": "This Regiment automatically passes Morale Tests"
+            },
+            {
+                "name": "Fiend Hunter",
+                "description": "This Stand adds +1 to its Clash and +2 to its Attacks characteristics when targeting Monsters or Brutes"
+            },
+            {
+                "name": "Flank",
+                "description": "This Regiment may deploy in the enemy Deployment Zone, outside of 12\" of any enemy models"
+            }
+        ],
+        "drawEvents": [],
+        "points": 160,
+        "pointsPerAdditionalStand": 50
+    },
+    {
+        "name": "Men-At-Arms",
+        "faction": "Hundred Kingdoms",
+        "type": "Infantry",
+        "regimentClass": "Medium",
+        "characteristics": {
+            "march": 5,
+            "volley": 1,
+            "clash": 2,
+            "attacks": 4,
+            "wounds": 4,
+            "resolve": 2,
+            "defense": 2,
+            "evasion": 0
+        },
+        "specialRules": [
+            {
+                "name": "Shield",
+                "description": "This Stand adds +1 to its Defense Characteristic"
+            }
+        ],
+        "drawEvents": [],
+        "points": 110,
+        "pointsPerAdditionalStand": 30
+    },
+    {
+        "name": "Gilded Legion",
+        "faction": "Hundred Kingdoms",
+        "type": "Infantry",
+        "regimentClass": "Heavy",
+        "characteristics": {
+            "march": 5,
+            "volley": 1,
+            "clash": 3,
+            "attacks": 4,
+            "wounds": 4,
+            "resolve": 4,
+            "defense": 3,
+            "evasion": 0
+        },
+        "specialRules": [
+            {
+                "name": "Cleave (1)",
+                "description": "The opponent must re-roll successful Defense rolls of '1' against this Stand's attacks"
+            },
+            {
+                "name": "Iron Discipline",
+                "description": "When this Regiment performs a Rally or Combat Rally Action, it automatically removes its Broken status"
+            },
+            {
+                "name": "Support (3)",
+                "description": "This Regiment gains 3 additional Attack dice per supporting Stand"
+            },
+            {
+                "name": "Pike Formation",
+                "description": "Enemy Regiments suffer -3 to their Impact (X) Special Rule when in contact with this Regiment's front arc"
+            }
+        ],
+        "drawEvents": [
+            {
+                "name": "Bastion (1)",
+                "description": "Ignore the first wound inflicted on this Regiment before any Defense rolls are made"
+            }
+        ],
+        "points": 170,
+        "pointsPerAdditionalStand": 40
+    },
+    {
+        "name": "Steel Legion",
+        "faction": "Hundred Kingdoms",
+        "type": "Infantry",
+        "regimentClass": "Heavy",
+        "characteristics": {
+            "march": 5,
+            "volley": 1,
+            "clash": 3,
+            "attacks": 5,
+            "wounds": 4,
+            "resolve": 3,
+            "defense": 3,
+            "evasion": 0
+        },
+        "specialRules": [
+            {
+                "name": "Bravery",
+                "description": "This Regiment may reroll one failed Morale Test per Action"
+            },
+            {
+                "name": "Cleave (2)",
+                "description": "The opponent must re-roll successful Defense rolls of '1' and '2' against this Stand's attacks"
+            },
+            {
+                "name": "Oblivious",
+                "description": "This Regiment is immune to the Terrifying and Fearsome special rules"
+            },
+            {
+                "name": "Support (2)",
+                "description": "This Regiment gains 2 additional Attack dice per supporting Stand"
+            }
+        ],
+        "drawEvents": [],
+        "points": 160,
+        "pointsPerAdditionalStand": 50
+    },
+    {
+        "name": "Longbowmen",
+        "faction": "Hundred Kingdoms",
+        "type": "Infantry",
+        "regimentClass": "Light",
+        "characteristics": {
+            "march": 6,
+            "volley": 2,
+            "clash": 1,
+            "attacks": 4,
+            "wounds": 4,
+            "resolve": 2,
+            "defense": 1,
+            "evasion": 0
+        },
+        "specialRules": [
+            {
+                "name": "Barrage (3) (22\", Arcing Fire, Armor Piercing (1))",
+                "description": "This Stand may perform a Volley Action with 3 dice at up to 22\" range with Arcing Fire and Armor Piercing (1)"
+            },
+            {
+                "name": "Cleave (1)",
+                "description": "The opponent must re-roll successful Defense rolls of '1' against this Stand's attacks"
+            }
+        ],
+        "drawEvents": [],
+        "points": 140,
+        "pointsPerAdditionalStand": 40
+    },
+    {
+        "name": "Militia",
+        "faction": "Hundred Kingdoms",
+        "type": "Infantry",
+        "regimentClass": "Light",
+        "characteristics": {
+            "march": 5,
+            "volley": 1,
+            "clash": 2,
+            "attacks": 4,
+            "wounds": 4,
+            "resolve": 2,
+            "defense": 1,
+            "evasion": 0
+        },
+        "specialRules": [
+            {
+                "name": "Shield",
+                "description": "This Stand adds +1 to its Defense Characteristic"
+            },
+            {
+                "name": "Support (2)",
+                "description": "This Regiment gains 2 additional Attack dice per supporting Stand"
+            }
+        ],
+        "drawEvents": [],
+        "points": 100,
+        "pointsPerAdditionalStand": 30
+    },
+    {
+        "name": "Mounted Squires",
+        "faction": "Hundred Kingdoms",
+        "type": "Cavalry",
+        "regimentClass": "Light",
+        "characteristics": {
+            "march": 9,
+            "volley": 1,
+            "clash": 2,
+            "attacks": 4,
+            "wounds": 4,
+            "resolve": 2,
+            "defense": 2,
+            "evasion": 0
+        },
+        "specialRules": [
+            {
+                "name": "Shield",
+                "description": "This Stand adds +1 to its Defense Characteristic"
+            },
+            {
+                "name": "Impact (2)",
+                "description": "This Stand performs 2 Impact Attacks when charging"
+            },
+            {
+                "name": "Opportunists",
+                "description": "This Regiment may perform an out-of-sequence Charge when an Enemy fails a Morale Test within 10\""
+            }
+        ],
+        "drawEvents": [],
+        "points": 140,
+        "pointsPerAdditionalStand": 40
+    },
+    {
+        "name": "Militia Bowmen",
+        "faction": "Hundred Kingdoms",
+        "type": "Infantry",
+        "regimentClass": "Light",
+        "characteristics": {
+            "march": 5,
+            "volley": 1,
+            "clash": 1,
+            "attacks": 3,
+            "wounds": 4,
+            "resolve": 2,
+            "defense": 1,
+            "evasion": 0
+        },
+        "specialRules": [
+            {
+                "name": "Barrage (3) (16\")",
+                "description": "This Stand may perform a Volley Action with 3 dice at up to 16\" range"
+            }
+        ],
+        "drawEvents": [],
+        "points": 80,
+        "pointsPerAdditionalStand": 25
+    },
+    {
+        "name": "Household Knights",
+        "faction": "Hundred Kingdoms",
+        "type": "Cavalry",
+        "regimentClass": "Medium",
+        "characteristics": {
+            "march": 7,
+            "volley": 1,
+            "clash": 2,
+            "attacks": 5,
+            "wounds": 4,
+            "resolve": 3,
+            "defense": 3,
+            "evasion": 0
+        },
+        "specialRules": [
+            {
+                "name": "Brutal Impact (1)",
+                "description": "Enemy Regiments charged by this Stand have -1 to their Defense characteristic against Impact Attacks"
+            },
+            {
+                "name": "Impact (3)",
+                "description": "This Stand performs 3 Impact Attacks when charging"
+            },
+            {
+                "name": "Shield",
+                "description": "This Stand adds +1 to its Defense Characteristic"
+            }
+        ],
+        "drawEvents": [],
+        "points": 160,
+        "pointsPerAdditionalStand": 55
+    },
+    {
+        "name": "Household Guard",
+        "faction": "Hundred Kingdoms",
+        "type": "Infantry",
+        "regimentClass": "Medium",
+        "characteristics": {
+            "march": 5,
+            "volley": 1,
+            "clash": 2,
+            "attacks": 4,
+            "wounds": 4,
+            "resolve": 3,
+            "defense": 3,
+            "evasion": 0
+        },
+        "specialRules": [
+            {
+                "name": "Cleave (1)",
+                "description": "The opponent must re-roll successful Defense rolls of '1' against this Stand's attacks"
+            },
+            {
+                "name": "Support (2)",
+                "description": "This Regiment gains 2 additional Attack dice per supporting Stand"
+            }
+        ],
+        "drawEvents": [],
+        "points": 150,
+        "pointsPerAdditionalStand": 40
+    },
+    {
+        "name": "Sicarii",
+        "faction": "Hundred Kingdoms",
+        "type": "Infantry",
+        "regimentClass": "Medium",
+        "characteristics": {
+            "march": 6,
+            "volley": 1,
+            "clash": 3,
+            "attacks": 4,
+            "wounds": 4,
+            "resolve": 4,
+            "defense": 2,
+            "evasion": 2
+        },
+        "specialRules": [
+            {
+                "name": "Cleave (1)",
+                "description": "The opponent must re-roll successful Defense rolls of '1' against this Stand's attacks"
+            },
+            {
+                "name": "Devout",
+                "description": "This Regiment may only use the Resolve characteristic of attached Character Stands if it is higher than their own"
+            },
+            {
+                "name": "Divine Purpose",
+                "description": "This Regiment can re-roll one failed Hit roll when targeting a Regiment or Character targeted by a Priest's spell"
+            },
+            {
+                "name": "Support (2)",
+                "description": "This Regiment gains 2 additional Attack dice per supporting Stand"
+            }
+        ],
+        "drawEvents": [],
+        "points": 160,
+        "pointsPerAdditionalStand": 40
+    },
+    {
+        "name": "Crusaders",
+        "faction": "Hundred Kingdoms",
+        "type": "Infantry",
+        "regimentClass": "Medium",
+        "characteristics": {
+            "march": 5,
+            "volley": 1,
+            "clash": 2,
+            "attacks": 4,
+            "wounds": 4,
+            "resolve": 3,
+            "defense": 2,
+            "evasion": 0
+        },
+        "specialRules": [
+            {
+                "name": "Devout",
+                "description": "This Regiment may only use the Resolve characteristic of attached Character Stands if it is higher than their own"
+            },
+            {
+                "name": "Shield",
+                "description": "This Stand adds +1 to its Defense Characteristic"
+            },
+            {
+                "name": "Hardened (1)",
+                "description": "This Regiment ignores the first Wound it would suffer each time it is wounded"
+            },
+            {
+                "name": "Support (2)",
+                "description": "This Regiment gains 2 additional Attack dice per supporting Stand"
+            }
+        ],
+        "drawEvents": [],
+        "points": 140,
+        "pointsPerAdditionalStand": 40
+    },
+    {
+        "name": "Archangel",
+        "faction": "Hundred Kingdoms",
+        "type": "Monster",
+        "regimentClass": "Heavy",
+        "characteristics": {
+            "march": 7,
+            "volley": 1,
+            "clash": 3,
+            "attacks": 12,
+            "wounds": 18,
+            "resolve": 4,
+            "defense": 3,
+            "evasion": 2
+        },
+        "specialRules": [
+            {
+                "name": "Cleave (2)",
+                "description": "The opponent must re-roll successful Defense rolls of '1' and '2' against this Stand's attacks"
+            },
+            {
+                "name": "Devout",
+                "description": "This Regiment may only use the Resolve characteristic of attached Character Stands if it is higher than their own"
+            },
+            {
+                "name": "Divine Purpose",
+                "description": "This Regiment can re-roll one failed Hit roll when targeting a Regiment or Character targeted by a Priest's spell"
+            },
+            {
+                "name": "Fearless",
+                "description": "This Regiment automatically passes Morale Tests"
+            },
+            {
+                "name": "Impact (5)",
+                "description": "This Stand performs 5 Impact Attacks when charging"
+            },
+            {
+                "name": "Terrifying (1)",
+                "description": "Enemy Stands in contact with this Stand have -1 to their Resolve Characteristic"
+            }
+        ],
+        "drawEvents": [],
+        "points": 260,
+        "pointsPerAdditionalStand": null
+    },
+    {
+        "name": "Order of the Sealed Temple",
+        "faction": "Hundred Kingdoms",
+        "type": "Cavalry",
+        "regimentClass": "Medium",
+        "characteristics": {
+            "march": 8,
+            "volley": 1,
+            "clash": 3,
+            "attacks": 4,
+            "wounds": 4,
+            "resolve": 4,
+            "defense": 3,
+            "evasion": 0
+        },
+        "specialRules": [
+            {
+                "name": "Fluid Formation",
+                "description": "This Regiment may form with any number of ranks or files, as long as all Stands are in base contact"
+            },
+            {
+                "name": "Impact (4)",
+                "description": "This Stand performs 4 Impact Attacks when charging"
+            },
+            {
+                "name": "Shield",
+                "description": "This Stand adds +1 to its Defense Characteristic"
+            }
+        ],
+        "drawEvents": [],
+        "points": 200,
+        "pointsPerAdditionalStand": 70
+    },
+    {
+        "name": "Order of the Ashen Dawn",
+        "faction": "Hundred Kingdoms",
+        "type": "Cavalry",
+        "regimentClass": "Heavy",
+        "characteristics": {
+            "march": 7,
+            "volley": 1,
+            "clash": 4,
+            "attacks": 5,
+            "wounds": 6,
+            "resolve": 5,
+            "defense": 4,
+            "evasion": 0
+        },
+        "specialRules": [
+            {
+                "name": "Blessed",
+                "description": "This Stand may re-roll one failed Defense roll per Action"
+            },
+            {
+                "name": "Cleave (1)",
+                "description": "The opponent must re-roll successful Defense rolls of '1' against this Stand's attacks"
+            },
+            {
+                "name": "Fearless",
+                "description": "This Regiment automatically passes Morale Tests"
+            },
+            {
+                "name": "Impact (3)",
+                "description": "This Stand performs 3 Impact Attacks when charging"
+            }
+        ],
+        "drawEvents": [],
+        "points": 260,
+        "pointsPerAdditionalStand": null
+    },
+    {
+        "name": "Order of the Crimson Tower",
+        "faction": "Hundred Kingdoms",
+        "type": "Cavalry",
+        "regimentClass": "Heavy",
+        "characteristics": {
+            "march": 7,
+            "volley": 1,
+            "clash": 3,
+            "attacks": 5,
+            "wounds": 5,
+            "resolve": 4,
+            "defense": 3,
+            "evasion": 0
+        },
+        "specialRules": [
+            {
+                "name": "Brutal Impact (2)",
+                "description": "Enemy Regiments charged by this Stand have -2 to their Defense characteristic against Impact Attacks"
+            },
+            {
+                "name": "Impact (4)",
+                "description": "This Stand performs 4 Impact Attacks when charging"
+            },
+            {
+                "name": "Shield",
+                "description": "This Stand adds +1 to its Defense Characteristic"
+            },
+            {
+                "name": "Terrifying (1)",
+                "description": "Enemy Stands in contact with this Stand have -1 to their Resolve Characteristic"
+            },
+            {
+                "name": "Wedge!",
+                "description": "After performing a successful Charge, this Regiment gains the Cleave (+1) Special Rule until the end of the Round"
+            }
+        ],
+        "drawEvents": [],
+        "points": 220,
+        "pointsPerAdditionalStand": 70
+    },
+    {
+        "name": "Imperial Officer",
+        "faction": "Hundred Kingdoms",
+        "type": "Infantry",
+        "regimentClass": "Character",
+        "characteristics": {
+            "march": null,
+            "volley": 2,
+            "clash": 2,
+            "attacks": 4,
+            "wounds": 3,
+            "resolve": 3,
+            "defense": 3,
+            "evasion": 0
+        },
+        "specialRules": [
+            {
+                "name": "Forward Force",
+                "description": "This Character Stand may join regiments from the first Round even if they're not in the first wave"
+            }
+        ],
+        "drawEvents": [],
+        "points": 100,
+        "pointsPerAdditionalStand": null
+    },
+    {
+        "name": "Chapter Mage",
+        "faction": "Hundred Kingdoms",
+        "type": "Infantry",
+        "regimentClass": "Character",
+        "characteristics": {
+            "march": null,
+            "volley": 3,
+            "clash": 1,
+            "attacks": 3,
+            "wounds": 4,
+            "resolve": 2,
+            "defense": 1,
+            "evasion": 0
+        },
+        "specialRules": [
+            {
+                "name": "Barrage (4) (18\")",
+                "description": "This Stand may perform a Volley Action with 4 dice at up to 18\" range"
+            },
+            {
+                "name": "Wizard (6)",
+                "description": "This Character can cast spells with 6 dice"
+            }
+        ],
+        "drawEvents": [],
+        "points": 80,
+        "pointsPerAdditionalStand": null
+    },
+    {
+        "name": "Noble Lord",
+        "faction": "Hundred Kingdoms",
+        "type": "Infantry",
+        "regimentClass": "Character",
+        "characteristics": {
+            "march": null,
+            "volley": 1,
+            "clash": 3,
+            "attacks": 4,
+            "wounds": 3,
+            "resolve": 3,
+            "defense": 3,
+            "evasion": 0
+        },
+        "specialRules": [],
+        "drawEvents": [],
+        "points": 80,
+        "pointsPerAdditionalStand": null
+    },
+    {
+        "name": "Mounted Noble Lord",
+        "faction": "Hundred Kingdoms",
+        "type": "Cavalry",
+        "regimentClass": "Character",
+        "characteristics": {
+            "march": null,
+            "volley": 1,
+            "clash": 3,
+            "attacks": 5,
+            "wounds": 3,
+            "resolve": 3,
+            "defense": 3,
+            "evasion": 0
+        },
+        "specialRules": [
+            {
+                "name": "Brutal Impact (2)",
+                "description": "Enemy Regiments charged by this Stand have -2 to their Defense characteristic against Impact Attacks"
+            },
+            {
+                "name": "Impact (3)",
+                "description": "This Stand performs 3 Impact Attacks when charging"
+            },
+            {
+                "name": "Shield",
+                "description": "This Stand adds +1 to its Defense Characteristic"
+            }
+        ],
+        "drawEvents": [],
+        "points": 130,
+        "pointsPerAdditionalStand": null
+    },
+    {
+        "name": "Crusading Noble Lord",
+        "faction": "Hundred Kingdoms",
+        "type": "Infantry",
+        "regimentClass": "Character",
+        "characteristics": {
+            "march": null,
+            "volley": 1,
+            "clash": 3,
+            "attacks": 5,
+            "wounds": 4,
+            "resolve": 4,
+            "defense": 3,
+            "evasion": 0
+        },
+        "specialRules": [
+            {
+                "name": "Cleave (2)",
+                "description": "The opponent must re-roll successful Defense rolls of '1' and '2' against this Stand's attacks"
+            },
+            {
+                "name": "Flurry",
+                "description": "This Stand may re-roll failed Hit rolls"
+            },
+            {
+                "name": "Devout",
+                "description": "This Character Stand may only use the Resolve characteristic of attached Character Stands if it is higher than their own"
+            }
+        ],
+        "drawEvents": [],
+        "points": 100,
+        "pointsPerAdditionalStand": null
+    },
+    {
+        "name": "Theist Priest",
+        "faction": "Hundred Kingdoms",
+        "type": "Infantry",
+        "regimentClass": "Character",
+        "characteristics": {
+            "march": null,
+            "volley": 1,
+            "clash": 2,
+            "attacks": 4,
+            "wounds": 3,
+            "resolve": 3,
+            "defense": 3,
+            "evasion": 0
+        },
+        "specialRules": [
+            {
+                "name": "Cleave (1)",
+                "description": "The opponent must re-roll successful Defense rolls of '1' against this Stand's attacks"
+            },
+            {
+                "name": "Devout",
+                "description": "This Character Stand may only use the Resolve characteristic of attached Character Stands if it is higher than their own"
+            },
+            {
+                "name": "Fearless",
+                "description": "This Character Stand automatically passes Morale Tests"
+            },
+            {
+                "name": "Priest (6)",
+                "description": "This Character can cast spells with 6 dice"
+            }
+        ],
+        "drawEvents": [],
+        "points": 90,
+        "pointsPerAdditionalStand": null
+    },
+    {
+        "name": "Priory Commander",
+        "faction": "Hundred Kingdoms",
+        "type": "Cavalry",
+        "regimentClass": "Character",
+        "characteristics": {
+            "march": null,
+            "volley": 1,
+            "clash": 4,
+            "attacks": 6,
+            "wounds": 4,
+            "resolve": 4,
+            "defense": 4,
+            "evasion": 0
+        },
+        "specialRules": [
+            {
+                "name": "Impact (4)",
+                "description": "This Stand performs 4 Impact Attacks when charging"
+            }
+        ],
+        "drawEvents": [],
+        "points": 120,
+        "pointsPerAdditionalStand": null
+    },
+    {
+        "name": "Errant of the Order of the Shield",
+        "faction": "Hundred Kingdoms",
+        "type": "Infantry",
+        "regimentClass": "Character",
+        "characteristics": {
+            "march": null,
+            "volley": 1,
+            "clash": 3,
+            "attacks": 5,
+            "wounds": 4,
+            "resolve": 4,
+            "defense": 3,
+            "evasion": 0
+        },
+        "specialRules": [
+            {
+                "name": "Cleave (2)",
+                "description": "The opponent must re-roll successful Defense rolls of '1' and '2' against this Stand's attacks"
+            },
+            {
+                "name": "Shield",
+                "description": "This Stand adds +1 to its Defense Characteristic"
+            }
+        ],
+        "drawEvents": [],
+        "points": 100,
+        "pointsPerAdditionalStand": null
+    }
+]
