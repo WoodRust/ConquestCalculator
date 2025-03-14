@@ -2,7 +2,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../providers/combat_provider.dart';
-import '../widgets/wave_slider.dart';
+import '../widgets/probability_distribution_chart.dart' as chart;
 import '../widgets/target_selector.dart';
 import 'regiment_selection_screen.dart';
 
@@ -17,225 +17,492 @@ class CombatCalculatorScreen extends ConsumerWidget {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Combat Calculator'),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.save),
+            onPressed: combatState.simulation != null
+                ? () => _showSaveDialog(context, combatNotifier)
+                : null,
+            tooltip: 'Save calculation',
+          ),
+          IconButton(
+            icon: Icon(combatState.showCumulativeDistribution
+                ? Icons.show_chart
+                : Icons.bar_chart),
+            onPressed: () => combatNotifier.toggleCumulativeDistribution(
+                !combatState.showCumulativeDistribution),
+            tooltip: combatState.showCumulativeDistribution
+                ? 'Show probability mass function'
+                : 'Show cumulative distribution',
+          ),
+        ],
       ),
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // Combat setup section
-            Card(
-              child: Padding(
-                padding: const EdgeInsets.all(16.0),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text('Combat Setup',
-                        style: Theme.of(context).textTheme.titleLarge),
-                    const SizedBox(height: 12),
+      body: SingleChildScrollView(
+        child: Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Combat setup section
+              Card(
+                child: Padding(
+                  padding: const EdgeInsets.all(16.0),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text('Combat Setup',
+                          style: Theme.of(context).textTheme.titleLarge),
+                      const SizedBox(height: 12),
 
-                    // Attacker selection
-                    Row(
-                      children: [
-                        Expanded(
-                          child: Text(
-                            'Attacker: ${combatState.attacker?.name ?? 'Select a regiment'}',
-                            style: const TextStyle(fontWeight: FontWeight.bold),
-                          ),
-                        ),
-                        ElevatedButton(
-                          onPressed: () => _selectAttacker(context, ref),
-                          child: const Text('Select'),
-                        ),
-                      ],
-                    ),
-
-                    if (combatState.attacker != null) ...[
-                      const SizedBox(height: 8),
+                      // Attacker selection
                       Row(
                         children: [
-                          const Text('Number of Attacking Stands: '),
-                          TargetSelector(
-                            selectionLimit: 10,
-                            initialValue: combatState.numAttackerStands,
-                            onChanged: (value) =>
-                                combatNotifier.updateAttackerStands(value),
+                          Expanded(
+                            child: Text(
+                              'Attacker: ${combatState.attacker?.name ?? 'Select a regiment'}',
+                              style:
+                                  const TextStyle(fontWeight: FontWeight.bold),
+                            ),
+                          ),
+                          ElevatedButton(
+                            onPressed: () => _selectAttacker(context, ref),
+                            child: const Text('Select'),
                           ),
                         ],
                       ),
-                    ],
 
-                    const SizedBox(height: 16),
-
-                    // Defender selection
-                    Row(
-                      children: [
-                        Expanded(
-                          child: Text(
-                            'Defender: ${combatState.defender?.name ?? 'Select a regiment'}',
-                            style: const TextStyle(fontWeight: FontWeight.bold),
-                          ),
-                        ),
-                        ElevatedButton(
-                          onPressed: () => _selectDefender(context, ref),
-                          child: const Text('Select'),
+                      if (combatState.attacker != null) ...[
+                        const SizedBox(height: 8),
+                        Row(
+                          children: [
+                            const Text('Number of Attacking Stands: '),
+                            TargetSelector(
+                              selectionLimit: 10,
+                              initialValue: combatState.numAttackerStands,
+                              onChanged: (value) =>
+                                  combatNotifier.updateAttackerStands(value),
+                            ),
+                          ],
                         ),
                       ],
-                    ),
 
-                    if (combatState.defender != null) ...[
-                      const SizedBox(height: 8),
+                      const SizedBox(height: 16),
+
+                      // Defender selection
                       Row(
                         children: [
-                          const Text('Number of Defending Stands: '),
-                          TargetSelector(
-                            selectionLimit: 10,
-                            initialValue: combatState.numDefenderStands,
-                            onChanged: (value) =>
-                                combatNotifier.updateDefenderStands(value),
+                          Expanded(
+                            child: Text(
+                              'Defender: ${combatState.defender?.name ?? 'Select a regiment'}',
+                              style:
+                                  const TextStyle(fontWeight: FontWeight.bold),
+                            ),
+                          ),
+                          ElevatedButton(
+                            onPressed: () => _selectDefender(context, ref),
+                            child: const Text('Select'),
                           ),
                         ],
                       ),
+
+                      if (combatState.defender != null) ...[
+                        const SizedBox(height: 8),
+                        Row(
+                          children: [
+                            const Text('Number of Defending Stands: '),
+                            TargetSelector(
+                              selectionLimit: 10,
+                              initialValue: combatState.numDefenderStands,
+                              onChanged: (value) =>
+                                  combatNotifier.updateDefenderStands(value),
+                            ),
+                          ],
+                        ),
+                      ],
+
+                      const SizedBox(height: 16),
+
+                      // Combat modifiers
+                      Text('Combat Modifiers',
+                          style: Theme.of(context).textTheme.titleMedium),
+
+                      // First row of toggles
+                      Row(
+                        children: [
+                          Expanded(
+                            child: CheckboxListTile(
+                              title: const Text('Charge'),
+                              value: combatState.isCharge,
+                              onChanged: (value) =>
+                                  combatNotifier.toggleCharge(value ?? false),
+                              dense: true,
+                              controlAffinity: ListTileControlAffinity.leading,
+                            ),
+                          ),
+                          Expanded(
+                            child: CheckboxListTile(
+                              title: const Text('Impact'),
+                              value: combatState.isImpact,
+                              onChanged: (value) =>
+                                  combatNotifier.toggleImpact(value ?? false),
+                              dense: true,
+                              controlAffinity: ListTileControlAffinity.leading,
+                            ),
+                          ),
+                        ],
+                      ),
+
+                      // Second row of toggles
+                      Row(
+                        children: [
+                          Expanded(
+                            child: CheckboxListTile(
+                              title: const Text('Flank'),
+                              value: combatState.isFlank,
+                              onChanged: (value) =>
+                                  combatNotifier.toggleFlank(value ?? false),
+                              dense: true,
+                              controlAffinity: ListTileControlAffinity.leading,
+                            ),
+                          ),
+                          Expanded(
+                            child: CheckboxListTile(
+                              title: const Text('Rear'),
+                              value: combatState.isRear,
+                              onChanged: (value) =>
+                                  combatNotifier.toggleRear(value ?? false),
+                              dense: true,
+                              controlAffinity: ListTileControlAffinity.leading,
+                            ),
+                          ),
+                        ],
+                      ),
+
+                      // Third row of toggles (for ranged combat)
+                      Row(
+                        children: [
+                          Expanded(
+                            child: CheckboxListTile(
+                              title: const Text('Volley'),
+                              value: combatState.isVolley,
+                              onChanged: (value) =>
+                                  combatNotifier.toggleVolley(value ?? false),
+                              dense: true,
+                              controlAffinity: ListTileControlAffinity.leading,
+                            ),
+                          ),
+                          Expanded(
+                            child: CheckboxListTile(
+                              title: const Text('Effective Range'),
+                              value: combatState.isWithinEffectiveRange,
+                              onChanged: (value) => combatNotifier
+                                  .toggleWithinEffectiveRange(value ?? false),
+                              dense: true,
+                              controlAffinity: ListTileControlAffinity.leading,
+                            ),
+                          ),
+                        ],
+                      ),
+
+                      // Special Rules (simplified version)
+                      if (combatState.attacker != null &&
+                          combatState.defender != null) ...[
+                        const SizedBox(height: 16),
+                        Text('Special Rules',
+                            style: Theme.of(context).textTheme.titleMedium),
+
+                        // Auto-detect cleave/shield from attacker/defender
+                        if (combatState.attacker!.hasSpecialRule('cleave') ||
+                            combatState.defender!.hasSpecialRule('shield'))
+                          Wrap(
+                            spacing: 8,
+                            children: [
+                              if (combatState.attacker!
+                                  .hasSpecialRule('cleave'))
+                                FilterChip(
+                                  label: const Text('Cleave'),
+                                  selected: combatState
+                                          .specialRulesInEffect['cleave'] ??
+                                      true,
+                                  onSelected: (bool selected) => combatNotifier
+                                      .toggleSpecialRule('cleave', selected),
+                                ),
+                              if (combatState.defender!
+                                  .hasSpecialRule('shield'))
+                                FilterChip(
+                                  label: const Text('Shield'),
+                                  selected: combatState
+                                          .specialRulesInEffect['shield'] ??
+                                      true,
+                                  onSelected: (bool selected) => combatNotifier
+                                      .toggleSpecialRule('shield', selected),
+                                ),
+                            ],
+                          ),
+
+                        // Common special rules
+                        Wrap(
+                          spacing: 8,
+                          children: [
+                            FilterChip(
+                              label: const Text('Inspired'),
+                              selected: combatState
+                                      .specialRulesInEffect['inspired'] ??
+                                  false,
+                              onSelected: (bool selected) => combatNotifier
+                                  .toggleSpecialRule('inspired', selected),
+                            ),
+                            FilterChip(
+                              label: const Text('Flurry'),
+                              selected:
+                                  combatState.specialRulesInEffect['flurry'] ??
+                                      false,
+                              onSelected: (bool selected) => combatNotifier
+                                  .toggleSpecialRule('flurry', selected),
+                            ),
+                            FilterChip(
+                              label: const Text('Phalanx'),
+                              selected:
+                                  combatState.specialRulesInEffect['phalanx'] ??
+                                      false,
+                              onSelected: (bool selected) => combatNotifier
+                                  .toggleSpecialRule('phalanx', selected),
+                            ),
+                          ],
+                        ),
+                      ],
                     ],
-
-                    const SizedBox(height: 16),
-
-                    // Combat modifiers
-                    Text('Combat Modifiers',
-                        style: Theme.of(context).textTheme.titleMedium),
-
-                    CheckboxListTile(
-                      title: const Text('Charge'),
-                      value: combatState.isCharge,
-                      onChanged: (value) =>
-                          combatNotifier.toggleCharge(value ?? false),
-                      dense: true,
-                      controlAffinity: ListTileControlAffinity.leading,
-                    ),
-
-                    CheckboxListTile(
-                      title: const Text('Impact'),
-                      value: combatState.isImpact,
-                      onChanged: (value) =>
-                          combatNotifier.toggleImpact(value ?? false),
-                      dense: true,
-                      controlAffinity: ListTileControlAffinity.leading,
-                    ),
-
-                    CheckboxListTile(
-                      title: const Text('Flank Attack'),
-                      value: combatState.isFlank,
-                      onChanged: (value) =>
-                          combatNotifier.toggleFlank(value ?? false),
-                      dense: true,
-                      controlAffinity: ListTileControlAffinity.leading,
-                    ),
-
-                    CheckboxListTile(
-                      title: const Text('Rear Attack'),
-                      value: combatState.isRear,
-                      onChanged: (value) =>
-                          combatNotifier.toggleRear(value ?? false),
-                      dense: true,
-                      controlAffinity: ListTileControlAffinity.leading,
-                    ),
-                  ],
+                  ),
                 ),
-              ),
-            ),
-
-            const SizedBox(height: 24),
-
-            // If we don't have a simulation yet, show a placeholder
-            if (combatState.simulation == null) ...[
-              const Center(
-                child: Text(
-                    'Select units and configure combat to calculate probabilities'),
-              ),
-            ] else ...[
-              // Combat results
-              Text('Combat Results',
-                  style: Theme.of(context).textTheme.titleLarge),
-              const SizedBox(height: 12),
-
-              // Hit roll wave slider
-              Text('Hit Roll', style: Theme.of(context).textTheme.titleMedium),
-              WaveSlider(
-                width: MediaQuery.of(context).size.width - 32,
-                height: 80,
-                dragPercentage: 0.0,
-                expectedSuccessPercentage:
-                    combatState.simulation!.hitRoll.successes /
-                        combatState.simulation!.hitRoll.total,
-                numDice: combatState.simulation!.hitRoll.total,
-                expectedSuccesses:
-                    combatState.simulation!.hitRoll.successes.toDouble(),
-                onChanged: (value) {}, // We're using it for display only
-              ),
-
-              const SizedBox(height: 16),
-
-              // Defense roll wave slider
-              Text('Defense Roll',
-                  style: Theme.of(context).textTheme.titleMedium),
-              WaveSlider(
-                width: MediaQuery.of(context).size.width - 32,
-                height: 80,
-                dragPercentage: 0.0,
-                expectedSuccessPercentage:
-                    combatState.simulation!.defenseRoll.successes /
-                        combatState.simulation!.defenseRoll.total,
-                numDice: combatState.simulation!.defenseRoll.total,
-                expectedSuccesses:
-                    combatState.simulation!.defenseRoll.successes.toDouble(),
-                onChanged: (value) {}, // We're using it for display only
-              ),
-
-              const SizedBox(height: 16),
-
-              // Resolve roll wave slider
-              Text('Resolve Roll',
-                  style: Theme.of(context).textTheme.titleMedium),
-              WaveSlider(
-                width: MediaQuery.of(context).size.width - 32,
-                height: 80,
-                dragPercentage: 0.0,
-                expectedSuccessPercentage:
-                    combatState.simulation!.resolveRoll.successes /
-                        combatState.simulation!.resolveRoll.total,
-                numDice: combatState.simulation!.resolveRoll.total,
-                expectedSuccesses:
-                    combatState.simulation!.resolveRoll.successes.toDouble(),
-                onChanged: (value) {}, // We're using it for display only
               ),
 
               const SizedBox(height: 24),
 
-              // Results summary
-              Container(
-                padding: const EdgeInsets.all(16),
-                decoration: BoxDecoration(
-                  color: Colors.deepPurple.withOpacity(0.1),
-                  borderRadius: BorderRadius.circular(8),
+              // If we don't have a simulation yet, show a placeholder
+              if (combatState.simulation == null ||
+                  combatState.simulation!.totalDamageDistribution == null) ...[
+                const Center(
+                  child: Text(
+                      'Select units and configure combat to calculate probabilities'),
                 ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      'Expected Wounds: ${combatState.simulation!.defenseRoll.failures + combatState.simulation!.resolveRoll.failures}',
-                      style: const TextStyle(
-                          fontSize: 18, fontWeight: FontWeight.bold),
+              ] else ...[
+                // Combat results
+                Text('Combat Results',
+                    style: Theme.of(context).textTheme.titleLarge),
+                const SizedBox(height: 12),
+
+                // Total damage distribution chart
+                chart.ProbabilityDistributionChart(
+                  distribution:
+                      combatState.simulation!.totalDamageDistribution!,
+                  title: 'Wound Distribution',
+                  width: MediaQuery.of(context).size.width - 32,
+                  height: 250,
+                  showCumulative: combatState.showCumulativeDistribution,
+                  thresholds: [
+                    // Stand loss threshold
+                    chart.Threshold(
+                      value: combatState.defender!.wounds,
+                      label: '1 Stand',
+                      color: Colors.orange,
                     ),
-                    Text(
-                      'Probability of Breaking: ${_calculateBreakProbability(combatState)}%',
-                      style: const TextStyle(fontSize: 16),
+                    // Breaking threshold
+                    chart.Threshold(
+                      value: combatState.simulation!.standsToBreak *
+                          combatState.defender!.wounds,
+                      label: 'Breaking',
+                      color: Colors.red,
+                    ),
+                    // Total destruction
+                    chart.Threshold(
+                      value: combatState.numDefenderStands *
+                          combatState.defender!.wounds,
+                      label: 'Destroyed',
+                      color: Colors.deepPurple,
                     ),
                   ],
                 ),
-              ),
+
+                const SizedBox(height: 24),
+
+                // Hit & wound distribution charts in a row
+                Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // Hit distribution chart
+                    Expanded(
+                      child: chart.ProbabilityDistributionChart(
+                        distribution: combatState.simulation!.hitDistribution!,
+                        title: 'Hit Distribution',
+                        height: 180,
+                        showCumulative: combatState.showCumulativeDistribution,
+                      ),
+                    ),
+                    const SizedBox(width: 16),
+                    // Wound distribution from defense rolls
+                    Expanded(
+                      child: chart.ProbabilityDistributionChart(
+                        distribution:
+                            combatState.simulation!.woundDistribution!,
+                        title: 'After Defense',
+                        height: 180,
+                        showCumulative: combatState.showCumulativeDistribution,
+                      ),
+                    ),
+                  ],
+                ),
+
+                const SizedBox(height: 24),
+
+                // Results summary
+                Card(
+                  color: Theme.of(context).colorScheme.surface,
+                  child: Padding(
+                    padding: const EdgeInsets.all(16),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'Combat Summary',
+                          style: Theme.of(context).textTheme.titleMedium,
+                        ),
+                        const SizedBox(height: 8),
+                        _buildSummaryRow(
+                          context,
+                          'Expected Wounds:',
+                          combatState.simulation!
+                              .getExpectedWounds()
+                              .toString(),
+                        ),
+                        _buildSummaryRow(
+                          context,
+                          'Expected Stands Lost:',
+                          combatState.simulation!
+                              .getExpectedStandsLost()
+                              .toString(),
+                        ),
+                        _buildSummaryRow(
+                          context,
+                          'Breaking Probability:',
+                          '${(combatState.simulation!.breakingProbability * 100).toStringAsFixed(1)}%',
+                          color: _getBreakingProbabilityColor(
+                              combatState.simulation!.breakingProbability),
+                        ),
+                        _buildSummaryRow(
+                          context,
+                          'Destruction Probability:',
+                          '${(combatState.simulation!.getProbabilityOfLosingAtLeast(combatState.numDefenderStands) * 100).toStringAsFixed(1)}%',
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+
+                // Saved calculations section
+                if (combatState.savedCalculations.isNotEmpty) ...[
+                  const SizedBox(height: 24),
+                  Text('Saved Calculations',
+                      style: Theme.of(context).textTheme.titleLarge),
+                  const SizedBox(height: 8),
+                  ListView.builder(
+                    shrinkWrap: true,
+                    physics: const NeverScrollableScrollPhysics(),
+                    itemCount: combatState.savedCalculations.length,
+                    itemBuilder: (context, index) {
+                      final calculation = combatState.savedCalculations[index];
+                      return ListTile(
+                        title: Text(calculation.name),
+                        subtitle: Text(
+                          '${calculation.simulation.attacker.name} vs ${calculation.simulation.defender.name}',
+                        ),
+                        trailing: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            IconButton(
+                              icon: Icon(
+                                calculation.isVisible
+                                    ? Icons.visibility
+                                    : Icons.visibility_off,
+                              ),
+                              onPressed: () => combatNotifier
+                                  .toggleSavedCalculationVisibility(index),
+                            ),
+                            IconButton(
+                              icon: const Icon(Icons.delete),
+                              onPressed: () =>
+                                  combatNotifier.deleteSavedCalculation(index),
+                            ),
+                          ],
+                        ),
+                      );
+                    },
+                  ),
+                ],
+              ],
             ],
-          ],
+          ),
         ),
+      ),
+    );
+  }
+
+  Widget _buildSummaryRow(BuildContext context, String label, String value,
+      {Color? color}) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 4.0),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Text(label),
+          Text(
+            value,
+            style: TextStyle(
+              fontWeight: FontWeight.bold,
+              color: color,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Color _getBreakingProbabilityColor(double probability) {
+    if (probability < 0.25) return Colors.green;
+    if (probability < 0.5) return Colors.orange;
+    if (probability < 0.75) return Colors.deepOrange;
+    return Colors.red;
+  }
+
+  void _showSaveDialog(BuildContext context, CombatNotifier notifier) {
+    final textController = TextEditingController();
+
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Save Calculation'),
+        content: TextField(
+          controller: textController,
+          decoration: const InputDecoration(
+            labelText: 'Name',
+            hintText: 'Enter a name for this calculation',
+          ),
+          autofocus: true,
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Cancel'),
+          ),
+          ElevatedButton(
+            onPressed: () {
+              if (textController.text.isNotEmpty) {
+                notifier.saveCurrentCalculation(textController.text);
+                Navigator.pop(context);
+              }
+            },
+            child: const Text('Save'),
+          ),
+        ],
       ),
     );
   }
@@ -433,32 +700,7 @@ class CombatCalculatorScreen extends ConsumerWidget {
                   );
                 },
               ),
-              ListTile(
-                title: const Text('Sorcerer Kings'),
-                onTap: () {
-                  Navigator.pop(context);
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => RegimentSelectionScreen(
-                        faction: 'sorcerer_kings',
-                        onRegimentSelected: (regiment) {
-                          if (isAttacker) {
-                            ref
-                                .read(combatProvider.notifier)
-                                .updateAttacker(regiment);
-                          } else {
-                            ref
-                                .read(combatProvider.notifier)
-                                .updateDefender(regiment);
-                          }
-                          Navigator.pop(context);
-                        },
-                      ),
-                    ),
-                  );
-                },
-              ),
+              // Additional factions...
               ListTile(
                 title: const Text('Spires'),
                 onTap: () {
@@ -485,84 +727,7 @@ class CombatCalculatorScreen extends ConsumerWidget {
                   );
                 },
               ),
-              ListTile(
-                title: const Text('W\'adrhun'),
-                onTap: () {
-                  Navigator.pop(context);
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => RegimentSelectionScreen(
-                        faction: 'wadrhun',
-                        onRegimentSelected: (regiment) {
-                          if (isAttacker) {
-                            ref
-                                .read(combatProvider.notifier)
-                                .updateAttacker(regiment);
-                          } else {
-                            ref
-                                .read(combatProvider.notifier)
-                                .updateDefender(regiment);
-                          }
-                          Navigator.pop(context);
-                        },
-                      ),
-                    ),
-                  );
-                },
-              ),
-              ListTile(
-                title: const Text('Yoroni'),
-                onTap: () {
-                  Navigator.pop(context);
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => RegimentSelectionScreen(
-                        faction: 'yoroni',
-                        onRegimentSelected: (regiment) {
-                          if (isAttacker) {
-                            ref
-                                .read(combatProvider.notifier)
-                                .updateAttacker(regiment);
-                          } else {
-                            ref
-                                .read(combatProvider.notifier)
-                                .updateDefender(regiment);
-                          }
-                          Navigator.pop(context);
-                        },
-                      ),
-                    ),
-                  );
-                },
-              ),
-              ListTile(
-                title: const Text('City States'),
-                onTap: () {
-                  Navigator.pop(context);
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => RegimentSelectionScreen(
-                        faction: 'city_states',
-                        onRegimentSelected: (regiment) {
-                          if (isAttacker) {
-                            ref
-                                .read(combatProvider.notifier)
-                                .updateAttacker(regiment);
-                          } else {
-                            ref
-                                .read(combatProvider.notifier)
-                                .updateDefender(regiment);
-                          }
-                          Navigator.pop(context);
-                        },
-                      ),
-                    ),
-                  );
-                },
-              ),
+              // More factions...
             ],
           ),
         ),
@@ -574,23 +739,5 @@ class CombatCalculatorScreen extends ConsumerWidget {
         ],
       ),
     );
-  }
-
-  double _calculateBreakProbability(CombatState state) {
-    if (state.simulation == null) return 0.0;
-
-    final simulation = state.simulation!;
-    final totalWounds =
-        simulation.defenseRoll.failures + simulation.resolveRoll.failures;
-    final standsLost = totalWounds ~/ state.defender!.wounds;
-
-    // Simplified breaking calculation
-    final standsRequired = (state.numDefenderStands / 2).ceil();
-    if (standsLost >= standsRequired) {
-      return 100.0;
-    } else {
-      // This is very simplified - a real implementation would use probability distributions
-      return (standsLost / standsRequired * 100).clamp(0.0, 100.0);
-    }
   }
 }

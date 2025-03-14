@@ -1,7 +1,8 @@
 // lib/domain/models/combat_simulation.dart
-
 import 'package:conquest_calculator/domain/models/regiment.dart';
+import 'package:conquest_calculator/domain/models/probability_distribution.dart';
 
+/// Represents the outcome of a simple dice roll with success and failure count
 class DiceResult {
   final int successes;
   final int failures;
@@ -25,6 +26,7 @@ class DiceResult {
   }
 }
 
+/// Represents a full combat simulation with probability distributions
 class CombatSimulation {
   // Attacker
   final Regiment attacker;
@@ -39,15 +41,24 @@ class CombatSimulation {
   final bool isImpact;
   final bool isFlank;
   final bool isRear;
-  final bool isVolley; // New - is this a ranged attack?
-  final bool
-      isWithinEffectiveRange; // New - is the attack within effective range?
+  final bool isVolley;
+  final bool isWithinEffectiveRange;
   final Map<String, bool> specialRulesInEffect;
 
-  // Results
+  // Basic results (legacy)
   final DiceResult hitRoll;
   final DiceResult defenseRoll;
   final DiceResult resolveRoll;
+
+  // Probability distributions
+  final ProbabilityDistribution? hitDistribution;
+  final ProbabilityDistribution? woundDistribution;
+  final ProbabilityDistribution? resolveDistribution;
+  final ProbabilityDistribution? totalDamageDistribution;
+
+  // Critical thresholds
+  final int standsToBreak;
+  final double breakingProbability;
 
   CombatSimulation({
     required this.attacker,
@@ -64,10 +75,22 @@ class CombatSimulation {
     required this.hitRoll,
     required this.defenseRoll,
     required this.resolveRoll,
-  });
+    this.hitDistribution,
+    this.woundDistribution,
+    this.resolveDistribution,
+    this.totalDamageDistribution,
+  })  : standsToBreak = (numDefenderStands / 2).ceil(),
+        breakingProbability = _calculateBreakingProbability(
+            numDefenderStands,
+            defender.wounds,
+            defenseRoll.failures + resolveRoll.failures,
+            totalDamageDistribution);
 
   // Helper methods to get meaningful results
   int getExpectedWounds() {
+    if (totalDamageDistribution != null) {
+      return totalDamageDistribution!.mean.round();
+    }
     return defenseRoll.failures + resolveRoll.failures;
   }
 
@@ -77,19 +100,59 @@ class CombatSimulation {
 
   bool willLikelyBreak() {
     // A regiment is likely to break if it loses half or more of its stands
-    return getExpectedStandsLost() >= (numDefenderStands / 2).ceil();
+    return getExpectedStandsLost() >= standsToBreak;
   }
 
-  // Calculate probability of breaking (simplified)
-  double getBreakProbability() {
-    final standsRequired = (numDefenderStands / 2).ceil();
-    final standsLost = getExpectedStandsLost();
+  // Get probability of losing exactly n stands
+  double getProbabilityOfLosing(int stands) {
+    if (totalDamageDistribution == null) {
+      return 0.0;
+    }
 
+    int minWounds = stands * defender.wounds;
+    int maxWounds = minWounds + defender.wounds - 1;
+
+    double probability = 0.0;
+    for (int wounds = minWounds; wounds <= maxWounds; wounds++) {
+      if (wounds < totalDamageDistribution!.probabilities.length) {
+        probability += totalDamageDistribution!.probabilities[wounds];
+      }
+    }
+
+    return probability;
+  }
+
+  // Get probability of losing at least n stands
+  double getProbabilityOfLosingAtLeast(int stands) {
+    if (totalDamageDistribution == null) {
+      return 0.0;
+    }
+
+    int minWounds = stands * defender.wounds;
+    return totalDamageDistribution!.getProbabilityOfExceeding(minWounds - 1);
+  }
+
+  // Calculate probability of breaking (simplified version)
+  static double _calculateBreakingProbability(
+      int numDefenderStands,
+      int woundsPerStand,
+      int expectedTotalWounds,
+      ProbabilityDistribution? distribution) {
+    final standsRequired = (numDefenderStands / 2).ceil();
+    final woundsRequired = standsRequired * woundsPerStand;
+
+    // Use probability distribution if available
+    if (distribution != null) {
+      return distribution.getProbabilityOfExceeding(woundsRequired - 1);
+    }
+
+    // Fall back to simplified calculation
+    final standsLost = expectedTotalWounds ~/ woundsPerStand;
     if (standsLost >= standsRequired) {
-      return 100.0;
+      return 1.0;
     } else {
       // This is simplified - real implementation would use probability distributions
-      return (standsLost / standsRequired * 100).clamp(0.0, 100.0);
+      return (standsLost / standsRequired).clamp(0.0, 1.0);
     }
   }
 }

@@ -2,6 +2,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../domain/models/regiment.dart';
 import '../../domain/models/combat_simulation.dart';
+import '../../domain/models/probability_distribution.dart';
 import '../../domain/usecases/calculate_combat.dart';
 
 class CombatState {
@@ -13,8 +14,13 @@ class CombatState {
   final bool isImpact;
   final bool isFlank;
   final bool isRear;
+  final bool isVolley;
+  final bool isWithinEffectiveRange;
   final Map<String, bool> specialRulesInEffect;
+  final Map<String, int> specialRuleValues;
   final CombatSimulation? simulation;
+  final List<SavedCalculation> savedCalculations;
+  final bool showCumulativeDistribution;
 
   CombatState({
     this.attacker,
@@ -25,8 +31,13 @@ class CombatState {
     this.isImpact = false,
     this.isFlank = false,
     this.isRear = false,
+    this.isVolley = false,
+    this.isWithinEffectiveRange = true,
     this.specialRulesInEffect = const {},
+    this.specialRuleValues = const {},
     this.simulation,
+    this.savedCalculations = const [],
+    this.showCumulativeDistribution = false,
   });
 
   CombatState copyWith({
@@ -38,8 +49,13 @@ class CombatState {
     bool? isImpact,
     bool? isFlank,
     bool? isRear,
+    bool? isVolley,
+    bool? isWithinEffectiveRange,
     Map<String, bool>? specialRulesInEffect,
+    Map<String, int>? specialRuleValues,
     CombatSimulation? simulation,
+    List<SavedCalculation>? savedCalculations,
+    bool? showCumulativeDistribution,
   }) {
     return CombatState(
       attacker: attacker ?? this.attacker,
@@ -50,8 +66,43 @@ class CombatState {
       isImpact: isImpact ?? this.isImpact,
       isFlank: isFlank ?? this.isFlank,
       isRear: isRear ?? this.isRear,
+      isVolley: isVolley ?? this.isVolley,
+      isWithinEffectiveRange:
+          isWithinEffectiveRange ?? this.isWithinEffectiveRange,
       specialRulesInEffect: specialRulesInEffect ?? this.specialRulesInEffect,
+      specialRuleValues: specialRuleValues ?? this.specialRuleValues,
       simulation: simulation ?? this.simulation,
+      savedCalculations: savedCalculations ?? this.savedCalculations,
+      showCumulativeDistribution:
+          showCumulativeDistribution ?? this.showCumulativeDistribution,
+    );
+  }
+}
+
+class SavedCalculation {
+  final String name;
+  final CombatSimulation simulation;
+  final bool isVisible;
+  final DateTime savedAt;
+
+  SavedCalculation({
+    required this.name,
+    required this.simulation,
+    this.isVisible = true,
+    DateTime? savedAt,
+  }) : savedAt = savedAt ?? DateTime.now();
+
+  SavedCalculation copyWith({
+    String? name,
+    CombatSimulation? simulation,
+    bool? isVisible,
+    DateTime? savedAt,
+  }) {
+    return SavedCalculation(
+      name: name ?? this.name,
+      simulation: simulation ?? this.simulation,
+      isVisible: isVisible ?? this.isVisible,
+      savedAt: savedAt ?? this.savedAt,
     );
   }
 }
@@ -101,11 +152,72 @@ class CombatNotifier extends StateNotifier<CombatState> {
     _recalculate();
   }
 
+  void toggleVolley(bool value) {
+    state = state.copyWith(isVolley: value);
+    _recalculate();
+  }
+
+  void toggleWithinEffectiveRange(bool value) {
+    state = state.copyWith(isWithinEffectiveRange: value);
+    _recalculate();
+  }
+
   void toggleSpecialRule(String rule, bool value) {
     final updatedRules = Map<String, bool>.from(state.specialRulesInEffect);
     updatedRules[rule] = value;
     state = state.copyWith(specialRulesInEffect: updatedRules);
     _recalculate();
+  }
+
+  void updateSpecialRuleValue(String rule, int value) {
+    final updatedValues = Map<String, int>.from(state.specialRuleValues);
+    updatedValues[rule] = value;
+    state = state.copyWith(specialRuleValues: updatedValues);
+    _recalculate();
+  }
+
+  void toggleCumulativeDistribution(bool value) {
+    state = state.copyWith(showCumulativeDistribution: value);
+  }
+
+  void saveCurrentCalculation(String name) {
+    if (state.simulation == null) return;
+
+    final currentSim = state.simulation!;
+    final savedCalc = SavedCalculation(
+      name: name,
+      simulation: currentSim,
+    );
+
+    final updatedSavedCalculations =
+        List<SavedCalculation>.from(state.savedCalculations);
+    updatedSavedCalculations.add(savedCalc);
+
+    state = state.copyWith(savedCalculations: updatedSavedCalculations);
+  }
+
+  void toggleSavedCalculationVisibility(int index) {
+    if (index < 0 || index >= state.savedCalculations.length) return;
+
+    final updatedSavedCalculations =
+        List<SavedCalculation>.from(state.savedCalculations);
+    final currentCalc = updatedSavedCalculations[index];
+
+    updatedSavedCalculations[index] = currentCalc.copyWith(
+      isVisible: !currentCalc.isVisible,
+    );
+
+    state = state.copyWith(savedCalculations: updatedSavedCalculations);
+  }
+
+  void deleteSavedCalculation(int index) {
+    if (index < 0 || index >= state.savedCalculations.length) return;
+
+    final updatedSavedCalculations =
+        List<SavedCalculation>.from(state.savedCalculations);
+    updatedSavedCalculations.removeAt(index);
+
+    state = state.copyWith(savedCalculations: updatedSavedCalculations);
   }
 
   void _recalculate() {
@@ -119,7 +231,10 @@ class CombatNotifier extends StateNotifier<CombatState> {
         isImpact: state.isImpact,
         isFlank: state.isFlank,
         isRear: state.isRear,
+        isVolley: state.isVolley,
+        isWithinEffectiveRange: state.isWithinEffectiveRange,
         specialRulesInEffect: state.specialRulesInEffect,
+        impactValues: state.specialRuleValues,
       );
 
       state = state.copyWith(simulation: simulation);
