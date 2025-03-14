@@ -24,7 +24,7 @@ class CombatState {
   final CombatSimulation? simulation;
   final List<SavedCalculation> savedCalculations;
   final bool showCumulativeDistribution;
-  final CombatMode combatMode; // New field for tracking combat mode
+  final CombatMode combatMode; // Field for tracking combat mode
 
   CombatState({
     this.attacker,
@@ -36,13 +36,13 @@ class CombatState {
     this.isFlank = false,
     this.isRear = false,
     this.isVolley = false,
-    this.isWithinEffectiveRange = false, // Changed default to false
+    this.isWithinEffectiveRange = false,
     this.specialRulesInEffect = const {},
     this.specialRuleValues = const {},
     this.simulation,
     this.savedCalculations = const [],
     this.showCumulativeDistribution = false,
-    this.combatMode = CombatMode.melee, // Default to melee combat mode
+    this.combatMode = CombatMode.melee,
   });
 
   CombatState copyWith({
@@ -148,7 +148,7 @@ class CombatNotifier extends StateNotifier<CombatState> {
     _recalculate();
   }
 
-  // New method to switch between combat modes
+  // Method to switch between combat modes
   void setCombatMode(CombatMode mode) {
     if (state.combatMode == mode) return; // No change needed
 
@@ -161,6 +161,8 @@ class CombatNotifier extends StateNotifier<CombatState> {
       state = state.copyWith(
         combatMode: mode,
         isVolley: false, // Turn off volley
+        isWithinEffectiveRange:
+            false, // Clear effective range when switching to melee
         specialRulesInEffect: updatedRules,
       );
     } else {

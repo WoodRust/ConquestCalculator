@@ -241,27 +241,12 @@ class CombatCalculatorScreen extends ConsumerWidget {
                                             .titleSmall),
                                     const SizedBox(height: 4),
                                     CheckboxListTile(
-                                      title: const Text('Charge'),
+                                      title: const Text('Clash'),
                                       value: combatState.isCharge,
                                       onChanged: combatState.combatMode ==
                                               CombatMode.melee
                                           ? (value) => combatNotifier
                                               .toggleCharge(value ?? false)
-                                          : null,
-                                      dense: true,
-                                      controlAffinity:
-                                          ListTileControlAffinity.leading,
-                                    ),
-                                    CheckboxListTile(
-                                      title: const Text('Impact'),
-                                      value: combatState.isImpact,
-                                      onChanged: combatState.combatMode ==
-                                                  CombatMode.melee &&
-                                              (combatState.attacker
-                                                      ?.hasImpact() ??
-                                                  false)
-                                          ? (value) => combatNotifier
-                                              .toggleImpact(value ?? false)
                                           : null,
                                       dense: true,
                                       controlAffinity:
@@ -277,6 +262,21 @@ class CombatCalculatorScreen extends ConsumerWidget {
                                           ? (value) =>
                                               combatNotifier.toggleSpecialRule(
                                                   'inspired', value ?? false)
+                                          : null,
+                                      dense: true,
+                                      controlAffinity:
+                                          ListTileControlAffinity.leading,
+                                    ),
+                                    CheckboxListTile(
+                                      title: const Text('Impact'),
+                                      value: combatState.isImpact,
+                                      onChanged: combatState.combatMode ==
+                                                  CombatMode.melee &&
+                                              (combatState.attacker
+                                                      ?.hasImpact() ??
+                                                  false)
+                                          ? (value) => combatNotifier
+                                              .toggleImpact(value ?? false)
                                           : null,
                                       dense: true,
                                       controlAffinity:
@@ -380,19 +380,22 @@ class CombatCalculatorScreen extends ConsumerWidget {
                                   style:
                                       Theme.of(context).textTheme.titleSmall),
                               CheckboxListTile(
-                                title: const Text('Flank Attack'),
-                                value: combatState.isFlank,
-                                onChanged: (value) =>
-                                    combatNotifier.toggleFlank(value ?? false),
-                                dense: true,
-                                controlAffinity:
-                                    ListTileControlAffinity.leading,
-                              ),
-                              CheckboxListTile(
-                                title: const Text('Rear Attack'),
-                                value: combatState.isRear,
-                                onChanged: (value) =>
-                                    combatNotifier.toggleRear(value ?? false),
+                                title: const Text('Flank/Rear Attack'),
+                                value:
+                                    combatState.isFlank || combatState.isRear,
+                                onChanged: (value) {
+                                  if (value != null) {
+                                    if (value) {
+                                      // Enable flank, disable rear
+                                      combatNotifier.toggleFlank(true);
+                                      combatNotifier.toggleRear(false);
+                                    } else {
+                                      // Disable both
+                                      combatNotifier.toggleFlank(false);
+                                      combatNotifier.toggleRear(false);
+                                    }
+                                  }
+                                },
                                 dense: true,
                                 controlAffinity:
                                     ListTileControlAffinity.leading,
