@@ -8,11 +8,14 @@ import '../../domain/usecases/calculate_combat.dart';
 // Enum to track which combat mode is active
 enum CombatMode { melee, ranged }
 
+// Updated CombatState class with character support
 class CombatState {
   final Regiment? attacker;
   final int numAttackerStands;
+  final Regiment? attackerCharacter; // Added: character attached to attacker
   final Regiment? defender;
   final int numDefenderStands;
+  final Regiment? defenderCharacter; // Added: character attached to defender
   final bool isCharge;
   final bool isImpact;
   final bool isFlank;
@@ -24,13 +27,15 @@ class CombatState {
   final CombatSimulation? simulation;
   final List<SavedCalculation> savedCalculations;
   final bool showCumulativeDistribution;
-  final CombatMode combatMode; // Field for tracking combat mode
+  final CombatMode combatMode;
 
   CombatState({
     this.attacker,
     this.numAttackerStands = 3,
+    this.attackerCharacter, // Added
     this.defender,
     this.numDefenderStands = 3,
+    this.defenderCharacter, // Added
     this.isCharge = false,
     this.isImpact = false,
     this.isFlank = false,
@@ -48,8 +53,10 @@ class CombatState {
   CombatState copyWith({
     Regiment? attacker,
     int? numAttackerStands,
+    Regiment? attackerCharacter,
     Regiment? defender,
     int? numDefenderStands,
+    Regiment? defenderCharacter,
     bool? isCharge,
     bool? isImpact,
     bool? isFlank,
@@ -66,8 +73,10 @@ class CombatState {
     return CombatState(
       attacker: attacker ?? this.attacker,
       numAttackerStands: numAttackerStands ?? this.numAttackerStands,
+      attackerCharacter: attackerCharacter ?? this.attackerCharacter,
       defender: defender ?? this.defender,
       numDefenderStands: numDefenderStands ?? this.numDefenderStands,
+      defenderCharacter: defenderCharacter ?? this.defenderCharacter,
       isCharge: isCharge ?? this.isCharge,
       isImpact: isImpact ?? this.isImpact,
       isFlank: isFlank ?? this.isFlank,
@@ -83,6 +92,22 @@ class CombatState {
           showCumulativeDistribution ?? this.showCumulativeDistribution,
       combatMode: combatMode ?? this.combatMode,
     );
+  }
+
+  // Helper methods to get effective stand counts (including character)
+  int get effectiveAttackerStands =>
+      numAttackerStands + (attackerCharacter != null ? 1 : 0);
+
+  int get effectiveDefenderStands =>
+      numDefenderStands + (defenderCharacter != null ? 1 : 0);
+
+  // Check if regiment can have a character attached (non-monster regiments only)
+  bool canAttachCharacterToAttacker() {
+    return attacker != null && attacker!.type != RegimentType.monster;
+  }
+
+  bool canAttachCharacterToDefender() {
+    return defender != null && defender!.type != RegimentType.monster;
   }
 }
 
@@ -136,6 +161,42 @@ class CombatNotifier extends StateNotifier<CombatState> {
   void updateAttackerStands(int stands) {
     state = state.copyWith(numAttackerStands: stands);
     _recalculate();
+  }
+
+  void attachCharacterToAttacker(Regiment character) {
+    // Only allow attaching if the regiment can have a character
+    if (state.canAttachCharacterToAttacker()) {
+      // Ensure the character is actually a character regiment
+      if (character.isCharacter()) {
+        state = state.copyWith(attackerCharacter: character);
+        _recalculate();
+      }
+    }
+  }
+
+  void detachCharacterFromAttacker() {
+    if (state.attackerCharacter != null) {
+      state = state.copyWith(attackerCharacter: null);
+      _recalculate();
+    }
+  }
+
+  void attachCharacterToDefender(Regiment character) {
+    // Only allow attaching if the regiment can have a character
+    if (state.canAttachCharacterToDefender()) {
+      // Ensure the character is actually a character regiment
+      if (character.isCharacter()) {
+        state = state.copyWith(defenderCharacter: character);
+        _recalculate();
+      }
+    }
+  }
+
+  void detachCharacterFromDefender() {
+    if (state.defenderCharacter != null) {
+      state = state.copyWith(defenderCharacter: null);
+      _recalculate();
+    }
   }
 
   void updateDefender(Regiment defender) {
@@ -308,8 +369,12 @@ class CombatNotifier extends StateNotifier<CombatState> {
       final simulation = _calculateCombat.calculateExpectedResult(
         attacker: state.attacker!,
         numAttackerStands: state.numAttackerStands,
+        attackerCharacter:
+            state.attackerCharacter, // Add character to calculation
         defender: state.defender!,
         numDefenderStands: state.numDefenderStands,
+        defenderCharacter:
+            state.defenderCharacter, // Add character to calculation
         isCharge: state.isCharge,
         isImpact: state.isImpact,
         isFlank: state.isFlank,

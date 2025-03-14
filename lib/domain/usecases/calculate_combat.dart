@@ -8,17 +8,21 @@ class CalculateCombat {
   final Random _random = Random();
 
   // Calculate expected result based on probabilities
+  // Update the calculateExpectedResult method in the CalculateCombat class
+
   CombatSimulation calculateExpectedResult({
     required Regiment attacker,
     required int numAttackerStands,
+    Regiment? attackerCharacter, // Add character parameters
     required Regiment defender,
     required int numDefenderStands,
+    Regiment? defenderCharacter, // Add character parameters
     bool isCharge = false,
     bool isImpact = false,
     bool isFlank = false,
     bool isRear = false,
     bool isVolley = false,
-    bool isWithinEffectiveRange = false, // Changed default to false
+    bool isWithinEffectiveRange = false,
     Map<String, bool> specialRulesInEffect = const {},
     Map<String, int> impactValues = const {},
   }) {
@@ -26,11 +30,18 @@ class CalculateCombat {
     int totalAttacks;
     int hitTarget;
 
+    // Calculate effective stand counts with characters
+    int effectiveAttackerStands =
+        numAttackerStands + (attackerCharacter != null ? 1 : 0);
+    int effectiveDefenderStands =
+        numDefenderStands + (defenderCharacter != null ? 1 : 0);
+
     if (isVolley) {
       // For volley actions, use barrage value
       totalAttacks = _calculateTotalVolleys(
         attacker: attacker,
         numAttackerStands: numAttackerStands,
+        attackerCharacter: attackerCharacter, // Add character
         isWithinEffectiveRange: isWithinEffectiveRange,
         specialRulesInEffect: specialRulesInEffect,
       );
@@ -45,7 +56,6 @@ class CalculateCombat {
         // If aimed would raise Volley to 5+, use re-roll instead
         if (hitTarget >= 5) {
           hitTarget = attacker.volley; // Reset to base value
-          // The re-roll effect is simulated in _calculateTotalVolleys
           specialRulesInEffect['aimedReroll'] = true;
         }
       }
@@ -59,6 +69,7 @@ class CalculateCombat {
       totalAttacks = _calculateTotalAttacks(
         attacker: attacker,
         numAttackerStands: numAttackerStands,
+        attackerCharacter: attackerCharacter, // Add character
         isCharge: isCharge,
         isImpact: isImpact,
         specialRulesInEffect: specialRulesInEffect,
@@ -87,6 +98,7 @@ class CalculateCombat {
       totalAttacks = _calculateTotalAttacks(
         attacker: attacker,
         numAttackerStands: numAttackerStands,
+        attackerCharacter: attackerCharacter, // Add character
         isCharge: isCharge,
         isImpact: isImpact,
         specialRulesInEffect: specialRulesInEffect,
@@ -102,7 +114,6 @@ class CalculateCombat {
         specialRulesInEffect['inspiredReroll'] == true ||
         specialRulesInEffect['flurry'] == true) {
       // For re-rolls, we simulate by increasing the hit probability
-      // This is a simplified approach - could be more precise with a custom distribution
       hitDistribution = _calculateDistributionWithRerolls(
           dice: totalAttacks, target: hitTarget, rerollFails: true);
     } else {
@@ -200,12 +211,17 @@ class CalculateCombat {
         _calculateTotalDamageDistribution(
             woundDistribution, resolveDistribution);
 
-    // 7. Return complete simulation
+    // 7. Calculate breaking threshold based on effective stand count
+    int standsToBreak = (effectiveDefenderStands / 2).ceil();
+
+    // 8. Return complete simulation
     return CombatSimulation(
       attacker: attacker,
-      numAttackerStands: numAttackerStands,
+      numAttackerStands:
+          effectiveAttackerStands, // Use effective count that includes character
       defender: defender,
-      numDefenderStands: numDefenderStands,
+      numDefenderStands:
+          effectiveDefenderStands, // Use effective count that includes character
       isCharge: isCharge,
       isImpact: isImpact,
       isFlank: isFlank,
@@ -220,7 +236,167 @@ class CalculateCombat {
       woundDistribution: woundDistribution,
       resolveDistribution: resolveDistribution,
       totalDamageDistribution: totalDamageDistribution,
+      standsToBreak:
+          standsToBreak, // Set the breaking threshold based on effective stands
     );
+  }
+
+// Update method to calculate total attacks to include character attacks
+  int _calculateTotalAttacks({
+    required Regiment attacker,
+    required int numAttackerStands,
+    Regiment? attackerCharacter,
+    required bool isCharge,
+    required bool isImpact,
+    required Map<String, bool> specialRulesInEffect,
+    required Map<String, int> impactValues,
+    Map<String, int> specialRuleValues = const {},
+  }) {
+    int totalAttacks;
+
+    if (isImpact) {
+      // For impact attacks, get the impact value
+      int impactValue = attacker.getImpact();
+
+      // If that's zero, check impactValues map (for backward compatibility)
+      if (impactValue == 0) {
+        impactValue = impactValues['impactValue'] ?? 0;
+      }
+
+      totalAttacks = impactValue * numAttackerStands;
+
+      // Add character impact attacks if present
+      if (attackerCharacter != null && attackerCharacter.getImpact() > 0) {
+        totalAttacks += attackerCharacter.getImpact();
+      }
+
+      // Apply glorious charge - updates the clash but not number of attacks
+      if (isCharge && attacker.hasSpecialRule('glorious charge')) {
+        specialRulesInEffect['gloriousCharge'] = true;
+      }
+
+      // Apply brutal impact - updates the defense reduction but not number of attacks
+      if (attacker.getBrutalImpact() > 0) {
+        specialRulesInEffect['brutalImpact'] = true;
+        specialRuleValues['brutalImpactValue'] = attacker.getBrutalImpact();
+      }
+    } else {
+      // For regular clash, use the attacks characteristic
+      int regimentAttacks = attacker.attacks * numAttackerStands;
+
+      // Add character attacks
+      int characterAttacks = 0;
+      if (attackerCharacter != null) {
+        characterAttacks = attackerCharacter.attacks;
+      }
+
+      // Calculate support attacks from unengaged stands
+      // Simplified model: we'll assume half stands are engaged, half provide support
+      int engagedStands = (numAttackerStands / 2).ceil();
+      int supportingStands = numAttackerStands - engagedStands;
+
+      // Get support value from Regiment's support field
+      int supportValue = attacker.getSupport();
+
+      // If no support value is defined, default to 1
+      if (supportValue == 0) {
+        supportValue = 1;
+      }
+
+      int supportAttacks = supportingStands * supportValue;
+
+      // Add engaged attacks and support attacks
+      totalAttacks = (engagedStands * attacker.attacks) +
+          supportAttacks +
+          characterAttacks;
+    }
+
+    // Apply special rules modifications
+    if (attacker.hasSpecialRule('flurry') ||
+        specialRulesInEffect['flurry'] == true) {
+      // Flurry allows re-rolling failed hits
+      // Let this be handled by our reroll-aware hit calculation instead
+      specialRulesInEffect['flurry'] = true;
+    }
+
+    // Apply shock special rule - impacts clash characteristic, not attack count
+    if (isCharge && attacker.hasSpecialRule('shock')) {
+      specialRulesInEffect['shock'] = true;
+    }
+
+    // Apply inspired rerolls - impacts the hit probability calculation
+    if (specialRulesInEffect['inspired'] == true && attacker.clash >= 4) {
+      specialRulesInEffect['inspiredReroll'] = true;
+    }
+
+    return totalAttacks;
+  }
+
+// Update volley calculation to include character's barrage
+  int _calculateTotalVolleys({
+    required Regiment attacker,
+    required int numAttackerStands,
+    Regiment? attackerCharacter,
+    required bool isWithinEffectiveRange,
+    required Map<String, bool> specialRulesInEffect,
+  }) {
+    if (!attacker.hasBarrage()) {
+      return 0; // No barrage capability
+    }
+
+    int totalVolleys = attacker.getBarrage() * numAttackerStands;
+
+    // Add character's barrage if present
+    if (attackerCharacter != null && attackerCharacter.hasBarrage()) {
+      totalVolleys += attackerCharacter.getBarrage();
+    }
+
+    // Apply special rules for volleys
+    if (attacker.hasSpecialRule('rapid volley') ||
+        specialRulesInEffect['rapidVolley'] == true) {
+      // Rapid volley grants an additional hit on rolls of 1
+      // Simulate by increasing expected hits by 1/6 of the total shots
+      double rapidVolleyBonus = totalVolleys * (1.0 / 6.0);
+      totalVolleys += rapidVolleyBonus.round();
+    }
+
+    if (attacker.hasSpecialRule('torrential fire') ||
+        specialRulesInEffect['torrentialFire'] == true) {
+      // Torrential fire grants an additional hit for every 2 hits
+      // Simulate by increasing expected hits by half the success rate
+      double successRate = attacker.volley / 6.0;
+      double torrentialFireBonus = totalVolleys * successRate * 0.5;
+      totalVolleys += torrentialFireBonus.round();
+    }
+
+    // Apply aimed re-rolls for failed hits
+    if (specialRulesInEffect['aimedReroll'] == true) {
+      // Similar effect to flurry for melee
+      double missRate = (6.0 - attacker.volley) / 6.0;
+      double rerollSuccessRate = missRate * (attacker.volley / 6.0);
+      double aimedBonus = totalVolleys * rerollSuccessRate;
+      totalVolleys += aimedBonus.round();
+    }
+
+    // Apply deadshots special rule (always under effects of aimed special rule)
+    if (attacker.hasSpecialRule('deadshots')) {
+      // This is handled in hit target adjustment, not in volley count
+      specialRulesInEffect['aimed'] = true;
+    }
+
+    // Apply sureshot (ignores obscuring terrain penalties)
+    if (attacker.hasSpecialRule('sureshot') ||
+        specialRulesInEffect['sureshot'] == true) {
+      // This doesn't affect volley count directly, but affects other calculations
+      specialRulesInEffect['sureshot'] = true;
+    }
+
+    // Penalize for being outside effective range - halved shots
+    if (!isWithinEffectiveRange) {
+      totalVolleys = (totalVolleys * 0.5).round();
+    }
+
+    return totalVolleys;
   }
 
   // New method to calculate distribution with rerolls

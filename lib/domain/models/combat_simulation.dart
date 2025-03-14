@@ -27,6 +27,8 @@ class DiceResult {
 }
 
 /// Represents a full combat simulation with probability distributions
+// Update the CombatSimulation class constructor to handle character stands properly
+
 class CombatSimulation {
   // Attacker
   final Regiment attacker;
@@ -79,12 +81,13 @@ class CombatSimulation {
     this.woundDistribution,
     this.resolveDistribution,
     this.totalDamageDistribution,
-  })  : standsToBreak = (numDefenderStands / 2).ceil(),
-        breakingProbability = _calculateBreakingProbability(
+    required this.standsToBreak, // Now passed in to account for character stands
+  }) : breakingProbability = _calculateBreakingProbability(
             numDefenderStands,
             defender.wounds,
             defenseRoll.failures + resolveRoll.failures,
-            totalDamageDistribution);
+            totalDamageDistribution,
+            standsToBreak); // Pass in standsToBreak
 
   // Helper methods to get meaningful results
   int getExpectedWounds() {
@@ -132,14 +135,15 @@ class CombatSimulation {
     return totalDamageDistribution!.getProbabilityOfExceeding(minWounds - 1);
   }
 
-  // Calculate probability of breaking (simplified version)
+  // Calculate probability of breaking - updated to use the passed-in standsToBreak value
   static double _calculateBreakingProbability(
       int numDefenderStands,
       int woundsPerStand,
       int expectedTotalWounds,
-      ProbabilityDistribution? distribution) {
-    final standsRequired = (numDefenderStands / 2).ceil();
-    final woundsRequired = standsRequired * woundsPerStand;
+      ProbabilityDistribution? distribution,
+      int standsToBreak) {
+    // Use standsToBreak value instead of calculating it
+    final woundsRequired = standsToBreak * woundsPerStand;
 
     // Use probability distribution if available
     if (distribution != null) {
@@ -148,11 +152,11 @@ class CombatSimulation {
 
     // Fall back to simplified calculation
     final standsLost = expectedTotalWounds ~/ woundsPerStand;
-    if (standsLost >= standsRequired) {
+    if (standsLost >= standsToBreak) {
       return 1.0;
     } else {
       // This is simplified - real implementation would use probability distributions
-      return (standsLost / standsRequired).clamp(0.0, 1.0);
+      return (standsLost / standsToBreak).clamp(0.0, 1.0);
     }
   }
 }

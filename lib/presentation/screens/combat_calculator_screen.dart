@@ -5,6 +5,7 @@ import '../providers/combat_provider.dart';
 import '../widgets/probability_distribution_chart.dart' as chart;
 import '../widgets/target_selector.dart';
 import 'regiment_selection_screen.dart';
+import 'character_selection_screen.dart';
 
 class CombatCalculatorScreen extends ConsumerWidget {
   const CombatCalculatorScreen({super.key});
@@ -76,8 +77,46 @@ class CombatCalculatorScreen extends ConsumerWidget {
                             onPressed: () => _selectAttacker(context, ref),
                             child: const Text('Select'),
                           ),
+                          if (combatState.canAttachCharacterToAttacker())
+                            IconButton(
+                              icon: const Icon(Icons.person_add),
+                              tooltip: combatState.attackerCharacter == null
+                                  ? 'Add character stand'
+                                  : 'Change character stand',
+                              onPressed: () =>
+                                  _selectAttackerCharacter(context, ref),
+                            ),
+                          if (combatState.attackerCharacter != null)
+                            IconButton(
+                              icon: const Icon(Icons.person_remove),
+                              tooltip: 'Remove character stand',
+                              onPressed: () => ref
+                                  .read(combatProvider.notifier)
+                                  .detachCharacterFromAttacker(),
+                            ),
                         ],
                       ),
+
+                      // Display attached character info
+                      if (combatState.attackerCharacter != null) ...[
+                        Padding(
+                          padding: const EdgeInsets.only(left: 16.0, top: 4.0),
+                          child: Row(
+                            children: [
+                              const Icon(Icons.person, size: 16),
+                              const SizedBox(width: 8),
+                              Text(
+                                'Character: ${combatState.attackerCharacter!.name}',
+                                style: TextStyle(
+                                  fontStyle: FontStyle.italic,
+                                  color:
+                                      Theme.of(context).colorScheme.secondary,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
 
                       if (combatState.attacker != null) ...[
                         // Attacker special rules section
@@ -148,8 +187,46 @@ class CombatCalculatorScreen extends ConsumerWidget {
                             onPressed: () => _selectDefender(context, ref),
                             child: const Text('Select'),
                           ),
+                          if (combatState.canAttachCharacterToDefender())
+                            IconButton(
+                              icon: const Icon(Icons.person_add),
+                              tooltip: combatState.defenderCharacter == null
+                                  ? 'Add character stand'
+                                  : 'Change character stand',
+                              onPressed: () =>
+                                  _selectDefenderCharacter(context, ref),
+                            ),
+                          if (combatState.defenderCharacter != null)
+                            IconButton(
+                              icon: const Icon(Icons.person_remove),
+                              tooltip: 'Remove character stand',
+                              onPressed: () => ref
+                                  .read(combatProvider.notifier)
+                                  .detachCharacterFromDefender(),
+                            ),
                         ],
                       ),
+
+                      // Display attached character info
+                      if (combatState.defenderCharacter != null) ...[
+                        Padding(
+                          padding: const EdgeInsets.only(left: 16.0, top: 4.0),
+                          child: Row(
+                            children: [
+                              const Icon(Icons.person, size: 16),
+                              const SizedBox(width: 8),
+                              Text(
+                                'Character: ${combatState.defenderCharacter!.name}',
+                                style: TextStyle(
+                                  fontStyle: FontStyle.italic,
+                                  color:
+                                      Theme.of(context).colorScheme.secondary,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
 
                       if (combatState.defender != null) ...[
                         // Defender special rules section
@@ -184,7 +261,7 @@ class CombatCalculatorScreen extends ConsumerWidget {
                           style: Theme.of(context).textTheme.titleMedium),
                       const SizedBox(height: 8),
 
-                      // New Combat Mode Selection (Radio buttons)
+                      // Combat Mode Selection (Radio buttons)
                       Row(
                         children: [
                           Expanded(
@@ -526,6 +603,33 @@ class CombatCalculatorScreen extends ConsumerWidget {
                           'Destruction Probability:',
                           '${(combatState.simulation!.getProbabilityOfLosingAtLeast(combatState.numDefenderStands) * 100).toStringAsFixed(1)}%',
                         ),
+                        // Show effective stand counts when characters are attached
+                        if (combatState.attackerCharacter != null ||
+                            combatState.defenderCharacter != null) ...[
+                          const SizedBox(height: 8),
+                          const Divider(),
+                          const SizedBox(height: 8),
+                          Text(
+                            'Stand Counts (including characters)',
+                            style: Theme.of(context).textTheme.titleSmall,
+                          ),
+                          const SizedBox(height: 4),
+                          _buildSummaryRow(
+                            context,
+                            'Attacker Effective Stands:',
+                            combatState.effectiveAttackerStands.toString(),
+                          ),
+                          _buildSummaryRow(
+                            context,
+                            'Defender Effective Stands:',
+                            combatState.effectiveDefenderStands.toString(),
+                          ),
+                          _buildSummaryRow(
+                            context,
+                            'Defender Stands to Break:',
+                            combatState.simulation!.standsToBreak.toString(),
+                          ),
+                        ],
                       ],
                     ),
                   ),
@@ -659,7 +763,10 @@ class CombatCalculatorScreen extends ConsumerWidget {
                   builder: (context) => RegimentSelectionScreen(
                     faction: 'dweghom',
                     onRegimentSelected: (regiment) {
-                      combatNotifier.updateAttacker(regiment);
+                      // Skip character regiments when selecting the main regiment
+                      if (!regiment.isCharacter()) {
+                        combatNotifier.updateAttacker(regiment);
+                      }
                       Navigator.pop(context);
                     },
                   ),
@@ -678,7 +785,10 @@ class CombatCalculatorScreen extends ConsumerWidget {
                   builder: (context) => RegimentSelectionScreen(
                     faction: 'hundred_kingdoms',
                     onRegimentSelected: (regiment) {
-                      combatNotifier.updateAttacker(regiment);
+                      // Skip character regiments when selecting the main regiment
+                      if (!regiment.isCharacter()) {
+                        combatNotifier.updateAttacker(regiment);
+                      }
                       Navigator.pop(context);
                     },
                   ),
@@ -697,7 +807,10 @@ class CombatCalculatorScreen extends ConsumerWidget {
                   builder: (context) => RegimentSelectionScreen(
                     faction: 'nords',
                     onRegimentSelected: (regiment) {
-                      combatNotifier.updateAttacker(regiment);
+                      // Skip character regiments when selecting the main regiment
+                      if (!regiment.isCharacter()) {
+                        combatNotifier.updateAttacker(regiment);
+                      }
                       Navigator.pop(context);
                     },
                   ),
@@ -714,6 +827,80 @@ class CombatCalculatorScreen extends ConsumerWidget {
               _showMoreFactions(context, ref, true);
             },
           ),
+        ],
+      ),
+    );
+  }
+
+  void _selectAttackerCharacter(BuildContext context, WidgetRef ref) async {
+    final combatNotifier = ref.read(combatProvider.notifier);
+    final combatState = ref.read(combatProvider);
+
+    if (combatState.attacker == null) return;
+
+    showModalBottomSheet(
+      context: context,
+      builder: (context) => Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          ListTile(
+            leading: const Icon(Icons.shield),
+            title: const Text('Dweghom Characters'),
+            onTap: () {
+              Navigator.pop(context);
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => CharacterSelectionScreen(
+                    faction: 'dweghom',
+                    onCharacterSelected: (character) {
+                      combatNotifier.attachCharacterToAttacker(character);
+                      Navigator.pop(context);
+                    },
+                  ),
+                ),
+              );
+            },
+          ),
+          ListTile(
+            leading: const Icon(Icons.castle),
+            title: const Text('Hundred Kingdoms Characters'),
+            onTap: () {
+              Navigator.pop(context);
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => CharacterSelectionScreen(
+                    faction: 'hundred_kingdoms',
+                    onCharacterSelected: (character) {
+                      combatNotifier.attachCharacterToAttacker(character);
+                      Navigator.pop(context);
+                    },
+                  ),
+                ),
+              );
+            },
+          ),
+          ListTile(
+            leading: const Icon(Icons.nordic_walking),
+            title: const Text('Nords Characters'),
+            onTap: () {
+              Navigator.pop(context);
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => CharacterSelectionScreen(
+                    faction: 'nords',
+                    onCharacterSelected: (character) {
+                      combatNotifier.attachCharacterToAttacker(character);
+                      Navigator.pop(context);
+                    },
+                  ),
+                ),
+              );
+            },
+          ),
+          // Add more factions here as needed
         ],
       ),
     );
@@ -738,7 +925,10 @@ class CombatCalculatorScreen extends ConsumerWidget {
                   builder: (context) => RegimentSelectionScreen(
                     faction: 'dweghom',
                     onRegimentSelected: (regiment) {
-                      combatNotifier.updateDefender(regiment);
+                      // Skip character regiments when selecting the main regiment
+                      if (!regiment.isCharacter()) {
+                        combatNotifier.updateDefender(regiment);
+                      }
                       Navigator.pop(context);
                     },
                   ),
@@ -757,7 +947,10 @@ class CombatCalculatorScreen extends ConsumerWidget {
                   builder: (context) => RegimentSelectionScreen(
                     faction: 'hundred_kingdoms',
                     onRegimentSelected: (regiment) {
-                      combatNotifier.updateDefender(regiment);
+                      // Skip character regiments when selecting the main regiment
+                      if (!regiment.isCharacter()) {
+                        combatNotifier.updateDefender(regiment);
+                      }
                       Navigator.pop(context);
                     },
                   ),
@@ -776,7 +969,10 @@ class CombatCalculatorScreen extends ConsumerWidget {
                   builder: (context) => RegimentSelectionScreen(
                     faction: 'nords',
                     onRegimentSelected: (regiment) {
-                      combatNotifier.updateDefender(regiment);
+                      // Skip character regiments when selecting the main regiment
+                      if (!regiment.isCharacter()) {
+                        combatNotifier.updateDefender(regiment);
+                      }
                       Navigator.pop(context);
                     },
                   ),
@@ -793,6 +989,80 @@ class CombatCalculatorScreen extends ConsumerWidget {
               _showMoreFactions(context, ref, false);
             },
           ),
+        ],
+      ),
+    );
+  }
+
+  void _selectDefenderCharacter(BuildContext context, WidgetRef ref) async {
+    final combatNotifier = ref.read(combatProvider.notifier);
+    final combatState = ref.read(combatProvider);
+
+    if (combatState.defender == null) return;
+
+    showModalBottomSheet(
+      context: context,
+      builder: (context) => Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          ListTile(
+            leading: const Icon(Icons.shield),
+            title: const Text('Dweghom Characters'),
+            onTap: () {
+              Navigator.pop(context);
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => CharacterSelectionScreen(
+                    faction: 'dweghom',
+                    onCharacterSelected: (character) {
+                      combatNotifier.attachCharacterToDefender(character);
+                      Navigator.pop(context);
+                    },
+                  ),
+                ),
+              );
+            },
+          ),
+          ListTile(
+            leading: const Icon(Icons.castle),
+            title: const Text('Hundred Kingdoms Characters'),
+            onTap: () {
+              Navigator.pop(context);
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => CharacterSelectionScreen(
+                    faction: 'hundred_kingdoms',
+                    onCharacterSelected: (character) {
+                      combatNotifier.attachCharacterToDefender(character);
+                      Navigator.pop(context);
+                    },
+                  ),
+                ),
+              );
+            },
+          ),
+          ListTile(
+            leading: const Icon(Icons.nordic_walking),
+            title: const Text('Nords Characters'),
+            onTap: () {
+              Navigator.pop(context);
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => CharacterSelectionScreen(
+                    faction: 'nords',
+                    onCharacterSelected: (character) {
+                      combatNotifier.attachCharacterToDefender(character);
+                      Navigator.pop(context);
+                    },
+                  ),
+                ),
+              );
+            },
+          ),
+          // Add more factions here as needed
         ],
       ),
     );
@@ -817,14 +1087,17 @@ class CombatCalculatorScreen extends ConsumerWidget {
                       builder: (context) => RegimentSelectionScreen(
                         faction: 'old_dominion',
                         onRegimentSelected: (regiment) {
-                          if (isAttacker) {
-                            ref
-                                .read(combatProvider.notifier)
-                                .updateAttacker(regiment);
-                          } else {
-                            ref
-                                .read(combatProvider.notifier)
-                                .updateDefender(regiment);
+                          // Skip character regiments when selecting the main regiment
+                          if (!regiment.isCharacter()) {
+                            if (isAttacker) {
+                              ref
+                                  .read(combatProvider.notifier)
+                                  .updateAttacker(regiment);
+                            } else {
+                              ref
+                                  .read(combatProvider.notifier)
+                                  .updateDefender(regiment);
+                            }
                           }
                           Navigator.pop(context);
                         },
@@ -844,14 +1117,17 @@ class CombatCalculatorScreen extends ConsumerWidget {
                       builder: (context) => RegimentSelectionScreen(
                         faction: 'spires',
                         onRegimentSelected: (regiment) {
-                          if (isAttacker) {
-                            ref
-                                .read(combatProvider.notifier)
-                                .updateAttacker(regiment);
-                          } else {
-                            ref
-                                .read(combatProvider.notifier)
-                                .updateDefender(regiment);
+                          // Skip character regiments when selecting the main regiment
+                          if (!regiment.isCharacter()) {
+                            if (isAttacker) {
+                              ref
+                                  .read(combatProvider.notifier)
+                                  .updateAttacker(regiment);
+                            } else {
+                              ref
+                                  .read(combatProvider.notifier)
+                                  .updateDefender(regiment);
+                            }
                           }
                           Navigator.pop(context);
                         },
