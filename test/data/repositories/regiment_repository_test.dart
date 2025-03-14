@@ -2,13 +2,13 @@
 import 'dart:convert';
 
 import 'package:flutter_test/flutter_test.dart';
-import 'package:flutter/services.dart'; // Add this
+import 'package:flutter/services.dart';
 import 'package:conquest_calculator/data/repositories/regiment_repository_impl.dart';
 import 'package:conquest_calculator/data/sources/local/regiment_local_data_source.dart';
 import 'package:conquest_calculator/domain/models/regiment.dart';
 
 void main() {
-  TestWidgetsFlutterBinding.ensureInitialized(); // Add this line
+  TestWidgetsFlutterBinding.ensureInitialized();
 
   // Set up asset bundle mocking
   final RegimentLocalDataSource dataSource = RegimentLocalDataSource();

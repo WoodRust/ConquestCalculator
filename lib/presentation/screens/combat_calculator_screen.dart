@@ -4,8 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../providers/combat_provider.dart';
 import '../widgets/probability_distribution_chart.dart' as chart;
 import '../widgets/target_selector.dart';
-import 'regiment_selection_screen.dart';
-import 'character_selection_screen.dart';
+import 'unit_selection_screen.dart';
 
 class CombatCalculatorScreen extends ConsumerWidget {
   const CombatCalculatorScreen({super.key});
@@ -764,9 +763,11 @@ class CombatCalculatorScreen extends ConsumerWidget {
               Navigator.push(
                 context,
                 MaterialPageRoute(
-                  builder: (context) => RegimentSelectionScreen(
+                  builder: (context) => UnitSelectionScreen(
                     faction: 'dweghom',
-                    onRegimentSelected: (regiment) {
+                    initialFilter: UnitFilter.regimentsOnly,
+                    title: 'Select Dweghom Regiment',
+                    onUnitSelected: (regiment) {
                       // Skip character regiments when selecting the main regiment
                       if (!regiment.isCharacter()) {
                         combatNotifier.updateAttacker(regiment);
@@ -786,9 +787,11 @@ class CombatCalculatorScreen extends ConsumerWidget {
               Navigator.push(
                 context,
                 MaterialPageRoute(
-                  builder: (context) => RegimentSelectionScreen(
+                  builder: (context) => UnitSelectionScreen(
                     faction: 'hundred_kingdoms',
-                    onRegimentSelected: (regiment) {
+                    initialFilter: UnitFilter.regimentsOnly,
+                    title: 'Select Hundred Kingdoms Regiment',
+                    onUnitSelected: (regiment) {
                       // Skip character regiments when selecting the main regiment
                       if (!regiment.isCharacter()) {
                         combatNotifier.updateAttacker(regiment);
@@ -808,9 +811,11 @@ class CombatCalculatorScreen extends ConsumerWidget {
               Navigator.push(
                 context,
                 MaterialPageRoute(
-                  builder: (context) => RegimentSelectionScreen(
+                  builder: (context) => UnitSelectionScreen(
                     faction: 'nords',
-                    onRegimentSelected: (regiment) {
+                    initialFilter: UnitFilter.regimentsOnly,
+                    title: 'Select Nords Regiment',
+                    onUnitSelected: (regiment) {
                       // Skip character regiments when selecting the main regiment
                       if (!regiment.isCharacter()) {
                         combatNotifier.updateAttacker(regiment);
@@ -836,76 +841,46 @@ class CombatCalculatorScreen extends ConsumerWidget {
     );
   }
 
+  // Updated method to use the unified UnitSelectionScreen for character selection
   void _selectAttackerCharacter(BuildContext context, WidgetRef ref) async {
     final combatNotifier = ref.read(combatProvider.notifier);
     final combatState = ref.read(combatProvider);
 
     if (combatState.attacker == null) return;
 
-    showModalBottomSheet(
-      context: context,
-      builder: (context) => Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          ListTile(
-            leading: const Icon(Icons.shield),
-            title: const Text('Dweghom Characters'),
-            onTap: () {
+    // Get the faction of the currently selected attacker regiment
+    // Convert to lowercase and replace spaces with underscores for file path
+    final String attackerFaction =
+        combatState.attacker!.faction.toLowerCase().replaceAll(' ', '_');
+
+    // Navigate directly to the unified selection screen with character filter
+    // and restrict available filters to characters only
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => UnitSelectionScreen(
+          faction: attackerFaction,
+          initialFilter: UnitFilter.charactersOnly,
+          allowedFilters: {
+            UnitFilter.charactersOnly
+          }, // Only allow character selection
+          title: 'Select ${combatState.attacker!.faction} Character',
+          onUnitSelected: (character) {
+            if (character.isCharacter()) {
+              combatNotifier.attachCharacterToAttacker(character);
               Navigator.pop(context);
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => CharacterSelectionScreen(
-                    faction: 'dweghom',
-                    onCharacterSelected: (character) {
-                      combatNotifier.attachCharacterToAttacker(character);
-                      Navigator.pop(context);
-                    },
-                  ),
+            } else {
+              // Show error if somehow a non-character is selected
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(
+                  content: Text(
+                      'Only character stands can be attached to regiments'),
+                  backgroundColor: Colors.red,
                 ),
               );
-            },
-          ),
-          ListTile(
-            leading: const Icon(Icons.castle),
-            title: const Text('Hundred Kingdoms Characters'),
-            onTap: () {
-              Navigator.pop(context);
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => CharacterSelectionScreen(
-                    faction: 'hundred_kingdoms',
-                    onCharacterSelected: (character) {
-                      combatNotifier.attachCharacterToAttacker(character);
-                      Navigator.pop(context);
-                    },
-                  ),
-                ),
-              );
-            },
-          ),
-          ListTile(
-            leading: const Icon(Icons.nordic_walking),
-            title: const Text('Nords Characters'),
-            onTap: () {
-              Navigator.pop(context);
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => CharacterSelectionScreen(
-                    faction: 'nords',
-                    onCharacterSelected: (character) {
-                      combatNotifier.attachCharacterToAttacker(character);
-                      Navigator.pop(context);
-                    },
-                  ),
-                ),
-              );
-            },
-          ),
-          // Add more factions here as needed
-        ],
+            }
+          },
+        ),
       ),
     );
   }
@@ -926,9 +901,11 @@ class CombatCalculatorScreen extends ConsumerWidget {
               Navigator.push(
                 context,
                 MaterialPageRoute(
-                  builder: (context) => RegimentSelectionScreen(
+                  builder: (context) => UnitSelectionScreen(
                     faction: 'dweghom',
-                    onRegimentSelected: (regiment) {
+                    initialFilter: UnitFilter.regimentsOnly,
+                    title: 'Select Dweghom Regiment',
+                    onUnitSelected: (regiment) {
                       // Skip character regiments when selecting the main regiment
                       if (!regiment.isCharacter()) {
                         combatNotifier.updateDefender(regiment);
@@ -948,9 +925,11 @@ class CombatCalculatorScreen extends ConsumerWidget {
               Navigator.push(
                 context,
                 MaterialPageRoute(
-                  builder: (context) => RegimentSelectionScreen(
+                  builder: (context) => UnitSelectionScreen(
                     faction: 'hundred_kingdoms',
-                    onRegimentSelected: (regiment) {
+                    initialFilter: UnitFilter.regimentsOnly,
+                    title: 'Select Hundred Kingdoms Regiment',
+                    onUnitSelected: (regiment) {
                       // Skip character regiments when selecting the main regiment
                       if (!regiment.isCharacter()) {
                         combatNotifier.updateDefender(regiment);
@@ -970,9 +949,11 @@ class CombatCalculatorScreen extends ConsumerWidget {
               Navigator.push(
                 context,
                 MaterialPageRoute(
-                  builder: (context) => RegimentSelectionScreen(
+                  builder: (context) => UnitSelectionScreen(
                     faction: 'nords',
-                    onRegimentSelected: (regiment) {
+                    initialFilter: UnitFilter.regimentsOnly,
+                    title: 'Select Nords Regiment',
+                    onUnitSelected: (regiment) {
                       // Skip character regiments when selecting the main regiment
                       if (!regiment.isCharacter()) {
                         combatNotifier.updateDefender(regiment);
@@ -998,76 +979,46 @@ class CombatCalculatorScreen extends ConsumerWidget {
     );
   }
 
+  // Updated method to use the unified UnitSelectionScreen for character selection
   void _selectDefenderCharacter(BuildContext context, WidgetRef ref) async {
     final combatNotifier = ref.read(combatProvider.notifier);
     final combatState = ref.read(combatProvider);
 
     if (combatState.defender == null) return;
 
-    showModalBottomSheet(
-      context: context,
-      builder: (context) => Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          ListTile(
-            leading: const Icon(Icons.shield),
-            title: const Text('Dweghom Characters'),
-            onTap: () {
+    // Get the faction of the currently selected defender regiment
+    // Convert to lowercase and replace spaces with underscores for file path
+    final String defenderFaction =
+        combatState.defender!.faction.toLowerCase().replaceAll(' ', '_');
+
+    // Navigate directly to the unified selection screen with character filter
+    // and restrict available filters to characters only
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => UnitSelectionScreen(
+          faction: defenderFaction,
+          initialFilter: UnitFilter.charactersOnly,
+          allowedFilters: {
+            UnitFilter.charactersOnly
+          }, // Only allow character selection
+          title: 'Select ${combatState.defender!.faction} Character',
+          onUnitSelected: (character) {
+            if (character.isCharacter()) {
+              combatNotifier.attachCharacterToDefender(character);
               Navigator.pop(context);
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => CharacterSelectionScreen(
-                    faction: 'dweghom',
-                    onCharacterSelected: (character) {
-                      combatNotifier.attachCharacterToDefender(character);
-                      Navigator.pop(context);
-                    },
-                  ),
+            } else {
+              // Show error if somehow a non-character is selected
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(
+                  content: Text(
+                      'Only character stands can be attached to regiments'),
+                  backgroundColor: Colors.red,
                 ),
               );
-            },
-          ),
-          ListTile(
-            leading: const Icon(Icons.castle),
-            title: const Text('Hundred Kingdoms Characters'),
-            onTap: () {
-              Navigator.pop(context);
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => CharacterSelectionScreen(
-                    faction: 'hundred_kingdoms',
-                    onCharacterSelected: (character) {
-                      combatNotifier.attachCharacterToDefender(character);
-                      Navigator.pop(context);
-                    },
-                  ),
-                ),
-              );
-            },
-          ),
-          ListTile(
-            leading: const Icon(Icons.nordic_walking),
-            title: const Text('Nords Characters'),
-            onTap: () {
-              Navigator.pop(context);
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => CharacterSelectionScreen(
-                    faction: 'nords',
-                    onCharacterSelected: (character) {
-                      combatNotifier.attachCharacterToDefender(character);
-                      Navigator.pop(context);
-                    },
-                  ),
-                ),
-              );
-            },
-          ),
-          // Add more factions here as needed
-        ],
+            }
+          },
+        ),
       ),
     );
   }
@@ -1088,9 +1039,11 @@ class CombatCalculatorScreen extends ConsumerWidget {
                   Navigator.push(
                     context,
                     MaterialPageRoute(
-                      builder: (context) => RegimentSelectionScreen(
+                      builder: (context) => UnitSelectionScreen(
                         faction: 'old_dominion',
-                        onRegimentSelected: (regiment) {
+                        initialFilter: UnitFilter.regimentsOnly,
+                        title: 'Select Old Dominion Regiment',
+                        onUnitSelected: (regiment) {
                           // Skip character regiments when selecting the main regiment
                           if (!regiment.isCharacter()) {
                             if (isAttacker) {
@@ -1118,9 +1071,11 @@ class CombatCalculatorScreen extends ConsumerWidget {
                   Navigator.push(
                     context,
                     MaterialPageRoute(
-                      builder: (context) => RegimentSelectionScreen(
+                      builder: (context) => UnitSelectionScreen(
                         faction: 'spires',
-                        onRegimentSelected: (regiment) {
+                        initialFilter: UnitFilter.regimentsOnly,
+                        title: 'Select Spires Regiment',
+                        onUnitSelected: (regiment) {
                           // Skip character regiments when selecting the main regiment
                           if (!regiment.isCharacter()) {
                             if (isAttacker) {
