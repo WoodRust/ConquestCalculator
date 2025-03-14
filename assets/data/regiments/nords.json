@@ -1,0 +1,918 @@
+[
+    {
+        "name": "Blooded",
+        "faction": "Nords",
+        "type": "infantry",
+        "regimentClass": "character",
+        "characteristics": {
+            "march": null,
+            "volley": 1,
+            "clash": 4,
+            "attacks": 5,
+            "wounds": 5,
+            "resolve": 3,
+            "defense": 2,
+            "evasion": 0
+        },
+        "specialRules": [
+            {
+                "name": "Cleave (2)",
+                "description": "Reduces the enemy's Defense by 2"
+            },
+            {
+                "name": "Impact (2)",
+                "description": "Performs 2 Impact attacks per stand"
+            },
+            {
+                "name": "Forward Force",
+                "description": "Can push enemies back during combat"
+            }
+        ],
+        "numericSpecialRules": {
+            "cleave": 2,
+            "impact": 2
+        },
+        "drawEvents": [],
+        "points": 110,
+        "pointsPerAdditionalStand": null
+    },
+    {
+        "name": "Jarl",
+        "faction": "Nords",
+        "type": "infantry",
+        "regimentClass": "character",
+        "characteristics": {
+            "march": null,
+            "volley": 2,
+            "clash": 3,
+            "attacks": 6,
+            "wounds": 4,
+            "resolve": 3,
+            "defense": 2,
+            "evasion": 0
+        },
+        "specialRules": [
+            {
+                "name": "Shield",
+                "description": "Adds +1 Defense against frontal attacks"
+            },
+            {
+                "name": "Impact (2)",
+                "description": "Performs 2 Impact attacks per stand"
+            },
+            {
+                "name": "Forward Force",
+                "description": "Can push enemies back during combat"
+            }
+        ],
+        "numericSpecialRules": {
+            "shield": true,
+            "impact": 2
+        },
+        "drawEvents": [],
+        "points": 100,
+        "pointsPerAdditionalStand": null
+    },
+    {
+        "name": "Konungyr",
+        "faction": "Nords",
+        "type": "infantry",
+        "regimentClass": "character",
+        "characteristics": {
+            "march": null,
+            "volley": 2,
+            "clash": 4,
+            "attacks": 7,
+            "wounds": 5,
+            "resolve": 4,
+            "defense": 2,
+            "evasion": 2
+        },
+        "specialRules": [
+            {
+                "name": "Cleave (1)",
+                "description": "Reduces the enemy's Defense by 1"
+            },
+            {
+                "name": "Terrifying (1)",
+                "description": "Enemy must pass a Resolve test at -1 or suffer a penalty"
+            },
+            {
+                "name": "Impact (3)",
+                "description": "Performs 3 Impact attacks per stand"
+            }
+        ],
+        "numericSpecialRules": {
+            "cleave": 1,
+            "terrifying": 1,
+            "impact": 3
+        },
+        "drawEvents": [],
+        "points": 120,
+        "pointsPerAdditionalStand": null
+    },
+    {
+        "name": "Shaman",
+        "faction": "Nords",
+        "type": "infantry",
+        "regimentClass": "character",
+        "characteristics": {
+            "march": null,
+            "volley": 1,
+            "clash": 2,
+            "attacks": 3,
+            "wounds": 4,
+            "resolve": 3,
+            "defense": 1,
+            "evasion": 1
+        },
+        "specialRules": [
+            {
+                "name": "Priest (6)",
+                "description": "Can cast spells with 6 dice"
+            }
+        ],
+        "numericSpecialRules": {
+            "spellDice": 6
+        },
+        "drawEvents": [],
+        "points": 80,
+        "pointsPerAdditionalStand": null
+    },
+    {
+        "name": "Volva",
+        "faction": "Nords",
+        "type": "infantry",
+        "regimentClass": "character",
+        "characteristics": {
+            "march": null,
+            "volley": 1,
+            "clash": 3,
+            "attacks": 5,
+            "wounds": 4,
+            "resolve": 3,
+            "defense": 2,
+            "evasion": 0
+        },
+        "specialRules": [
+            {
+                "name": "Priest (6)",
+                "description": "Can cast spells with 6 dice"
+            },
+            {
+                "name": "Devout",
+                "description": "Gains bonuses to spellcasting"
+            }
+        ],
+        "numericSpecialRules": {
+            "spellDice": 6
+        },
+        "drawEvents": [],
+        "points": 100,
+        "pointsPerAdditionalStand": null
+    },
+    {
+        "name": "Vargyr Lord",
+        "faction": "Nords",
+        "type": "brute",
+        "regimentClass": "character",
+        "characteristics": {
+            "march": null,
+            "volley": 1,
+            "clash": 3,
+            "attacks": 6,
+            "wounds": 6,
+            "resolve": 3,
+            "defense": 3,
+            "evasion": 1
+        },
+        "specialRules": [
+            {
+                "name": "Cleave (1)",
+                "description": "Reduces the enemy's Defense by 1"
+            },
+            {
+                "name": "Impact (4)",
+                "description": "Performs 4 Impact attacks per stand"
+            },
+            {
+                "name": "Irregular",
+                "description": "Cannot hold objective zones"
+            },
+            {
+                "name": "Forward Force",
+                "description": "Can push enemies back during combat"
+            }
+        ],
+        "numericSpecialRules": {
+            "cleave": 1,
+            "impact": 4
+        },
+        "drawEvents": [
+            {
+                "name": "Regeneration (2)",
+                "description": "Heals 2 wounds at the start of activation"
+            }
+        ],
+        "points": 120,
+        "pointsPerAdditionalStand": null
+    },
+    {
+        "name": "Jotnar Seidr",
+        "faction": "Nords",
+        "type": "monster",
+        "regimentClass": "heavy",
+        "characteristics": {
+            "march": 7,
+            "volley": 2,
+            "clash": 3,
+            "attacks": 12,
+            "wounds": 20,
+            "resolve": 4,
+            "defense": 3,
+            "evasion": 2
+        },
+        "specialRules": [
+            {
+                "name": "Cleave (2)",
+                "description": "Reduces the enemy's Defense by 2"
+            },
+            {
+                "name": "Fearless",
+                "description": "Automatically passes Resolve tests"
+            },
+            {
+                "name": "Hardened (1)",
+                "description": "Ignores 1 point of Cleave"
+            },
+            {
+                "name": "Impact (6)",
+                "description": "Performs 6 Impact attacks per stand"
+            },
+            {
+                "name": "Tenacious (1)",
+                "description": "Ignores 1 wound per round"
+            },
+            {
+                "name": "Terrifying (1)",
+                "description": "Enemy must pass a Resolve test at -1 or suffer a penalty"
+            }
+        ],
+        "numericSpecialRules": {
+            "cleave": 2,
+            "hardened": 1,
+            "impact": 6,
+            "tenacious": 1,
+            "terrifying": 1
+        },
+        "drawEvents": [],
+        "points": 260,
+        "pointsPerAdditionalStand": null
+    },
+    {
+        "name": "Raiders",
+        "faction": "Nords",
+        "type": "infantry",
+        "regimentClass": "light",
+        "characteristics": {
+            "march": 6,
+            "volley": 1,
+            "clash": 2,
+            "attacks": 4,
+            "wounds": 4,
+            "resolve": 2,
+            "defense": 1,
+            "evasion": 1
+        },
+        "specialRules": [
+            {
+                "name": "Flurry",
+                "description": "Re-roll failed Hit rolls"
+            },
+            {
+                "name": "Impact (2)",
+                "description": "Performs 2 Impact attacks per stand"
+            },
+            {
+                "name": "Tenacious (1)",
+                "description": "Ignores 1 wound per round"
+            }
+        ],
+        "numericSpecialRules": {
+            "impact": 2,
+            "tenacious": 1
+        },
+        "drawEvents": [],
+        "points": 120,
+        "pointsPerAdditionalStand": 40
+    },
+    {
+        "name": "Bow Chosen",
+        "faction": "Nords",
+        "type": "infantry",
+        "regimentClass": "light",
+        "characteristics": {
+            "march": 6,
+            "volley": 3,
+            "clash": 3,
+            "attacks": 4,
+            "wounds": 5,
+            "resolve": 3,
+            "defense": 2,
+            "evasion": 2
+        },
+        "specialRules": [
+            {
+                "name": "Barrage (5) (14\", Precise Shot)",
+                "description": "Ranged attack with 5 dice per stand at 14\" range with Precise Shot"
+            },
+            {
+                "name": "War-Brethren",
+                "description": "Gains the benefits of the Character's Tribal Tactics"
+            }
+        ],
+        "numericSpecialRules": {
+            "barrage": 5,
+            "barrageRange": 14
+        },
+        "drawEvents": [],
+        "points": 200,
+        "pointsPerAdditionalStand": 60
+    },
+    {
+        "name": "Stalkers",
+        "faction": "Nords",
+        "type": "infantry",
+        "regimentClass": "light",
+        "characteristics": {
+            "march": 6,
+            "volley": 2,
+            "clash": 2,
+            "attacks": 4,
+            "wounds": 4,
+            "resolve": 2,
+            "defense": 1,
+            "evasion": 2
+        },
+        "specialRules": [
+            {
+                "name": "Barrage (4) (16\")",
+                "description": "Ranged attack with 4 dice per stand at 16\" range"
+            },
+            {
+                "name": "Flank",
+                "description": "Bonuses when attacking enemy flanks"
+            },
+            {
+                "name": "Opportunists",
+                "description": "Can exploit gaps in enemy lines"
+            }
+        ],
+        "numericSpecialRules": {
+            "barrage": 4,
+            "barrageRange": 16
+        },
+        "drawEvents": [],
+        "points": 140,
+        "pointsPerAdditionalStand": 40
+    },
+    {
+        "name": "Werewargs",
+        "faction": "Nords",
+        "type": "brute",
+        "regimentClass": "light",
+        "characteristics": {
+            "march": 7,
+            "volley": 1,
+            "clash": 2,
+            "attacks": 6,
+            "wounds": 5,
+            "resolve": 3,
+            "defense": 2,
+            "evasion": 1
+        },
+        "specialRules": [
+            {
+                "name": "Impact (3)",
+                "description": "Performs 3 Impact attacks per stand"
+            },
+            {
+                "name": "Terrifying (1)",
+                "description": "Enemy must pass a Resolve test at -1 or suffer a penalty"
+            }
+        ],
+        "numericSpecialRules": {
+            "impact": 3,
+            "terrifying": 1
+        },
+        "drawEvents": [
+            {
+                "name": "Regeneration (3)",
+                "description": "Heals 3 wounds at the start of activation"
+            }
+        ],
+        "points": 170,
+        "pointsPerAdditionalStand": 60
+    },
+    {
+        "name": "Huskarls",
+        "faction": "Nords",
+        "type": "infantry",
+        "regimentClass": "medium",
+        "characteristics": {
+            "march": 6,
+            "volley": 1,
+            "clash": 3,
+            "attacks": 4,
+            "wounds": 4,
+            "resolve": 3,
+            "defense": 2,
+            "evasion": 0
+        },
+        "specialRules": [
+            {
+                "name": "Shield",
+                "description": "Adds +1 Defense against frontal attacks"
+            },
+            {
+                "name": "Impact (2)",
+                "description": "Performs 2 Impact attacks per stand"
+            },
+            {
+                "name": "Untouchable",
+                "description": "Cannot be targeted by certain abilities"
+            }
+        ],
+        "numericSpecialRules": {
+            "shield": true,
+            "impact": 2
+        },
+        "drawEvents": [],
+        "points": 150,
+        "pointsPerAdditionalStand": 50
+    },
+    {
+        "name": "Ulfhednar",
+        "faction": "Nords",
+        "type": "infantry",
+        "regimentClass": "medium",
+        "characteristics": {
+            "march": 6,
+            "volley": 1,
+            "clash": 2,
+            "attacks": 7,
+            "wounds": 4,
+            "resolve": 4,
+            "defense": 2,
+            "evasion": 1
+        },
+        "specialRules": [
+            {
+                "name": "Vanguard (4)",
+                "description": "Can deploy 4\" further forward"
+            },
+            {
+                "name": "Tenacious (1)",
+                "description": "Ignores 1 wound per round"
+            }
+        ],
+        "numericSpecialRules": {
+            "vanguard": 4,
+            "tenacious": 1
+        },
+        "drawEvents": [],
+        "points": 170,
+        "pointsPerAdditionalStand": 60
+    },
+    {
+        "name": "Trolls",
+        "faction": "Nords",
+        "type": "infantry",
+        "regimentClass": "medium",
+        "characteristics": {
+            "march": 6,
+            "volley": 1,
+            "clash": 2,
+            "attacks": 5,
+            "wounds": 6,
+            "resolve": 3,
+            "defense": 2,
+            "evasion": 1
+        },
+        "specialRules": [
+            {
+                "name": "Cleave (1)",
+                "description": "Reduces the enemy's Defense by 1"
+            },
+            {
+                "name": "Fearsome",
+                "description": "Causes fear in enemies"
+            },
+            {
+                "name": "Oblivious",
+                "description": "Ignores certain negative effects"
+            }
+        ],
+        "numericSpecialRules": {
+            "cleave": 1
+        },
+        "drawEvents": [
+            {
+                "name": "Regeneration (6)",
+                "description": "Heals 6 wounds at the start of activation"
+            }
+        ],
+        "points": 180,
+        "pointsPerAdditionalStand": 60
+    },
+    {
+        "name": "Valkyries",
+        "faction": "Nords",
+        "type": "infantry",
+        "regimentClass": "medium",
+        "characteristics": {
+            "march": 6,
+            "volley": 1,
+            "clash": 3,
+            "attacks": 4,
+            "wounds": 4,
+            "resolve": 3,
+            "defense": 2,
+            "evasion": 0
+        },
+        "specialRules": [
+            {
+                "name": "Blessed",
+                "description": "Gains bonuses against certain enemies"
+            },
+            {
+                "name": "Devout",
+                "description": "Gains bonuses from faith"
+            },
+            {
+                "name": "Shield",
+                "description": "Adds +1 Defense against frontal attacks"
+            },
+            {
+                "name": "Support (2)",
+                "description": "Provides 2 support attacks per stand"
+            }
+        ],
+        "numericSpecialRules": {
+            "shield": true,
+            "support": 2
+        },
+        "drawEvents": [],
+        "points": 150,
+        "pointsPerAdditionalStand": 50
+    },
+    {
+        "name": "Fenr Beastpack",
+        "faction": "Nords",
+        "type": "cavalry",
+        "regimentClass": "medium",
+        "characteristics": {
+            "march": 7,
+            "volley": 1,
+            "clash": 2,
+            "attacks": 6,
+            "wounds": 4,
+            "resolve": 2,
+            "defense": 1,
+            "evasion": 2
+        },
+        "specialRules": [
+            {
+                "name": "Fluid Formation",
+                "description": "Can move through difficult terrain more easily"
+            },
+            {
+                "name": "Opportunists",
+                "description": "Can exploit gaps in enemy lines"
+            },
+            {
+                "name": "Irregular",
+                "description": "Cannot hold objective zones"
+            },
+            {
+                "name": "Loose Formation",
+                "description": "Less vulnerable to area effects"
+            },
+            {
+                "name": "Vanguard (4)",
+                "description": "Can deploy 4\" further forward"
+            }
+        ],
+        "numericSpecialRules": {
+            "vanguard": 4
+        },
+        "drawEvents": [],
+        "points": 140,
+        "pointsPerAdditionalStand": 50
+    },
+    {
+        "name": "Ugr",
+        "faction": "Nords",
+        "type": "brute",
+        "regimentClass": "medium",
+        "characteristics": {
+            "march": 6,
+            "volley": 1,
+            "clash": 3,
+            "attacks": 4,
+            "wounds": 5,
+            "resolve": 3,
+            "defense": 2,
+            "evasion": 0
+        },
+        "specialRules": [
+            {
+                "name": "Cleave (2)",
+                "description": "Reduces the enemy's Defense by 2"
+            },
+            {
+                "name": "Fearless",
+                "description": "Automatically passes Resolve tests"
+            },
+            {
+                "name": "Oblivious",
+                "description": "Ignores certain negative effects"
+            },
+            {
+                "name": "Impact (2)",
+                "description": "Performs 2 Impact attacks per stand"
+            }
+        ],
+        "numericSpecialRules": {
+            "cleave": 2,
+            "impact": 2
+        },
+        "drawEvents": [],
+        "points": 150,
+        "pointsPerAdditionalStand": 50
+    },
+    {
+        "name": "Bearsarks",
+        "faction": "Nords",
+        "type": "infantry",
+        "regimentClass": "heavy",
+        "characteristics": {
+            "march": 6,
+            "volley": 1,
+            "clash": 3,
+            "attacks": 5,
+            "wounds": 4,
+            "resolve": 4,
+            "defense": 2,
+            "evasion": 1
+        },
+        "specialRules": [
+            {
+                "name": "Cleave (2)",
+                "description": "Reduces the enemy's Defense by 2"
+            },
+            {
+                "name": "Vanguard (4)",
+                "description": "Can deploy 4\" further forward"
+            },
+            {
+                "name": "Tenacious (1)",
+                "description": "Ignores 1 wound per round"
+            }
+        ],
+        "numericSpecialRules": {
+            "cleave": 2,
+            "vanguard": 4,
+            "tenacious": 1
+        },
+        "drawEvents": [],
+        "points": 170,
+        "pointsPerAdditionalStand": 60
+    },
+    {
+        "name": "Steel Chosen",
+        "faction": "Nords",
+        "type": "infantry",
+        "regimentClass": "medium",
+        "characteristics": {
+            "march": 6,
+            "volley": 1,
+            "clash": 3,
+            "attacks": 6,
+            "wounds": 5,
+            "resolve": 3,
+            "defense": 2,
+            "evasion": 1
+        },
+        "specialRules": [
+            {
+                "name": "Flurry",
+                "description": "Re-roll failed Hit rolls"
+            },
+            {
+                "name": "Linebreaker",
+                "description": "Bonuses when breaking enemy formations"
+            },
+            {
+                "name": "Impact (2)",
+                "description": "Performs 2 Impact attacks per stand"
+            },
+            {
+                "name": "War-Brethren",
+                "description": "Gains the benefits of the Character's Tribal Tactics"
+            }
+        ],
+        "numericSpecialRules": {
+            "impact": 2
+        },
+        "drawEvents": [],
+        "points": 180,
+        "pointsPerAdditionalStand": 60
+    },
+    {
+        "name": "Goltr Beastpack",
+        "faction": "Nords",
+        "type": "cavalry",
+        "regimentClass": "medium",
+        "characteristics": {
+            "march": 6,
+            "volley": 1,
+            "clash": 3,
+            "attacks": 5,
+            "wounds": 5,
+            "resolve": 3,
+            "defense": 3,
+            "evasion": 1
+        },
+        "specialRules": [
+            {
+                "name": "Brutal Impact (1)",
+                "description": "Adds +1 to Impact value"
+            },
+            {
+                "name": "Linebreaker",
+                "description": "Bonuses when breaking enemy formations"
+            },
+            {
+                "name": "Trample (2)",
+                "description": "Causes 2 automatic hits when charging"
+            },
+            {
+                "name": "Irregular",
+                "description": "Cannot hold objective zones"
+            },
+            {
+                "name": "Impact (3)",
+                "description": "Performs 3 Impact attacks per stand"
+            },
+            {
+                "name": "Unstoppable",
+                "description": "Cannot be stopped by terrain or obstacles"
+            }
+        ],
+        "numericSpecialRules": {
+            "brutalImpact": 1,
+            "trample": 2,
+            "impact": 3
+        },
+        "drawEvents": [],
+        "points": 160,
+        "pointsPerAdditionalStand": 50
+    },
+    {
+        "name": "Sea Jotnar",
+        "faction": "Nords",
+        "type": "monster",
+        "regimentClass": "heavy",
+        "characteristics": {
+            "march": 7,
+            "volley": 3,
+            "clash": 3,
+            "attacks": 13,
+            "wounds": 16,
+            "resolve": 3,
+            "defense": 3,
+            "evasion": 2
+        },
+        "specialRules": [
+            {
+                "name": "Barrage (6) (8\", Armor Piercing (1))",
+                "description": "Ranged attack with 6 dice at 8\" range with Armor Piercing (1)"
+            },
+            {
+                "name": "Cleave (2)",
+                "description": "Reduces the enemy's Defense by 2"
+            },
+            {
+                "name": "Fiend Hunter",
+                "description": "Bonuses against certain enemy types"
+            },
+            {
+                "name": "Terrifying (1)",
+                "description": "Enemy must pass a Resolve test at -1 or suffer a penalty"
+            },
+            {
+                "name": "Impact (5)",
+                "description": "Performs 5 Impact attacks per stand"
+            }
+        ],
+        "numericSpecialRules": {
+            "barrage": 6,
+            "barrageRange": 8,
+            "armorPiercing": true,
+            "armorPiercingValue": 1,
+            "cleave": 2,
+            "terrifying": 1,
+            "impact": 5
+        },
+        "drawEvents": [],
+        "points": 240,
+        "pointsPerAdditionalStand": null
+    },
+    {
+        "name": "Mountain Jotnar",
+        "faction": "Nords",
+        "type": "monster",
+        "regimentClass": "heavy",
+        "characteristics": {
+            "march": 7,
+            "volley": 1,
+            "clash": 3,
+            "attacks": 12,
+            "wounds": 18,
+            "resolve": 3,
+            "defense": 3,
+            "evasion": 0
+        },
+        "specialRules": [
+            {
+                "name": "Cleave (2)",
+                "description": "Reduces the enemy's Defense by 2"
+            },
+            {
+                "name": "Terrifying (1)",
+                "description": "Enemy must pass a Resolve test at -1 or suffer a penalty"
+            },
+            {
+                "name": "Hardened (1)",
+                "description": "Ignores 1 point of Cleave"
+            },
+            {
+                "name": "Impact (6)",
+                "description": "Performs 6 Impact attacks per stand"
+            }
+        ],
+        "numericSpecialRules": {
+            "cleave": 2,
+            "terrifying": 1,
+            "hardened": 1,
+            "impact": 6
+        },
+        "drawEvents": [],
+        "points": 210,
+        "pointsPerAdditionalStand": null
+    },
+    {
+        "name": "Ice Jotnar",
+        "faction": "Nords",
+        "type": "monster",
+        "regimentClass": "heavy",
+        "characteristics": {
+            "march": 7,
+            "volley": 1,
+            "clash": 3,
+            "attacks": 14,
+            "wounds": 16,
+            "resolve": 4,
+            "defense": 3,
+            "evasion": 2
+        },
+        "specialRules": [
+            {
+                "name": "Cleave (3)",
+                "description": "Reduces the enemy's Defense by 3"
+            },
+            {
+                "name": "Priest (5)",
+                "description": "Can cast spells with 5 dice"
+            },
+            {
+                "name": "Terrifying (1)",
+                "description": "Enemy must pass a Resolve test at -1 or suffer a penalty"
+            },
+            {
+                "name": "Impact (6)",
+                "description": "Performs 6 Impact attacks per stand"
+            }
+        ],
+        "numericSpecialRules": {
+            "cleave": 3,
+            "spellDice": 5,
+            "terrifying": 1,
+            "impact": 6
+        },
+        "drawEvents": [],
+        "points": 250,
+        "pointsPerAdditionalStand": null
+    }
+]
