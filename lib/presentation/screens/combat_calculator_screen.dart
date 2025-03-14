@@ -327,8 +327,8 @@ class CombatCalculatorScreen extends ConsumerWidget {
                       const SizedBox(height: 8),
 
                       // Combat Mode Selection (Radio buttons)
-                      if (!combatState.attacker?.isCharacter() ??
-                          true) // Don't show for character vs character
+                      if (!(combatState.attacker?.isCharacter() ??
+                          false)) // Don't show for character vs character
                         Row(
                           children: [
                             Expanded(
@@ -365,8 +365,8 @@ class CombatCalculatorScreen extends ConsumerWidget {
                         ),
 
                       // Divide combat modifiers into two clear sections
-                      if (!combatState.attacker?.isCharacter() ??
-                          true) // Don't show for character vs character
+                      if (!(combatState.attacker?.isCharacter() ??
+                          false)) // Don't show for character vs character
                         Row(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
@@ -521,8 +521,8 @@ class CombatCalculatorScreen extends ConsumerWidget {
                       const SizedBox(height: 8),
 
                       // Flank/Rear modifier (applies to both melee and ranged)
-                      if (!combatState.attacker?.isCharacter() ??
-                          true) // Don't show for character vs character
+                      if (!(combatState.attacker?.isCharacter() ??
+                          false)) // Don't show for character vs character
                         Card(
                           elevation: 1,
                           child: Padding(

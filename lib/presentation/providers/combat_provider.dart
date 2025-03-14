@@ -158,8 +158,10 @@ class CombatNotifier extends StateNotifier<CombatState> {
   CombatNotifier(this._calculateCombat) : super(CombatState());
 
   void updateAttacker(Regiment attacker) {
-    // If new attacker is a character
-    if (attacker.isCharacter()) {
+    // If new attacker is a character and defender is a regular regiment
+    if (attacker.isCharacter() &&
+        state.defender != null &&
+        !state.defender!.isCharacter()) {
       // Clear the defender and defender character if set
       state = state.copyWith(
         attacker: attacker,
@@ -225,7 +227,20 @@ class CombatNotifier extends StateNotifier<CombatState> {
   }
 
   void updateDefender(Regiment defender) {
-    state = state.copyWith(defender: defender);
+    // If new defender is a regiment and attacker is a character-only unit
+    if (!defender.isCharacter() &&
+        state.attacker != null &&
+        state.attacker!.isCharacter()) {
+      // Clear the attacker and attacker character if set
+      state = state.copyWith(
+        defender: defender,
+        attacker: null, // Clear attacker
+        clearAttackerCharacter: true, // Clear any attached character
+      );
+    } else {
+      state = state.copyWith(defender: defender);
+    }
+
     _recalculate();
   }
 
