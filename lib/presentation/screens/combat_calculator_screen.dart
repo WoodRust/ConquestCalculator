@@ -182,86 +182,192 @@ class CombatCalculatorScreen extends ConsumerWidget {
                       // Combat modifiers
                       Text('Combat Modifiers',
                           style: Theme.of(context).textTheme.titleMedium),
+                      const SizedBox(height: 8),
 
-                      // First row of toggles
+                      // Divide combat modifiers into two clear sections
                       Row(
+                        crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
+                          // Melee combat section
                           Expanded(
-                            child: CheckboxListTile(
-                              title: const Text('Charge'),
-                              value: combatState.isCharge,
-                              onChanged: (value) =>
-                                  combatNotifier.toggleCharge(value ?? false),
-                              dense: true,
-                              controlAffinity: ListTileControlAffinity.leading,
+                            child: Card(
+                              elevation: 1,
+                              child: Padding(
+                                padding: const EdgeInsets.all(8.0),
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text('Melee Combat',
+                                        style: Theme.of(context)
+                                            .textTheme
+                                            .titleSmall),
+                                    const SizedBox(height: 4),
+                                    CheckboxListTile(
+                                      title: const Text('Clash'),
+                                      value: !combatState.isVolley,
+                                      onChanged: (value) {
+                                        if (value == true) {
+                                          combatNotifier.toggleVolley(false);
+                                          // Default values for melee mode
+                                          combatNotifier.toggleSpecialRule(
+                                              'aimed', false);
+                                        }
+                                      },
+                                      dense: true,
+                                      controlAffinity:
+                                          ListTileControlAffinity.leading,
+                                    ),
+                                    CheckboxListTile(
+                                      title: const Text('Charge'),
+                                      value: combatState.isCharge,
+                                      onChanged: !combatState.isVolley
+                                          ? (value) => combatNotifier
+                                              .toggleCharge(value ?? false)
+                                          : null,
+                                      dense: true,
+                                      controlAffinity:
+                                          ListTileControlAffinity.leading,
+                                    ),
+                                    CheckboxListTile(
+                                      title: const Text('Impact'),
+                                      value: combatState.isImpact,
+                                      onChanged: !combatState.isVolley &&
+                                              (combatState.attacker
+                                                      ?.hasImpact() ??
+                                                  false)
+                                          ? (value) => combatNotifier
+                                              .toggleImpact(value ?? false)
+                                          : null,
+                                      dense: true,
+                                      controlAffinity:
+                                          ListTileControlAffinity.leading,
+                                    ),
+                                    CheckboxListTile(
+                                      title: const Text('Inspired'),
+                                      value: combatState.specialRulesInEffect[
+                                              'inspired'] ??
+                                          false,
+                                      onChanged: !combatState.isVolley
+                                          ? (value) =>
+                                              combatNotifier.toggleSpecialRule(
+                                                  'inspired', value ?? false)
+                                          : null,
+                                      dense: true,
+                                      controlAffinity:
+                                          ListTileControlAffinity.leading,
+                                    ),
+                                  ],
+                                ),
+                              ),
                             ),
                           ),
+                          const SizedBox(width: 8),
+                          // Ranged combat section
                           Expanded(
-                            child: CheckboxListTile(
-                              title: const Text('Impact'),
-                              value: combatState.isImpact,
-                              onChanged: (value) =>
-                                  combatNotifier.toggleImpact(value ?? false),
-                              dense: true,
-                              controlAffinity: ListTileControlAffinity.leading,
+                            child: Card(
+                              elevation: 1,
+                              child: Padding(
+                                padding: const EdgeInsets.all(8.0),
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text('Ranged Combat',
+                                        style: Theme.of(context)
+                                            .textTheme
+                                            .titleSmall),
+                                    const SizedBox(height: 4),
+                                    CheckboxListTile(
+                                      title: const Text('Volley'),
+                                      value: combatState.isVolley,
+                                      onChanged: (combatState.attacker
+                                                  ?.hasBarrage() ??
+                                              false)
+                                          ? (value) {
+                                              combatNotifier
+                                                  .toggleVolley(value ?? false);
+                                              if (value == true) {
+                                                // When switching to volley mode, disable melee options
+                                                combatNotifier
+                                                    .toggleCharge(false);
+                                                combatNotifier
+                                                    .toggleImpact(false);
+                                                combatNotifier
+                                                    .toggleSpecialRule(
+                                                        'inspired', false);
+                                              }
+                                            }
+                                          : null,
+                                      dense: true,
+                                      controlAffinity:
+                                          ListTileControlAffinity.leading,
+                                    ),
+                                    CheckboxListTile(
+                                      title: const Text('Aimed'),
+                                      value: combatState
+                                              .specialRulesInEffect['aimed'] ??
+                                          false,
+                                      onChanged: combatState.isVolley &&
+                                              (combatState.attacker
+                                                      ?.hasBarrage() ??
+                                                  false)
+                                          ? (value) =>
+                                              combatNotifier.toggleSpecialRule(
+                                                  'aimed', value ?? false)
+                                          : null,
+                                      dense: true,
+                                      controlAffinity:
+                                          ListTileControlAffinity.leading,
+                                    ),
+                                    CheckboxListTile(
+                                      title: const Text('Effective Range'),
+                                      value: combatState.isWithinEffectiveRange,
+                                      onChanged: combatState.isVolley &&
+                                              (combatState.attacker
+                                                      ?.hasBarrage() ??
+                                                  false)
+                                          ? (value) => combatNotifier
+                                              .toggleWithinEffectiveRange(
+                                                  value ?? false)
+                                          : null,
+                                      dense: true,
+                                      controlAffinity:
+                                          ListTileControlAffinity.leading,
+                                    ),
+                                    // Empty tile for balanced layout with melee section
+                                    const SizedBox(height: 48),
+                                  ],
+                                ),
+                              ),
                             ),
                           ),
                         ],
                       ),
 
-                      // Second row of toggles
-                      Row(
-                        children: [
-                          Expanded(
-                            child: CheckboxListTile(
-                              title: const Text('Flank/Rear'),
-                              value: combatState.isFlank,
-                              onChanged: (value) =>
-                                  combatNotifier.toggleFlank(value ?? false),
-                              dense: true,
-                              controlAffinity: ListTileControlAffinity.leading,
-                            ),
-                          ),
-                          Expanded(
-                            child: CheckboxListTile(
-                              title: const Text('Inspired'),
-                              value: combatState
-                                      .specialRulesInEffect['inspired'] ??
-                                  false,
-                              onChanged: (value) =>
-                                  combatNotifier.toggleSpecialRule(
-                                      'inspired', value ?? false),
-                              dense: true,
-                              controlAffinity: ListTileControlAffinity.leading,
-                            ),
-                          ),
-                        ],
-                      ),
+                      const SizedBox(height: 8),
 
-                      // Third row of toggles (for ranged combat)
-                      Row(
-                        children: [
-                          Expanded(
-                            child: CheckboxListTile(
-                              title: const Text('Volley'),
-                              value: combatState.isVolley,
-                              onChanged: (value) =>
-                                  combatNotifier.toggleVolley(value ?? false),
-                              dense: true,
-                              controlAffinity: ListTileControlAffinity.leading,
-                            ),
+                      // Flank/Rear modifier (applies to both melee and ranged)
+                      Card(
+                        elevation: 1,
+                        child: Padding(
+                          padding: const EdgeInsets.all(8.0),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text('Position Modifiers',
+                                  style:
+                                      Theme.of(context).textTheme.titleSmall),
+                              CheckboxListTile(
+                                title: const Text('Flank/Rear Attack'),
+                                value: combatState.isFlank,
+                                onChanged: (value) =>
+                                    combatNotifier.toggleFlank(value ?? false),
+                                dense: true,
+                                controlAffinity:
+                                    ListTileControlAffinity.leading,
+                              ),
+                            ],
                           ),
-                          Expanded(
-                            child: CheckboxListTile(
-                              title: const Text('Effective Range'),
-                              value: combatState.isWithinEffectiveRange,
-                              onChanged: (value) => combatNotifier
-                                  .toggleWithinEffectiveRange(value ?? false),
-                              dense: true,
-                              controlAffinity: ListTileControlAffinity.leading,
-                            ),
-                          ),
-                        ],
+                        ),
                       ),
 
                       // Combat environment and common special rules could go here
