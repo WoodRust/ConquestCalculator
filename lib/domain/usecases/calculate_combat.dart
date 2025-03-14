@@ -367,18 +367,12 @@ class CalculateCombat {
 
     if (isImpact) {
       // For impact attacks, get the impact value
-      int impactValue = impactValues['impactValue'] ?? 0;
+      // First try to get from the Regiment's impact field
+      int impactValue = attacker.getImpact();
 
-      // Check if the regiment has Impact special rule
-      for (final rule in attacker.specialRules) {
-        if (rule.contains('Impact (')) {
-          // Extract the impact value from the special rule
-          final match = RegExp(r'Impact \((\d+)\)').firstMatch(rule);
-          if (match != null && match.groupCount >= 1) {
-            impactValue = int.parse(match.group(1)!);
-            break;
-          }
-        }
+      // If that's zero, check impactValues map (for backward compatibility)
+      if (impactValue == 0) {
+        impactValue = impactValues['impactValue'] ?? 0;
       }
 
       totalAttacks = impactValue * numAttackerStands;
@@ -390,19 +384,12 @@ class CalculateCombat {
       // In a simplified model, we can assume half of stands provide support
       int supportAttacks = (numAttackerStands / 2).floor();
 
-      // If the unit has Support(X) special rule, adjust support attacks
-      int supportValue = 1;
+      // Get support value from Regiment's support field
+      int supportValue = attacker.getSupport();
 
-      // Extract Support value from special rules
-      for (final rule in attacker.specialRules) {
-        if (rule.contains('Support (')) {
-          // Extract the support value from the special rule
-          final match = RegExp(r'Support \((\d+)\)').firstMatch(rule);
-          if (match != null && match.groupCount >= 1) {
-            supportValue = int.parse(match.group(1)!);
-            break;
-          }
-        }
+      // If no support value is defined, default to 1
+      if (supportValue == 0) {
+        supportValue = 1;
       }
 
       supportAttacks *= supportValue;
