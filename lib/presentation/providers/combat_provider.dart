@@ -5,6 +5,9 @@ import '../../domain/models/combat_simulation.dart';
 import '../../domain/models/probability_distribution.dart';
 import '../../domain/usecases/calculate_combat.dart';
 
+// Enum to track which combat mode is active
+enum CombatMode { melee, ranged }
+
 class CombatState {
   final Regiment? attacker;
   final int numAttackerStands;
@@ -21,6 +24,7 @@ class CombatState {
   final CombatSimulation? simulation;
   final List<SavedCalculation> savedCalculations;
   final bool showCumulativeDistribution;
+  final CombatMode combatMode; // New field for tracking combat mode
 
   CombatState({
     this.attacker,
@@ -32,12 +36,13 @@ class CombatState {
     this.isFlank = false,
     this.isRear = false,
     this.isVolley = false,
-    this.isWithinEffectiveRange = true,
+    this.isWithinEffectiveRange = false, // Changed default to false
     this.specialRulesInEffect = const {},
     this.specialRuleValues = const {},
     this.simulation,
     this.savedCalculations = const [],
     this.showCumulativeDistribution = false,
+    this.combatMode = CombatMode.melee, // Default to melee combat mode
   });
 
   CombatState copyWith({
@@ -56,6 +61,7 @@ class CombatState {
     CombatSimulation? simulation,
     List<SavedCalculation>? savedCalculations,
     bool? showCumulativeDistribution,
+    CombatMode? combatMode,
   }) {
     return CombatState(
       attacker: attacker ?? this.attacker,
@@ -75,6 +81,7 @@ class CombatState {
       savedCalculations: savedCalculations ?? this.savedCalculations,
       showCumulativeDistribution:
           showCumulativeDistribution ?? this.showCumulativeDistribution,
+      combatMode: combatMode ?? this.combatMode,
     );
   }
 }
@@ -114,6 +121,15 @@ class CombatNotifier extends StateNotifier<CombatState> {
 
   void updateAttacker(Regiment attacker) {
     state = state.copyWith(attacker: attacker);
+
+    // Auto-select combat mode based on regiment's capabilities
+    if (attacker.hasBarrage() &&
+        !state.isVolley &&
+        state.combatMode == CombatMode.melee) {
+      // If regiment has barrage ability, prompt user by highlighting ranged combat option
+      // (we don't auto-switch, just make it clear it's available)
+    }
+
     _recalculate();
   }
 
@@ -132,34 +148,99 @@ class CombatNotifier extends StateNotifier<CombatState> {
     _recalculate();
   }
 
-  void toggleCharge(bool value) {
-    state = state.copyWith(isCharge: value);
+  // New method to switch between combat modes
+  void setCombatMode(CombatMode mode) {
+    if (state.combatMode == mode) return; // No change needed
+
+    // Update combat state based on the selected mode
+    if (mode == CombatMode.melee) {
+      // Switching to melee mode
+      final updatedRules = Map<String, bool>.from(state.specialRulesInEffect)
+        ..remove('aimed'); // Clear ranged-specific rules
+
+      state = state.copyWith(
+        combatMode: mode,
+        isVolley: false, // Turn off volley
+        specialRulesInEffect: updatedRules,
+      );
+    } else {
+      // Switching to ranged mode
+      final updatedRules = Map<String, bool>.from(state.specialRulesInEffect)
+        ..remove('inspired'); // Clear melee-specific rules
+
+      state = state.copyWith(
+        combatMode: mode,
+        isVolley: true, // Turn on volley
+        isCharge: false, // Turn off melee-specific options
+        isImpact: false,
+        specialRulesInEffect: updatedRules,
+      );
+    }
+
     _recalculate();
   }
 
+  void toggleCharge(bool value) {
+    // Only allow toggling charge in melee mode
+    if (state.combatMode == CombatMode.melee) {
+      state = state.copyWith(isCharge: value);
+      // If turning on charge and regiment has impact, enable impact too
+      if (value && (state.attacker?.hasImpact() ?? false)) {
+        state = state.copyWith(isImpact: true);
+      }
+      _recalculate();
+    }
+  }
+
   void toggleImpact(bool value) {
-    state = state.copyWith(isImpact: value);
-    _recalculate();
+    // Only allow toggling impact in melee mode for regiments with impact
+    if (state.combatMode == CombatMode.melee &&
+        (state.attacker?.hasImpact() ?? false)) {
+      state = state.copyWith(isImpact: value);
+      _recalculate();
+    }
   }
 
   void toggleFlank(bool value) {
     state = state.copyWith(isFlank: value);
+    // If turning on flank, turn off rear
+    if (value && state.isRear) {
+      state = state.copyWith(isRear: false);
+    }
     _recalculate();
   }
 
   void toggleRear(bool value) {
     state = state.copyWith(isRear: value);
+    // If turning on rear, turn off flank
+    if (value && state.isFlank) {
+      state = state.copyWith(isFlank: false);
+    }
     _recalculate();
   }
 
   void toggleVolley(bool value) {
-    state = state.copyWith(isVolley: value);
-    _recalculate();
+    // Only allow toggling volley in ranged mode
+    if (state.combatMode == CombatMode.ranged) {
+      state = state.copyWith(isVolley: value);
+
+      // If turning off volley, also clear ranged-specific rules
+      if (!value) {
+        final updatedRules = Map<String, bool>.from(state.specialRulesInEffect)
+          ..remove('aimed');
+        state = state.copyWith(specialRulesInEffect: updatedRules);
+      }
+
+      _recalculate();
+    }
   }
 
   void toggleWithinEffectiveRange(bool value) {
-    state = state.copyWith(isWithinEffectiveRange: value);
-    _recalculate();
+    // Only allow toggling effective range in ranged mode
+    if (state.combatMode == CombatMode.ranged && state.isVolley) {
+      state = state.copyWith(isWithinEffectiveRange: value);
+      _recalculate();
+    }
   }
 
   void toggleSpecialRule(String rule, bool value) {

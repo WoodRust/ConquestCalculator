@@ -179,10 +179,45 @@ class CombatCalculatorScreen extends ConsumerWidget {
 
                       const SizedBox(height: 16),
 
-                      // Combat modifiers
+                      // Combat modifiers section title
                       Text('Combat Modifiers',
                           style: Theme.of(context).textTheme.titleMedium),
                       const SizedBox(height: 8),
+
+                      // New Combat Mode Selection (Radio buttons)
+                      Row(
+                        children: [
+                          Expanded(
+                            child: RadioListTile<CombatMode>(
+                              title: const Text('Melee Combat'),
+                              groupValue: combatState.combatMode,
+                              value: CombatMode.melee,
+                              onChanged: (CombatMode? value) {
+                                if (value != null) {
+                                  combatNotifier.setCombatMode(value);
+                                }
+                              },
+                              dense: true,
+                            ),
+                          ),
+                          Expanded(
+                            child: RadioListTile<CombatMode>(
+                              title: const Text('Ranged Combat'),
+                              groupValue: combatState.combatMode,
+                              value: CombatMode.ranged,
+                              onChanged:
+                                  (combatState.attacker?.hasBarrage() ?? false)
+                                      ? (CombatMode? value) {
+                                          if (value != null) {
+                                            combatNotifier.setCombatMode(value);
+                                          }
+                                        }
+                                      : null,
+                              dense: true,
+                            ),
+                          ),
+                        ],
+                      ),
 
                       // Divide combat modifiers into two clear sections
                       Row(
@@ -192,35 +227,24 @@ class CombatCalculatorScreen extends ConsumerWidget {
                           Expanded(
                             child: Card(
                               elevation: 1,
+                              color: combatState.combatMode == CombatMode.melee
+                                  ? Theme.of(context).cardColor
+                                  : Colors.grey.shade300,
                               child: Padding(
                                 padding: const EdgeInsets.all(8.0),
                                 child: Column(
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
-                                    Text('Melee Combat',
+                                    Text('Melee Options',
                                         style: Theme.of(context)
                                             .textTheme
                                             .titleSmall),
                                     const SizedBox(height: 4),
                                     CheckboxListTile(
-                                      title: const Text('Clash'),
-                                      value: !combatState.isVolley,
-                                      onChanged: (value) {
-                                        if (value == true) {
-                                          combatNotifier.toggleVolley(false);
-                                          // Default values for melee mode
-                                          combatNotifier.toggleSpecialRule(
-                                              'aimed', false);
-                                        }
-                                      },
-                                      dense: true,
-                                      controlAffinity:
-                                          ListTileControlAffinity.leading,
-                                    ),
-                                    CheckboxListTile(
                                       title: const Text('Charge'),
                                       value: combatState.isCharge,
-                                      onChanged: !combatState.isVolley
+                                      onChanged: combatState.combatMode ==
+                                              CombatMode.melee
                                           ? (value) => combatNotifier
                                               .toggleCharge(value ?? false)
                                           : null,
@@ -231,7 +255,8 @@ class CombatCalculatorScreen extends ConsumerWidget {
                                     CheckboxListTile(
                                       title: const Text('Impact'),
                                       value: combatState.isImpact,
-                                      onChanged: !combatState.isVolley &&
+                                      onChanged: combatState.combatMode ==
+                                                  CombatMode.melee &&
                                               (combatState.attacker
                                                       ?.hasImpact() ??
                                                   false)
@@ -247,7 +272,8 @@ class CombatCalculatorScreen extends ConsumerWidget {
                                       value: combatState.specialRulesInEffect[
                                               'inspired'] ??
                                           false,
-                                      onChanged: !combatState.isVolley
+                                      onChanged: combatState.combatMode ==
+                                              CombatMode.melee
                                           ? (value) =>
                                               combatNotifier.toggleSpecialRule(
                                                   'inspired', value ?? false)
@@ -266,12 +292,15 @@ class CombatCalculatorScreen extends ConsumerWidget {
                           Expanded(
                             child: Card(
                               elevation: 1,
+                              color: combatState.combatMode == CombatMode.ranged
+                                  ? Theme.of(context).cardColor
+                                  : Colors.grey.shade300,
                               child: Padding(
                                 padding: const EdgeInsets.all(8.0),
                                 child: Column(
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
-                                    Text('Ranged Combat',
+                                    Text('Ranged Options',
                                         style: Theme.of(context)
                                             .textTheme
                                             .titleSmall),
@@ -280,21 +309,13 @@ class CombatCalculatorScreen extends ConsumerWidget {
                                       title: const Text('Volley'),
                                       value: combatState.isVolley,
                                       onChanged: (combatState.attacker
-                                                  ?.hasBarrage() ??
-                                              false)
+                                                      ?.hasBarrage() ??
+                                                  false) &&
+                                              combatState.combatMode ==
+                                                  CombatMode.ranged
                                           ? (value) {
                                               combatNotifier
                                                   .toggleVolley(value ?? false);
-                                              if (value == true) {
-                                                // When switching to volley mode, disable melee options
-                                                combatNotifier
-                                                    .toggleCharge(false);
-                                                combatNotifier
-                                                    .toggleImpact(false);
-                                                combatNotifier
-                                                    .toggleSpecialRule(
-                                                        'inspired', false);
-                                              }
                                             }
                                           : null,
                                       dense: true,
@@ -306,7 +327,9 @@ class CombatCalculatorScreen extends ConsumerWidget {
                                       value: combatState
                                               .specialRulesInEffect['aimed'] ??
                                           false,
-                                      onChanged: combatState.isVolley &&
+                                      onChanged: combatState.combatMode ==
+                                                  CombatMode.ranged &&
+                                              combatState.isVolley &&
                                               (combatState.attacker
                                                       ?.hasBarrage() ??
                                                   false)
@@ -321,7 +344,9 @@ class CombatCalculatorScreen extends ConsumerWidget {
                                     CheckboxListTile(
                                       title: const Text('Effective Range'),
                                       value: combatState.isWithinEffectiveRange,
-                                      onChanged: combatState.isVolley &&
+                                      onChanged: combatState.combatMode ==
+                                                  CombatMode.ranged &&
+                                              combatState.isVolley &&
                                               (combatState.attacker
                                                       ?.hasBarrage() ??
                                                   false)
@@ -333,8 +358,6 @@ class CombatCalculatorScreen extends ConsumerWidget {
                                       controlAffinity:
                                           ListTileControlAffinity.leading,
                                     ),
-                                    // Empty tile for balanced layout with melee section
-                                    const SizedBox(height: 48),
                                   ],
                                 ),
                               ),
@@ -357,10 +380,19 @@ class CombatCalculatorScreen extends ConsumerWidget {
                                   style:
                                       Theme.of(context).textTheme.titleSmall),
                               CheckboxListTile(
-                                title: const Text('Flank/Rear Attack'),
+                                title: const Text('Flank Attack'),
                                 value: combatState.isFlank,
                                 onChanged: (value) =>
                                     combatNotifier.toggleFlank(value ?? false),
+                                dense: true,
+                                controlAffinity:
+                                    ListTileControlAffinity.leading,
+                              ),
+                              CheckboxListTile(
+                                title: const Text('Rear Attack'),
+                                value: combatState.isRear,
+                                onChanged: (value) =>
+                                    combatNotifier.toggleRear(value ?? false),
                                 dense: true,
                                 controlAffinity:
                                     ListTileControlAffinity.leading,
@@ -369,9 +401,6 @@ class CombatCalculatorScreen extends ConsumerWidget {
                           ),
                         ),
                       ),
-
-                      // Combat environment and common special rules could go here
-                      // if needed in the future
                     ],
                   ),
                 ),
