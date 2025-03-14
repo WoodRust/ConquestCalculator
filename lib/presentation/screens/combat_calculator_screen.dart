@@ -50,12 +50,33 @@ class CombatCalculatorScreen extends ConsumerWidget {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text('Combat Setup',
-                          style: Theme.of(context).textTheme.titleLarge),
+                      // Combat Setup title with Duel mode checkbox
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Text('Combat Setup',
+                              style: Theme.of(context).textTheme.titleLarge),
+                          Row(
+                            children: [
+                              const Text('Duel'),
+                              const SizedBox(width: 4),
+                              Checkbox(
+                                value: combatState.isDuelMode,
+                                onChanged: (value) {
+                                  if (value != null) {
+                                    combatNotifier.toggleDuelMode(value);
+                                  }
+                                },
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
                       const SizedBox(height: 12),
 
                       // Character vs Character mode indicator
-                      if (combatState.attacker?.isCharacter() == true)
+                      if (combatState.isDuelMode ||
+                          combatState.attacker?.isCharacter() == true)
                         Container(
                           padding: const EdgeInsets.all(8.0),
                           margin: const EdgeInsets.only(bottom: 12.0),
@@ -121,7 +142,8 @@ class CombatCalculatorScreen extends ConsumerWidget {
                             ),
                           ),
                           if (combatState.attacker != null &&
-                              !combatState.attacker!.isCharacter())
+                              !combatState.attacker!.isCharacter() &&
+                              !combatState.isDuelMode)
                             TargetSelector(
                               selectionLimit: 10,
                               initialValue: combatState.numAttackerStands,
@@ -135,7 +157,8 @@ class CombatCalculatorScreen extends ConsumerWidget {
                           ),
                           if (combatState.attacker != null &&
                               !combatState.attacker!.isCharacter() &&
-                              combatState.canAttachCharacterToAttacker())
+                              combatState.canAttachCharacterToAttacker() &&
+                              !combatState.isDuelMode)
                             IconButton(
                               icon: const Icon(Icons.person_add),
                               tooltip: combatState.attackerCharacter == null
@@ -236,7 +259,8 @@ class CombatCalculatorScreen extends ConsumerWidget {
                             ),
                           ),
                           if (combatState.defender != null &&
-                              !combatState.defender!.isCharacter())
+                              !combatState.defender!.isCharacter() &&
+                              !combatState.isDuelMode)
                             TargetSelector(
                               selectionLimit: 10,
                               initialValue: combatState.numDefenderStands,
@@ -250,7 +274,8 @@ class CombatCalculatorScreen extends ConsumerWidget {
                           ),
                           if (combatState.defender != null &&
                               !combatState.defender!.isCharacter() &&
-                              combatState.canAttachCharacterToDefender())
+                              combatState.canAttachCharacterToDefender() &&
+                              !combatState.isDuelMode)
                             IconButton(
                               icon: const Icon(Icons.person_add),
                               tooltip: combatState.defenderCharacter == null
@@ -327,8 +352,9 @@ class CombatCalculatorScreen extends ConsumerWidget {
                       const SizedBox(height: 8),
 
                       // Combat Mode Selection (Radio buttons)
-                      if (!(combatState.attacker?.isCharacter() ??
-                          false)) // Don't show for character vs character
+                      if (!(combatState.isDuelMode ||
+                          (combatState.attacker?.isCharacter() ??
+                              false))) // Don't show for character vs character
                         Row(
                           children: [
                             Expanded(
@@ -365,8 +391,9 @@ class CombatCalculatorScreen extends ConsumerWidget {
                         ),
 
                       // Divide combat modifiers into two clear sections
-                      if (!(combatState.attacker?.isCharacter() ??
-                          false)) // Don't show for character vs character
+                      if (!(combatState.isDuelMode ||
+                          (combatState.attacker?.isCharacter() ??
+                              false))) // Don't show for character vs character
                         Row(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
@@ -521,8 +548,9 @@ class CombatCalculatorScreen extends ConsumerWidget {
                       const SizedBox(height: 8),
 
                       // Flank/Rear modifier (applies to both melee and ranged)
-                      if (!(combatState.attacker?.isCharacter() ??
-                          false)) // Don't show for character vs character
+                      if (!(combatState.isDuelMode ||
+                          (combatState.attacker?.isCharacter() ??
+                              false))) // Don't show for character vs character
                         Card(
                           elevation: 1,
                           child: Padding(
@@ -827,6 +855,19 @@ class CombatCalculatorScreen extends ConsumerWidget {
 
   void _selectAttacker(BuildContext context, WidgetRef ref) async {
     final combatNotifier = ref.read(combatProvider.notifier);
+    final combatState = ref.read(combatProvider);
+
+    // In duel mode, only allow character selection
+    final UnitFilter initialFilter = combatState.isDuelMode
+        ? UnitFilter.charactersOnly
+        : UnitFilter.regimentsOnly;
+    final Set<UnitFilter> allowedFilters = combatState.isDuelMode
+        ? {UnitFilter.charactersOnly} // Only show characters in duel mode
+        : {
+            UnitFilter.all,
+            UnitFilter.regimentsOnly,
+            UnitFilter.charactersOnly
+          }; // Show all normally
 
     showModalBottomSheet(
       context: context,
@@ -843,13 +884,33 @@ class CombatCalculatorScreen extends ConsumerWidget {
                 MaterialPageRoute(
                   builder: (context) => UnitSelectionScreen(
                     faction: 'dweghom',
-                    initialFilter: UnitFilter
-                        .all, // Changed from regimentsOnly to allow all units
-                    title: 'Select Dweghom Unit',
+                    initialFilter: initialFilter,
+                    allowedFilters: allowedFilters,
+                    title:
+                        'Select Dweghom ${combatState.isDuelMode ? "Character" : "Regiment"}',
                     onUnitSelected: (regiment) {
-                      // Allow characters to be selected as attackers (removed the character check)
-                      combatNotifier.updateAttacker(regiment);
-                      Navigator.pop(context);
+                      // Ensure selected unit matches the required type
+                      if (combatState.isDuelMode && !regiment.isCharacter()) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(
+                            content: Text(
+                                'In duel mode, only character units can be selected'),
+                            backgroundColor: Colors.red,
+                          ),
+                        );
+                      } else if (!combatState.isDuelMode &&
+                          regiment.isCharacter()) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(
+                            content: Text(
+                                'Characters must be attached to regiments in normal mode'),
+                            backgroundColor: Colors.red,
+                          ),
+                        );
+                      } else {
+                        combatNotifier.updateAttacker(regiment);
+                        Navigator.pop(context);
+                      }
                     },
                   ),
                 ),
@@ -866,12 +927,33 @@ class CombatCalculatorScreen extends ConsumerWidget {
                 MaterialPageRoute(
                   builder: (context) => UnitSelectionScreen(
                     faction: 'hundred_kingdoms',
-                    initialFilter: UnitFilter.all, // Changed from regimentsOnly
-                    title: 'Select Hundred Kingdoms Unit',
+                    initialFilter: initialFilter,
+                    allowedFilters: allowedFilters,
+                    title:
+                        'Select Hundred Kingdoms ${combatState.isDuelMode ? "Character" : "Regiment"}',
                     onUnitSelected: (regiment) {
-                      // Allow characters to be selected as attackers
-                      combatNotifier.updateAttacker(regiment);
-                      Navigator.pop(context);
+                      // Ensure selected unit matches the required type
+                      if (combatState.isDuelMode && !regiment.isCharacter()) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(
+                            content: Text(
+                                'In duel mode, only character units can be selected'),
+                            backgroundColor: Colors.red,
+                          ),
+                        );
+                      } else if (!combatState.isDuelMode &&
+                          regiment.isCharacter()) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(
+                            content: Text(
+                                'Characters must be attached to regiments in normal mode'),
+                            backgroundColor: Colors.red,
+                          ),
+                        );
+                      } else {
+                        combatNotifier.updateAttacker(regiment);
+                        Navigator.pop(context);
+                      }
                     },
                   ),
                 ),
@@ -888,12 +970,33 @@ class CombatCalculatorScreen extends ConsumerWidget {
                 MaterialPageRoute(
                   builder: (context) => UnitSelectionScreen(
                     faction: 'nords',
-                    initialFilter: UnitFilter.all, // Changed from regimentsOnly
-                    title: 'Select Nords Unit',
+                    initialFilter: initialFilter,
+                    allowedFilters: allowedFilters,
+                    title:
+                        'Select Nords ${combatState.isDuelMode ? "Character" : "Regiment"}',
                     onUnitSelected: (regiment) {
-                      // Allow characters to be selected as attackers
-                      combatNotifier.updateAttacker(regiment);
-                      Navigator.pop(context);
+                      // Ensure selected unit matches the required type
+                      if (combatState.isDuelMode && !regiment.isCharacter()) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(
+                            content: Text(
+                                'In duel mode, only character units can be selected'),
+                            backgroundColor: Colors.red,
+                          ),
+                        );
+                      } else if (!combatState.isDuelMode &&
+                          regiment.isCharacter()) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(
+                            content: Text(
+                                'Characters must be attached to regiments in normal mode'),
+                            backgroundColor: Colors.red,
+                          ),
+                        );
+                      } else {
+                        combatNotifier.updateAttacker(regiment);
+                        Navigator.pop(context);
+                      }
                     },
                   ),
                 ),
@@ -920,6 +1023,17 @@ class CombatCalculatorScreen extends ConsumerWidget {
     final combatState = ref.read(combatProvider);
 
     if (combatState.attacker == null) return;
+
+    // Don't allow character attachment in duel mode
+    if (combatState.isDuelMode) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Characters cannot be attached in duel mode'),
+          backgroundColor: Colors.red,
+        ),
+      );
+      return;
+    }
 
     // Get the faction of the currently selected attacker regiment
     // Convert to lowercase and replace spaces with underscores for file path
@@ -962,19 +1076,42 @@ class CombatCalculatorScreen extends ConsumerWidget {
     final combatNotifier = ref.read(combatProvider.notifier);
     final combatState = ref.read(combatProvider);
 
-    // If attacker is a character, only allow character selection for defender
-    final bool characterVsCharacterMode =
-        combatState.attacker?.isCharacter() ?? false;
-    final UnitFilter initialFilter = characterVsCharacterMode
+    // In duel mode, only allow character selection
+    final UnitFilter initialFilter = combatState.isDuelMode
         ? UnitFilter.charactersOnly
         : UnitFilter.regimentsOnly;
-    final Set<UnitFilter> allowedFilters = characterVsCharacterMode
-        ? {UnitFilter.charactersOnly} // Only show characters
+    final Set<UnitFilter> allowedFilters = combatState.isDuelMode
+        ? {UnitFilter.charactersOnly} // Only show characters in duel mode
         : {
             UnitFilter.all,
             UnitFilter.regimentsOnly,
             UnitFilter.charactersOnly
-          }; // Show all
+          }; // Show all normally
+
+    // If attacker is a character in non-duel mode, restrict defender to characters too
+    final bool characterVsCharacterMode = !combatState.isDuelMode &&
+        (combatState.attacker?.isCharacter() ?? false);
+
+    if (characterVsCharacterMode) {
+      showModalBottomSheet(
+        context: context,
+        builder: (context) => Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            ListTile(
+              title: const Text('Notice'),
+              subtitle: const Text(
+                  'When attacker is a character in normal mode, defender must also be a character. Consider using Duel Mode for character vs character combat.'),
+            ),
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text('OK'),
+            ),
+          ],
+        ),
+      );
+      return;
+    }
 
     showModalBottomSheet(
       context: context,
@@ -992,17 +1129,25 @@ class CombatCalculatorScreen extends ConsumerWidget {
                   builder: (context) => UnitSelectionScreen(
                     faction: 'dweghom',
                     initialFilter: initialFilter,
-                    allowedFilters:
-                        allowedFilters, // Only allow appropriate filters
+                    allowedFilters: allowedFilters,
                     title:
-                        'Select Dweghom ${characterVsCharacterMode ? "Character" : "Regiment"}',
+                        'Select Dweghom ${combatState.isDuelMode ? "Character" : "Regiment"}',
                     onUnitSelected: (regiment) {
-                      // Ensure defender type matches attacker type in character vs character mode
-                      if (characterVsCharacterMode && !regiment.isCharacter()) {
+                      // Ensure selected unit matches the required type
+                      if (combatState.isDuelMode && !regiment.isCharacter()) {
                         ScaffoldMessenger.of(context).showSnackBar(
                           const SnackBar(
                             content: Text(
-                                'When attacker is a character, defender must also be a character'),
+                                'In duel mode, only character units can be selected'),
+                            backgroundColor: Colors.red,
+                          ),
+                        );
+                      } else if (!combatState.isDuelMode &&
+                          regiment.isCharacter()) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(
+                            content: Text(
+                                'Characters must be attached to regiments in normal mode'),
                             backgroundColor: Colors.red,
                           ),
                         );
@@ -1029,13 +1174,23 @@ class CombatCalculatorScreen extends ConsumerWidget {
                     initialFilter: initialFilter,
                     allowedFilters: allowedFilters,
                     title:
-                        'Select Hundred Kingdoms ${characterVsCharacterMode ? "Character" : "Regiment"}',
+                        'Select Hundred Kingdoms ${combatState.isDuelMode ? "Character" : "Regiment"}',
                     onUnitSelected: (regiment) {
-                      if (characterVsCharacterMode && !regiment.isCharacter()) {
+                      // Ensure selected unit matches the required type
+                      if (combatState.isDuelMode && !regiment.isCharacter()) {
                         ScaffoldMessenger.of(context).showSnackBar(
                           const SnackBar(
                             content: Text(
-                                'When attacker is a character, defender must also be a character'),
+                                'In duel mode, only character units can be selected'),
+                            backgroundColor: Colors.red,
+                          ),
+                        );
+                      } else if (!combatState.isDuelMode &&
+                          regiment.isCharacter()) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(
+                            content: Text(
+                                'Characters must be attached to regiments in normal mode'),
                             backgroundColor: Colors.red,
                           ),
                         );
@@ -1062,13 +1217,23 @@ class CombatCalculatorScreen extends ConsumerWidget {
                     initialFilter: initialFilter,
                     allowedFilters: allowedFilters,
                     title:
-                        'Select Nords ${characterVsCharacterMode ? "Character" : "Regiment"}',
+                        'Select Nords ${combatState.isDuelMode ? "Character" : "Regiment"}',
                     onUnitSelected: (regiment) {
-                      if (characterVsCharacterMode && !regiment.isCharacter()) {
+                      // Ensure selected unit matches the required type
+                      if (combatState.isDuelMode && !regiment.isCharacter()) {
                         ScaffoldMessenger.of(context).showSnackBar(
                           const SnackBar(
                             content: Text(
-                                'When attacker is a character, defender must also be a character'),
+                                'In duel mode, only character units can be selected'),
+                            backgroundColor: Colors.red,
+                          ),
+                        );
+                      } else if (!combatState.isDuelMode &&
+                          regiment.isCharacter()) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(
+                            content: Text(
+                                'Characters must be attached to regiments in normal mode'),
                             backgroundColor: Colors.red,
                           ),
                         );
@@ -1102,6 +1267,17 @@ class CombatCalculatorScreen extends ConsumerWidget {
     final combatState = ref.read(combatProvider);
 
     if (combatState.defender == null) return;
+
+    // Don't allow character attachment in duel mode
+    if (combatState.isDuelMode) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Characters cannot be attached in duel mode'),
+          backgroundColor: Colors.red,
+        ),
+      );
+      return;
+    }
 
     // Get the faction of the currently selected defender regiment
     // Convert to lowercase and replace spaces with underscores for file path
@@ -1142,19 +1318,18 @@ class CombatCalculatorScreen extends ConsumerWidget {
 
   void _showMoreFactions(BuildContext context, WidgetRef ref, bool isAttacker) {
     final combatState = ref.read(combatProvider);
-    // If attacker is a character, only allow character selection for defender
-    final bool characterVsCharacterMode =
-        !isAttacker && (combatState.attacker?.isCharacter() ?? false);
-    final UnitFilter initialFilter = characterVsCharacterMode
+
+    // In duel mode, only allow character selection
+    final UnitFilter initialFilter = combatState.isDuelMode
         ? UnitFilter.charactersOnly
         : UnitFilter.regimentsOnly;
-    final Set<UnitFilter> allowedFilters = characterVsCharacterMode
-        ? {UnitFilter.charactersOnly} // Only show characters
+    final Set<UnitFilter> allowedFilters = combatState.isDuelMode
+        ? {UnitFilter.charactersOnly} // Only show characters in duel mode
         : {
             UnitFilter.all,
             UnitFilter.regimentsOnly,
             UnitFilter.charactersOnly
-          }; // Show all
+          }; // Show all normally
 
     showDialog(
       context: context,
@@ -1176,27 +1351,39 @@ class CombatCalculatorScreen extends ConsumerWidget {
                         initialFilter: initialFilter,
                         allowedFilters: allowedFilters,
                         title:
-                            'Select Old Dominion ${characterVsCharacterMode ? "Character" : "Regiment"}',
+                            'Select Old Dominion ${combatState.isDuelMode ? "Character" : "Regiment"}',
                         onUnitSelected: (regiment) {
-                          if (characterVsCharacterMode &&
+                          // Ensure selected unit matches the required type
+                          if (combatState.isDuelMode &&
                               !regiment.isCharacter()) {
                             ScaffoldMessenger.of(context).showSnackBar(
                               const SnackBar(
                                 content: Text(
-                                    'When attacker is a character, defender must also be a character'),
+                                    'In duel mode, only character units can be selected'),
                                 backgroundColor: Colors.red,
                               ),
                             );
+                            return;
+                          } else if (!combatState.isDuelMode &&
+                              regiment.isCharacter()) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(
+                                content: Text(
+                                    'Characters must be attached to regiments in normal mode'),
+                                backgroundColor: Colors.red,
+                              ),
+                            );
+                            return;
+                          }
+
+                          if (isAttacker) {
+                            ref
+                                .read(combatProvider.notifier)
+                                .updateAttacker(regiment);
                           } else {
-                            if (isAttacker) {
-                              ref
-                                  .read(combatProvider.notifier)
-                                  .updateAttacker(regiment);
-                            } else {
-                              ref
-                                  .read(combatProvider.notifier)
-                                  .updateDefender(regiment);
-                            }
+                            ref
+                                .read(combatProvider.notifier)
+                                .updateDefender(regiment);
                           }
                           Navigator.pop(context);
                         },
@@ -1218,27 +1405,39 @@ class CombatCalculatorScreen extends ConsumerWidget {
                         initialFilter: initialFilter,
                         allowedFilters: allowedFilters,
                         title:
-                            'Select Spires ${characterVsCharacterMode ? "Character" : "Regiment"}',
+                            'Select Spires ${combatState.isDuelMode ? "Character" : "Regiment"}',
                         onUnitSelected: (regiment) {
-                          if (characterVsCharacterMode &&
+                          // Ensure selected unit matches the required type
+                          if (combatState.isDuelMode &&
                               !regiment.isCharacter()) {
                             ScaffoldMessenger.of(context).showSnackBar(
                               const SnackBar(
                                 content: Text(
-                                    'When attacker is a character, defender must also be a character'),
+                                    'In duel mode, only character units can be selected'),
                                 backgroundColor: Colors.red,
                               ),
                             );
+                            return;
+                          } else if (!combatState.isDuelMode &&
+                              regiment.isCharacter()) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(
+                                content: Text(
+                                    'Characters must be attached to regiments in normal mode'),
+                                backgroundColor: Colors.red,
+                              ),
+                            );
+                            return;
+                          }
+
+                          if (isAttacker) {
+                            ref
+                                .read(combatProvider.notifier)
+                                .updateAttacker(regiment);
                           } else {
-                            if (isAttacker) {
-                              ref
-                                  .read(combatProvider.notifier)
-                                  .updateAttacker(regiment);
-                            } else {
-                              ref
-                                  .read(combatProvider.notifier)
-                                  .updateDefender(regiment);
-                            }
+                            ref
+                                .read(combatProvider.notifier)
+                                .updateDefender(regiment);
                           }
                           Navigator.pop(context);
                         },
