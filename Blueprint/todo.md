@@ -52,12 +52,12 @@
 - [ ] Create sample JSON data files
   - [x] Create assets/data/regiments folder
   - [x] Create dweghom.json with sample data
-  - [x] Create hundred_kingdoms.json with sample data
-  - [x] Create nords.json with sample data
+  - [ ] Create hundred_kingdoms.json with sample data
+  - [ ] Create nords.json with sample data
   - [ ] Create additional faction JSON files (spires, old_dominion, wadrhun, etc.)
   - [ ] Expand regiment data with comprehensive special rules
 - [x] Update pubspec.yaml to include assets
-- [x] Write unit tests for data layer
+- [ ] Write unit tests for data layer
 
 ### Step 3: Combat Simulation Models
 - [x] Create DiceResult class
@@ -87,9 +87,9 @@
   - [x] Handle basic special rules (Shield, Cleave, etc.)
   - [x] Apply flank/rear modifiers correctly
 - [ ] Enhance probability calculations
-  - [ ] Replace simplified calculations with proper probability distributions
-  - [ ] Implement binomial probability distribution for hit rolls
-  - [ ] Create proper calculation for wound distributions
+  - [~] Create ProbabilityDistribution class (implemented but needs refinement)
+  - [~] Implement binomial probability distribution for hit rolls (implemented but needs testing)
+  - [~] Create proper calculation for wound distributions (implemented but needs validation)
   - [ ] Implement Monte Carlo simulation for complex interactions
   - [ ] Add support for more special rules from the game
   - [ ] Implement detailed rule interactions (e.g., Support, Flurry, Fearsome)
@@ -125,10 +125,10 @@
   - [x] Create _recalculate private method
 - [x] Create combatProvider
 - [x] Update main.dart with ProviderScope
-- [ ] Create ResultHistoryProvider
-  - [ ] Implement storage of calculation results
-  - [ ] Create state for managing multiple calculation results
-  - [ ] Add methods for toggling visibility of saved results
+- [~] Create ResultHistoryProvider
+  - [~] Implement storage of calculation results (basic implementation, needs refinement)
+  - [~] Create state for managing multiple calculation results (implemented but not working correctly)
+  - [~] Add methods for toggling visibility of saved results (implemented but needs testing)
 - [ ] Write tests for providers
 
 ### Step 6: Basic UI Screens
@@ -171,7 +171,7 @@
   - [x] Add Consumer widgets for state observation
   - [x] Implement loading indicators
 - [ ] Create comprehensive special rules UI
-  - [ ] Add UI for all relevant special rules
+  - [~] Add UI for all relevant special rules (basic implementation, needs expansion)
   - [ ] Create section for activating special abilities
   - [ ] Add dynamic special rule detection from regiment data
 - [ ] Write widget tests for combat calculator UI
@@ -179,45 +179,39 @@
 ## Phase 4: Visualization
 
 ### Step 8: Combat Results Visualization
-- [x] Create basic WavePainter class
-  - [x] Implement paint method for wave drawing
-  - [x] Add color calculation based on probabilities
-  - [x] Implement expected success marker
-  - [x] Add text annotations
-- [x] Create basic WaveSlider widget
-  - [x] Set up CustomPaint with WavePainter
-  - [x] Implement interactive sliding
-  - [x] Add value display
-  - [x] Handle size constraints
-- [ ] Replace WaveSlider with proper probability distribution graphs
-  - [ ] Create ProbabilityDistributionChart widget using fl_chart
-  - [ ] Implement proper bar or line chart visualization
-  - [ ] Add X axis (wounds/dice) and Y axis (probability)
-  - [ ] Create threshold markers for critical points (breaking, stand loss)
-  - [ ] Implement color-coded sections based on outcomes
+- [~] Create basic visualization components (implemented but need refinement)
+  - [~] Implement WavePainter class (implemented but being replaced)
+  - [~] Create WaveSlider widget (implemented but being replaced)
+  - [~] Add expected success markers (implemented but needs improvement)
+- [~] Replace WaveSlider with proper probability distribution graphs
+  - [~] Create ProbabilityDistributionChart widget using fl_chart (implemented but needs refinement)
+  - [~] Implement proper bar or line chart visualization (basic implementation, needs styling)
+  - [~] Add X axis (wounds/dice) and Y axis (probability) (implemented but needs better scaling)
+  - [~] Create threshold markers for critical points (implemented but needs visual refinement)
+  - [~] Implement color-coded sections based on outcomes (implemented but needs better visual cues)
 - [ ] Add visualization for multiple probability distributions
-  - [ ] Show multiple data series on the same chart
-  - [ ] Add legend for comparing different combat scenarios
-  - [ ] Implement toggle controls for hiding/showing distributions
+  - [~] Show multiple data series on the same chart (implemented but not working correctly)
+  - [~] Add legend for comparing different combat scenarios (implemented but needs styling)
+  - [~] Implement toggle controls for hiding/showing distributions (basic implementation, needs testing)
 - [ ] Write tests for visualization components
 
 ## Phase 5: Integration and Polish
 
 ### Step 9: Integration and Final Touches
 - [ ] Complete CombatCalculatorScreen integration
-  - [ ] Ensure all components work together
+  - [~] Ensure all components work together (implemented but has bugs)
   - [ ] Add proper loading states
   - [ ] Implement error handling
-  - [ ] Add breaking probability calculation
+  - [~] Add breaking probability calculation (implemented but needs validation)
 - [ ] Implement persistent storage
   - [ ] Create model for stored combat calculations
   - [ ] Implement SharedPreferences or SQLite storage
-  - [ ] Add UI for naming and saving calculations
+  - [~] Add UI for naming and saving calculations (implemented but not persisting data)
   - [ ] Create history screen for viewing saved calculations
 - [ ] Add summary cards
-  - [ ] Create collapsed summary view
-  - [ ] Highlight key statistics
-  - [ ] Add color coding for outcomes
+  - [~] Create collapsed summary view (implemented but needs better organization)
+  - [~] Highlight key statistics (implemented but needs better formatting)
+  - [~] Add color coding for outcomes (implemented but needs refinement)
 - [ ] Final UI polish
   - [ ] Review and standardize padding/spacing
   - [ ] Check typography hierarchy
@@ -237,7 +231,7 @@
   - [ ] Usage guide
   - [ ] Screenshots
 - [ ] Create complete data for all factions
-  - [ ] Complete dweghom.json
+  - [~] Complete dweghom.json (basic version implemented, needs expansion)
   - [ ] Complete hundred_kingdoms.json
   - [ ] Complete nords.json
   - [ ] Add data for other factions
