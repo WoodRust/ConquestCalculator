@@ -54,9 +54,11 @@ class CombatState {
     Regiment? attacker,
     int? numAttackerStands,
     Regiment? attackerCharacter,
+    bool clearAttackerCharacter = false,
     Regiment? defender,
     int? numDefenderStands,
     Regiment? defenderCharacter,
+    bool clearDefenderCharacter = false,
     bool? isCharge,
     bool? isImpact,
     bool? isFlank,
@@ -73,10 +75,14 @@ class CombatState {
     return CombatState(
       attacker: attacker ?? this.attacker,
       numAttackerStands: numAttackerStands ?? this.numAttackerStands,
-      attackerCharacter: attackerCharacter ?? this.attackerCharacter,
+      attackerCharacter: clearAttackerCharacter
+          ? null
+          : (attackerCharacter ?? this.attackerCharacter),
       defender: defender ?? this.defender,
       numDefenderStands: numDefenderStands ?? this.numDefenderStands,
-      defenderCharacter: defenderCharacter ?? this.defenderCharacter,
+      defenderCharacter: clearDefenderCharacter
+          ? null
+          : (defenderCharacter ?? this.defenderCharacter),
       isCharge: isCharge ?? this.isCharge,
       isImpact: isImpact ?? this.isImpact,
       isFlank: isFlank ?? this.isFlank,
@@ -176,7 +182,8 @@ class CombatNotifier extends StateNotifier<CombatState> {
 
   void detachCharacterFromAttacker() {
     if (state.attackerCharacter != null) {
-      state = state.copyWith(attackerCharacter: null);
+      // Use the clearAttackerCharacter flag to ensure null is properly applied
+      state = state.copyWith(clearAttackerCharacter: true);
       _recalculate();
     }
   }
@@ -194,7 +201,8 @@ class CombatNotifier extends StateNotifier<CombatState> {
 
   void detachCharacterFromDefender() {
     if (state.defenderCharacter != null) {
-      state = state.copyWith(defenderCharacter: null);
+      // Use the clearDefenderCharacter flag to ensure null is properly applied
+      state = state.copyWith(clearDefenderCharacter: true);
       _recalculate();
     }
   }

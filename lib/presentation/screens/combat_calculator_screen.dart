@@ -86,18 +86,10 @@ class CombatCalculatorScreen extends ConsumerWidget {
                               onPressed: () =>
                                   _selectAttackerCharacter(context, ref),
                             ),
-                          if (combatState.attackerCharacter != null)
-                            IconButton(
-                              icon: const Icon(Icons.person_remove),
-                              tooltip: 'Remove character stand',
-                              onPressed: () => ref
-                                  .read(combatProvider.notifier)
-                                  .detachCharacterFromAttacker(),
-                            ),
                         ],
                       ),
 
-                      // Display attached character info
+                      // Display attached character info with remove button
                       if (combatState.attackerCharacter != null) ...[
                         Padding(
                           padding: const EdgeInsets.only(left: 16.0, top: 4.0),
@@ -105,13 +97,23 @@ class CombatCalculatorScreen extends ConsumerWidget {
                             children: [
                               const Icon(Icons.person, size: 16),
                               const SizedBox(width: 8),
-                              Text(
-                                'Character: ${combatState.attackerCharacter!.name}',
-                                style: TextStyle(
-                                  fontStyle: FontStyle.italic,
-                                  color:
-                                      Theme.of(context).colorScheme.secondary,
+                              Expanded(
+                                child: Text(
+                                  'Character: ${combatState.attackerCharacter!.name}',
+                                  style: TextStyle(
+                                    fontStyle: FontStyle.italic,
+                                    color:
+                                        Theme.of(context).colorScheme.secondary,
+                                  ),
                                 ),
+                              ),
+                              // Move the remove button here next to character info
+                              IconButton(
+                                icon: const Icon(Icons.person_remove, size: 18),
+                                tooltip: 'Remove character stand',
+                                onPressed: () => ref
+                                    .read(combatProvider.notifier)
+                                    .detachCharacterFromAttacker(),
                               ),
                             ],
                           ),
@@ -196,18 +198,10 @@ class CombatCalculatorScreen extends ConsumerWidget {
                               onPressed: () =>
                                   _selectDefenderCharacter(context, ref),
                             ),
-                          if (combatState.defenderCharacter != null)
-                            IconButton(
-                              icon: const Icon(Icons.person_remove),
-                              tooltip: 'Remove character stand',
-                              onPressed: () => ref
-                                  .read(combatProvider.notifier)
-                                  .detachCharacterFromDefender(),
-                            ),
                         ],
                       ),
 
-                      // Display attached character info
+                      // Display attached character info with remove button
                       if (combatState.defenderCharacter != null) ...[
                         Padding(
                           padding: const EdgeInsets.only(left: 16.0, top: 4.0),
@@ -215,13 +209,23 @@ class CombatCalculatorScreen extends ConsumerWidget {
                             children: [
                               const Icon(Icons.person, size: 16),
                               const SizedBox(width: 8),
-                              Text(
-                                'Character: ${combatState.defenderCharacter!.name}',
-                                style: TextStyle(
-                                  fontStyle: FontStyle.italic,
-                                  color:
-                                      Theme.of(context).colorScheme.secondary,
+                              Expanded(
+                                child: Text(
+                                  'Character: ${combatState.defenderCharacter!.name}',
+                                  style: TextStyle(
+                                    fontStyle: FontStyle.italic,
+                                    color:
+                                        Theme.of(context).colorScheme.secondary,
+                                  ),
                                 ),
+                              ),
+                              // Move the remove button here next to character info
+                              IconButton(
+                                icon: const Icon(Icons.person_remove, size: 18),
+                                tooltip: 'Remove character stand',
+                                onPressed: () => ref
+                                    .read(combatProvider.notifier)
+                                    .detachCharacterFromDefender(),
                               ),
                             ],
                           ),

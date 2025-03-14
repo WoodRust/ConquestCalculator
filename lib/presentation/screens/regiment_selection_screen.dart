@@ -24,21 +24,69 @@ class RegimentSelectionScreen extends ConsumerWidget {
       ),
       body: regimentsAsyncValue.when(
         data: (regiments) {
-          return ListView.builder(
-            itemCount: regiments.length,
-            itemBuilder: (context, index) {
-              final regiment = regiments[index];
-              return Card(
-                margin: const EdgeInsets.symmetric(vertical: 4, horizontal: 8),
-                child: ListTile(
-                  title: Text(regiment.name),
-                  subtitle: Text(_getRegimentSubtitle(regiment)),
-                  trailing: Text(
-                      '${regiment.type.toString().split('.').last} - ${regiment.regimentClass.toString().split('.').last}'),
-                  onTap: () => onRegimentSelected(regiment),
+          // Split regiments into characters and regular regiments
+          final characterRegiments =
+              regiments.where((r) => r.isCharacter()).toList();
+          final regularRegiments =
+              regiments.where((r) => !r.isCharacter()).toList();
+
+          return SingleChildScrollView(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // Regular regiments section
+                Padding(
+                  padding: const EdgeInsets.all(16.0),
+                  child: Text(
+                    'Regiments',
+                    style: Theme.of(context).textTheme.titleLarge,
+                  ),
                 ),
-              );
-            },
+                if (regularRegiments.isEmpty)
+                  const Padding(
+                    padding: EdgeInsets.all(16.0),
+                    child: Text('No regiments available for this faction'),
+                  )
+                else
+                  ListView.builder(
+                    shrinkWrap: true,
+                    physics: const NeverScrollableScrollPhysics(),
+                    itemCount: regularRegiments.length,
+                    itemBuilder: (context, index) {
+                      return _buildRegimentCard(
+                          context, regularRegiments[index]);
+                    },
+                  ),
+
+                // Character stands section
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(16.0, 24.0, 16.0, 16.0),
+                  child: Text(
+                    'Character Stands',
+                    style: Theme.of(context).textTheme.titleLarge,
+                  ),
+                ),
+                if (characterRegiments.isEmpty)
+                  const Padding(
+                    padding: EdgeInsets.all(16.0),
+                    child:
+                        Text('No character stands available for this faction'),
+                  )
+                else
+                  ListView.builder(
+                    shrinkWrap: true,
+                    physics: const NeverScrollableScrollPhysics(),
+                    itemCount: characterRegiments.length,
+                    itemBuilder: (context, index) {
+                      return _buildRegimentCard(
+                        context,
+                        characterRegiments[index],
+                        isCharacter: true,
+                      );
+                    },
+                  ),
+              ],
+            ),
           );
         },
         loading: () => const Center(child: CircularProgressIndicator()),
@@ -49,9 +97,62 @@ class RegimentSelectionScreen extends ConsumerWidget {
     );
   }
 
+  Widget _buildRegimentCard(BuildContext context, Regiment regiment,
+      {bool isCharacter = false}) {
+    return Card(
+      margin: const EdgeInsets.symmetric(vertical: 4, horizontal: 8),
+      child: ListTile(
+        leading: Icon(
+          isCharacter ? Icons.person : _getRegimentTypeIcon(regiment.type),
+        ),
+        title: Text(regiment.name),
+        subtitle: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(_getRegimentSubtitle(regiment)),
+            if (regiment.specialRules.isNotEmpty)
+              Text(
+                'Special: ${regiment.specialRules.take(3).join(", ")}${regiment.specialRules.length > 3 ? "..." : ""}',
+                style: TextStyle(
+                  fontSize: 12,
+                  color: Theme.of(context).colorScheme.secondary,
+                ),
+                overflow: TextOverflow.ellipsis,
+              ),
+          ],
+        ),
+        isThreeLine: regiment.specialRules.isNotEmpty,
+        trailing: Chip(
+          label: Text(
+            '${regiment.type.toString().split('.').last} - ${regiment.regimentClass.toString().split('.').last}',
+            style: const TextStyle(fontSize: 12),
+          ),
+        ),
+        onTap: () => onRegimentSelected(regiment),
+      ),
+    );
+  }
+
   String _getRegimentSubtitle(Regiment regiment) {
-    return 'M:${regiment.march} V:${regiment.volley} C:${regiment.clash} '
-        'A:${regiment.attacks} W:${regiment.wounds} R:${regiment.resolve} '
+    return 'M:${regiment.march ?? "-"} V:${regiment.volley} C:${regiment.clash} '
+        'A:${regiment.attacks} W:${regiment.wounds} R:${regiment.resolve ?? "-"} '
         'D:${regiment.defense} E:${regiment.evasion}';
+  }
+
+  IconData _getRegimentTypeIcon(RegimentType type) {
+    switch (type) {
+      case RegimentType.infantry:
+        return Icons.people;
+      case RegimentType.cavalry:
+        return Icons.sports_handball;
+      case RegimentType.brute:
+        return Icons.fitness_center;
+      case RegimentType.monster:
+        return Icons.pets;
+      case RegimentType.chariot:
+        return Icons.directions_car;
+      default:
+        return Icons.group;
+    }
   }
 }
