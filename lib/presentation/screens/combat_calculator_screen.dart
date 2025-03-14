@@ -64,6 +64,14 @@ class CombatCalculatorScreen extends ConsumerWidget {
                                   const TextStyle(fontWeight: FontWeight.bold),
                             ),
                           ),
+                          if (combatState.attacker != null)
+                            TargetSelector(
+                              selectionLimit: 10,
+                              initialValue: combatState.numAttackerStands,
+                              onChanged: (value) =>
+                                  combatNotifier.updateAttackerStands(value),
+                            ),
+                          const SizedBox(width: 8),
                           ElevatedButton(
                             onPressed: () => _selectAttacker(context, ref),
                             child: const Text('Select'),
@@ -72,18 +80,48 @@ class CombatCalculatorScreen extends ConsumerWidget {
                       ),
 
                       if (combatState.attacker != null) ...[
-                        const SizedBox(height: 8),
-                        Row(
-                          children: [
-                            const Text('Number of Attacking Stands: '),
-                            TargetSelector(
-                              selectionLimit: 10,
-                              initialValue: combatState.numAttackerStands,
-                              onChanged: (value) =>
-                                  combatNotifier.updateAttackerStands(value),
-                            ),
-                          ],
-                        ),
+                        // Attacker special rules section
+                        if (combatState.attacker!.specialRules.isNotEmpty) ...[
+                          const SizedBox(height: 12),
+                          Text('Special Rules',
+                              style: Theme.of(context).textTheme.titleSmall),
+                          const SizedBox(height: 4),
+                          Wrap(
+                            spacing: 8,
+                            children: [
+                              if (combatState.attacker!
+                                  .hasSpecialRule('cleave'))
+                                FilterChip(
+                                  label: const Text('Cleave'),
+                                  selected: combatState
+                                          .specialRulesInEffect['cleave'] ??
+                                      true,
+                                  onSelected: (bool selected) => combatNotifier
+                                      .toggleSpecialRule('cleave', selected),
+                                ),
+                              if (combatState.attacker!
+                                  .hasSpecialRule('flurry'))
+                                FilterChip(
+                                  label: const Text('Flurry'),
+                                  selected: combatState
+                                          .specialRulesInEffect['flurry'] ??
+                                      true,
+                                  onSelected: (bool selected) => combatNotifier
+                                      .toggleSpecialRule('flurry', selected),
+                                ),
+                              if (combatState.attacker!
+                                  .hasSpecialRule('phalanx'))
+                                FilterChip(
+                                  label: const Text('Phalanx'),
+                                  selected: combatState
+                                          .specialRulesInEffect['phalanx'] ??
+                                      true,
+                                  onSelected: (bool selected) => combatNotifier
+                                      .toggleSpecialRule('phalanx', selected),
+                                ),
+                            ],
+                          ),
+                        ],
                       ],
 
                       const SizedBox(height: 16),
@@ -98,6 +136,14 @@ class CombatCalculatorScreen extends ConsumerWidget {
                                   const TextStyle(fontWeight: FontWeight.bold),
                             ),
                           ),
+                          if (combatState.defender != null)
+                            TargetSelector(
+                              selectionLimit: 10,
+                              initialValue: combatState.numDefenderStands,
+                              onChanged: (value) =>
+                                  combatNotifier.updateDefenderStands(value),
+                            ),
+                          const SizedBox(width: 8),
                           ElevatedButton(
                             onPressed: () => _selectDefender(context, ref),
                             child: const Text('Select'),
@@ -106,18 +152,29 @@ class CombatCalculatorScreen extends ConsumerWidget {
                       ),
 
                       if (combatState.defender != null) ...[
-                        const SizedBox(height: 8),
-                        Row(
-                          children: [
-                            const Text('Number of Defending Stands: '),
-                            TargetSelector(
-                              selectionLimit: 10,
-                              initialValue: combatState.numDefenderStands,
-                              onChanged: (value) =>
-                                  combatNotifier.updateDefenderStands(value),
-                            ),
-                          ],
-                        ),
+                        // Defender special rules section
+                        if (combatState.defender!.specialRules.isNotEmpty) ...[
+                          const SizedBox(height: 12),
+                          Text('Special Rules',
+                              style: Theme.of(context).textTheme.titleSmall),
+                          const SizedBox(height: 4),
+                          Wrap(
+                            spacing: 8,
+                            children: [
+                              if (combatState.defender!
+                                  .hasSpecialRule('shield'))
+                                FilterChip(
+                                  label: const Text('Shield'),
+                                  selected: combatState
+                                          .specialRulesInEffect['shield'] ??
+                                      true,
+                                  onSelected: (bool selected) => combatNotifier
+                                      .toggleSpecialRule('shield', selected),
+                                ),
+                              // Add other defender-specific special rules here
+                            ],
+                          ),
+                        ],
                       ],
 
                       const SizedBox(height: 16),
@@ -157,7 +214,7 @@ class CombatCalculatorScreen extends ConsumerWidget {
                         children: [
                           Expanded(
                             child: CheckboxListTile(
-                              title: const Text('Flank'),
+                              title: const Text('Flank/Rear'),
                               value: combatState.isFlank,
                               onChanged: (value) =>
                                   combatNotifier.toggleFlank(value ?? false),
@@ -167,10 +224,13 @@ class CombatCalculatorScreen extends ConsumerWidget {
                           ),
                           Expanded(
                             child: CheckboxListTile(
-                              title: const Text('Rear'),
-                              value: combatState.isRear,
+                              title: const Text('Inspired'),
+                              value: combatState
+                                      .specialRulesInEffect['inspired'] ??
+                                  false,
                               onChanged: (value) =>
-                                  combatNotifier.toggleRear(value ?? false),
+                                  combatNotifier.toggleSpecialRule(
+                                      'inspired', value ?? false),
                               dense: true,
                               controlAffinity: ListTileControlAffinity.leading,
                             ),
@@ -204,73 +264,8 @@ class CombatCalculatorScreen extends ConsumerWidget {
                         ],
                       ),
 
-                      // Special Rules (simplified version)
-                      if (combatState.attacker != null &&
-                          combatState.defender != null) ...[
-                        const SizedBox(height: 16),
-                        Text('Special Rules',
-                            style: Theme.of(context).textTheme.titleMedium),
-
-                        // Auto-detect cleave/shield from attacker/defender
-                        if (combatState.attacker!.hasSpecialRule('cleave') ||
-                            combatState.defender!.hasSpecialRule('shield'))
-                          Wrap(
-                            spacing: 8,
-                            children: [
-                              if (combatState.attacker!
-                                  .hasSpecialRule('cleave'))
-                                FilterChip(
-                                  label: const Text('Cleave'),
-                                  selected: combatState
-                                          .specialRulesInEffect['cleave'] ??
-                                      true,
-                                  onSelected: (bool selected) => combatNotifier
-                                      .toggleSpecialRule('cleave', selected),
-                                ),
-                              if (combatState.defender!
-                                  .hasSpecialRule('shield'))
-                                FilterChip(
-                                  label: const Text('Shield'),
-                                  selected: combatState
-                                          .specialRulesInEffect['shield'] ??
-                                      true,
-                                  onSelected: (bool selected) => combatNotifier
-                                      .toggleSpecialRule('shield', selected),
-                                ),
-                            ],
-                          ),
-
-                        // Common special rules
-                        Wrap(
-                          spacing: 8,
-                          children: [
-                            FilterChip(
-                              label: const Text('Inspired'),
-                              selected: combatState
-                                      .specialRulesInEffect['inspired'] ??
-                                  false,
-                              onSelected: (bool selected) => combatNotifier
-                                  .toggleSpecialRule('inspired', selected),
-                            ),
-                            FilterChip(
-                              label: const Text('Flurry'),
-                              selected:
-                                  combatState.specialRulesInEffect['flurry'] ??
-                                      false,
-                              onSelected: (bool selected) => combatNotifier
-                                  .toggleSpecialRule('flurry', selected),
-                            ),
-                            FilterChip(
-                              label: const Text('Phalanx'),
-                              selected:
-                                  combatState.specialRulesInEffect['phalanx'] ??
-                                      false,
-                              onSelected: (bool selected) => combatNotifier
-                                  .toggleSpecialRule('phalanx', selected),
-                            ),
-                          ],
-                        ),
-                      ],
+                      // Combat environment and common special rules could go here
+                      // if needed in the future
                     ],
                   ),
                 ),

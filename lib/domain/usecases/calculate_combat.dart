@@ -85,9 +85,9 @@ class CalculateCombat {
       effectiveDefense = max(defenseTarget - cleaveValue, 0);
     }
 
-    // Adjust for flanking and special rules
-    if (isFlank || isRear) {
-      // Flanking ignores shields - simulate by reducing defense
+    // Adjust for flanking/rear attack
+    if (isFlank) {
+      // Flanking/rear attack ignores shields - simulate by reducing defense
       if (defender.hasSpecialRule('shield')) {
         effectiveDefense = max(effectiveDefense - 1, 0);
       }
@@ -114,8 +114,8 @@ class CalculateCombat {
       resolveTarget = 6; // Will always succeed
     }
 
-    // Adjust for flanking
-    if (isFlank || isRear) {
+    // Adjust for flanking/rear attack
+    if (isFlank) {
       // Units attacked from flank/rear must re-roll successful resolve tests
       resolveTarget =
           max(resolveTarget - 1, 0); // Simulate re-rolls by reducing target
