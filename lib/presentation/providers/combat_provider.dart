@@ -107,14 +107,21 @@ class CombatState {
   int get effectiveDefenderStands =>
       numDefenderStands + (defenderCharacter != null ? 1 : 0);
 
-  // Check if regiment can have a character attached (non-monster regiments only)
+  // Check if regiment can have a character attached (non-monster regiments only and not characters)
   bool canAttachCharacterToAttacker() {
-    return attacker != null && attacker!.type != RegimentType.monster;
+    return attacker != null &&
+        attacker!.type != RegimentType.monster &&
+        !attacker!.isCharacter(); // Add this check
   }
 
   bool canAttachCharacterToDefender() {
-    return defender != null && defender!.type != RegimentType.monster;
+    return defender != null &&
+        defender!.type != RegimentType.monster &&
+        !defender!.isCharacter(); // Add this check
   }
+
+  // Add a helper property to check for character vs character mode
+  bool get isCharacterVsCharacterMode => attacker?.isCharacter() == true;
 }
 
 class SavedCalculation {
@@ -151,7 +158,17 @@ class CombatNotifier extends StateNotifier<CombatState> {
   CombatNotifier(this._calculateCombat) : super(CombatState());
 
   void updateAttacker(Regiment attacker) {
-    state = state.copyWith(attacker: attacker);
+    // If new attacker is a character
+    if (attacker.isCharacter()) {
+      // Clear the defender and defender character if set
+      state = state.copyWith(
+        attacker: attacker,
+        defender: null, // Clear defender
+        clearDefenderCharacter: true, // Clear any attached character
+      );
+    } else {
+      state = state.copyWith(attacker: attacker);
+    }
 
     // Auto-select combat mode based on regiment's capabilities
     if (attacker.hasBarrage() &&
@@ -374,13 +391,17 @@ class CombatNotifier extends StateNotifier<CombatState> {
 
   void _recalculate() {
     if (state.attacker != null && state.defender != null) {
+      // Handle character vs character combat differently
+      bool isCharacterVsCharacter =
+          state.attacker!.isCharacter() && state.defender!.isCharacter();
+
       final simulation = _calculateCombat.calculateExpectedResult(
         attacker: state.attacker!,
-        numAttackerStands: state.numAttackerStands,
+        numAttackerStands: isCharacterVsCharacter ? 1 : state.numAttackerStands,
         attackerCharacter:
             state.attackerCharacter, // Add character to calculation
         defender: state.defender!,
-        numDefenderStands: state.numDefenderStands,
+        numDefenderStands: isCharacterVsCharacter ? 1 : state.numDefenderStands,
         defenderCharacter:
             state.defenderCharacter, // Add character to calculation
         isCharge: state.isCharge,

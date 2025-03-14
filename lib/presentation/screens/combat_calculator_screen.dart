@@ -54,6 +54,62 @@ class CombatCalculatorScreen extends ConsumerWidget {
                           style: Theme.of(context).textTheme.titleLarge),
                       const SizedBox(height: 12),
 
+                      // Character vs Character mode indicator
+                      if (combatState.attacker?.isCharacter() == true)
+                        Container(
+                          padding: const EdgeInsets.all(8.0),
+                          margin: const EdgeInsets.only(bottom: 12.0),
+                          decoration: BoxDecoration(
+                            color: Theme.of(context)
+                                .colorScheme
+                                .primaryContainer
+                                .withOpacity(0.3),
+                            borderRadius: BorderRadius.circular(8),
+                            border: Border.all(
+                              color: Theme.of(context)
+                                  .colorScheme
+                                  .primary
+                                  .withOpacity(0.5),
+                            ),
+                          ),
+                          child: Row(
+                            children: [
+                              const Icon(Icons.person, size: 16),
+                              const SizedBox(width: 8),
+                              const Expanded(
+                                child: Text(
+                                  'Character vs Character Mode',
+                                  style: TextStyle(fontWeight: FontWeight.bold),
+                                ),
+                              ),
+                              IconButton(
+                                icon: const Icon(Icons.info_outline, size: 16),
+                                onPressed: () {
+                                  showDialog(
+                                    context: context,
+                                    builder: (context) => AlertDialog(
+                                      title: const Text(
+                                          'Character vs Character Combat'),
+                                      content: const Text(
+                                          'In character vs character mode, combat is resolved differently:\n\n'
+                                          '• Only characters can fight other characters\n'
+                                          '• No stand count selection is needed\n'
+                                          '• Characters cannot have other characters attached to them'),
+                                      actions: [
+                                        TextButton(
+                                          onPressed: () =>
+                                              Navigator.pop(context),
+                                          child: const Text('OK'),
+                                        ),
+                                      ],
+                                    ),
+                                  );
+                                },
+                              ),
+                            ],
+                          ),
+                        ),
+
                       // Attacker selection
                       Row(
                         children: [
@@ -64,7 +120,8 @@ class CombatCalculatorScreen extends ConsumerWidget {
                                   const TextStyle(fontWeight: FontWeight.bold),
                             ),
                           ),
-                          if (combatState.attacker != null)
+                          if (combatState.attacker != null &&
+                              !combatState.attacker!.isCharacter())
                             TargetSelector(
                               selectionLimit: 10,
                               initialValue: combatState.numAttackerStands,
@@ -76,7 +133,9 @@ class CombatCalculatorScreen extends ConsumerWidget {
                             onPressed: () => _selectAttacker(context, ref),
                             child: const Text('Select'),
                           ),
-                          if (combatState.canAttachCharacterToAttacker())
+                          if (combatState.attacker != null &&
+                              !combatState.attacker!.isCharacter() &&
+                              combatState.canAttachCharacterToAttacker())
                             IconButton(
                               icon: const Icon(Icons.person_add),
                               tooltip: combatState.attackerCharacter == null
@@ -176,7 +235,8 @@ class CombatCalculatorScreen extends ConsumerWidget {
                                   const TextStyle(fontWeight: FontWeight.bold),
                             ),
                           ),
-                          if (combatState.defender != null)
+                          if (combatState.defender != null &&
+                              !combatState.defender!.isCharacter())
                             TargetSelector(
                               selectionLimit: 10,
                               initialValue: combatState.numDefenderStands,
@@ -188,7 +248,9 @@ class CombatCalculatorScreen extends ConsumerWidget {
                             onPressed: () => _selectDefender(context, ref),
                             child: const Text('Select'),
                           ),
-                          if (combatState.canAttachCharacterToDefender())
+                          if (combatState.defender != null &&
+                              !combatState.defender!.isCharacter() &&
+                              combatState.canAttachCharacterToDefender())
                             IconButton(
                               icon: const Icon(Icons.person_add),
                               tooltip: combatState.defenderCharacter == null
@@ -265,225 +327,237 @@ class CombatCalculatorScreen extends ConsumerWidget {
                       const SizedBox(height: 8),
 
                       // Combat Mode Selection (Radio buttons)
-                      Row(
-                        children: [
-                          Expanded(
-                            child: RadioListTile<CombatMode>(
-                              title: const Text('Melee Combat'),
-                              groupValue: combatState.combatMode,
-                              value: CombatMode.melee,
-                              onChanged: (CombatMode? value) {
-                                if (value != null) {
-                                  combatNotifier.setCombatMode(value);
-                                }
-                              },
-                              dense: true,
+                      if (!combatState.attacker?.isCharacter() ??
+                          true) // Don't show for character vs character
+                        Row(
+                          children: [
+                            Expanded(
+                              child: RadioListTile<CombatMode>(
+                                title: const Text('Melee Combat'),
+                                groupValue: combatState.combatMode,
+                                value: CombatMode.melee,
+                                onChanged: (CombatMode? value) {
+                                  if (value != null) {
+                                    combatNotifier.setCombatMode(value);
+                                  }
+                                },
+                                dense: true,
+                              ),
                             ),
-                          ),
-                          Expanded(
-                            child: RadioListTile<CombatMode>(
-                              title: const Text('Ranged Combat'),
-                              groupValue: combatState.combatMode,
-                              value: CombatMode.ranged,
-                              onChanged:
-                                  (combatState.attacker?.hasBarrage() ?? false)
-                                      ? (CombatMode? value) {
-                                          if (value != null) {
-                                            combatNotifier.setCombatMode(value);
-                                          }
+                            Expanded(
+                              child: RadioListTile<CombatMode>(
+                                title: const Text('Ranged Combat'),
+                                groupValue: combatState.combatMode,
+                                value: CombatMode.ranged,
+                                onChanged: (combatState.attacker
+                                            ?.hasBarrage() ??
+                                        false)
+                                    ? (CombatMode? value) {
+                                        if (value != null) {
+                                          combatNotifier.setCombatMode(value);
                                         }
-                                      : null,
-                              dense: true,
+                                      }
+                                    : null,
+                                dense: true,
+                              ),
                             ),
-                          ),
-                        ],
-                      ),
+                          ],
+                        ),
 
                       // Divide combat modifiers into two clear sections
-                      Row(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          // Melee combat section
-                          Expanded(
-                            child: Card(
-                              elevation: 1,
-                              color: combatState.combatMode == CombatMode.melee
-                                  ? Theme.of(context).cardColor
-                                  : Colors.grey.shade300,
-                              child: Padding(
-                                padding: const EdgeInsets.all(8.0),
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Text('Melee Options',
-                                        style: Theme.of(context)
-                                            .textTheme
-                                            .titleSmall),
-                                    const SizedBox(height: 4),
-                                    CheckboxListTile(
-                                      title: const Text('Clash'),
-                                      value: combatState.isCharge,
-                                      onChanged: combatState.combatMode ==
-                                              CombatMode.melee
-                                          ? (value) => combatNotifier
-                                              .toggleCharge(value ?? false)
-                                          : null,
-                                      dense: true,
-                                      controlAffinity:
-                                          ListTileControlAffinity.leading,
-                                    ),
-                                    CheckboxListTile(
-                                      title: const Text('Inspired'),
-                                      value: combatState.specialRulesInEffect[
-                                              'inspired'] ??
-                                          false,
-                                      onChanged: combatState.combatMode ==
-                                              CombatMode.melee
-                                          ? (value) =>
-                                              combatNotifier.toggleSpecialRule(
-                                                  'inspired', value ?? false)
-                                          : null,
-                                      dense: true,
-                                      controlAffinity:
-                                          ListTileControlAffinity.leading,
-                                    ),
-                                    CheckboxListTile(
-                                      title: const Text('Impact'),
-                                      value: combatState.isImpact,
-                                      onChanged: combatState.combatMode ==
-                                                  CombatMode.melee &&
-                                              (combatState.attacker
-                                                      ?.hasImpact() ??
-                                                  false)
-                                          ? (value) => combatNotifier
-                                              .toggleImpact(value ?? false)
-                                          : null,
-                                      dense: true,
-                                      controlAffinity:
-                                          ListTileControlAffinity.leading,
-                                    ),
-                                  ],
+                      if (!combatState.attacker?.isCharacter() ??
+                          true) // Don't show for character vs character
+                        Row(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            // Melee combat section
+                            Expanded(
+                              child: Card(
+                                elevation: 1,
+                                color:
+                                    combatState.combatMode == CombatMode.melee
+                                        ? Theme.of(context).cardColor
+                                        : Colors.grey.shade300,
+                                child: Padding(
+                                  padding: const EdgeInsets.all(8.0),
+                                  child: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      Text('Melee Options',
+                                          style: Theme.of(context)
+                                              .textTheme
+                                              .titleSmall),
+                                      const SizedBox(height: 4),
+                                      CheckboxListTile(
+                                        title: const Text('Clash'),
+                                        value: combatState.isCharge,
+                                        onChanged: combatState.combatMode ==
+                                                CombatMode.melee
+                                            ? (value) => combatNotifier
+                                                .toggleCharge(value ?? false)
+                                            : null,
+                                        dense: true,
+                                        controlAffinity:
+                                            ListTileControlAffinity.leading,
+                                      ),
+                                      CheckboxListTile(
+                                        title: const Text('Inspired'),
+                                        value: combatState.specialRulesInEffect[
+                                                'inspired'] ??
+                                            false,
+                                        onChanged: combatState.combatMode ==
+                                                CombatMode.melee
+                                            ? (value) => combatNotifier
+                                                .toggleSpecialRule(
+                                                    'inspired', value ?? false)
+                                            : null,
+                                        dense: true,
+                                        controlAffinity:
+                                            ListTileControlAffinity.leading,
+                                      ),
+                                      CheckboxListTile(
+                                        title: const Text('Impact'),
+                                        value: combatState.isImpact,
+                                        onChanged: combatState.combatMode ==
+                                                    CombatMode.melee &&
+                                                (combatState.attacker
+                                                        ?.hasImpact() ??
+                                                    false)
+                                            ? (value) => combatNotifier
+                                                .toggleImpact(value ?? false)
+                                            : null,
+                                        dense: true,
+                                        controlAffinity:
+                                            ListTileControlAffinity.leading,
+                                      ),
+                                    ],
+                                  ),
                                 ),
                               ),
                             ),
-                          ),
-                          const SizedBox(width: 8),
-                          // Ranged combat section
-                          Expanded(
-                            child: Card(
-                              elevation: 1,
-                              color: combatState.combatMode == CombatMode.ranged
-                                  ? Theme.of(context).cardColor
-                                  : Colors.grey.shade300,
-                              child: Padding(
-                                padding: const EdgeInsets.all(8.0),
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Text('Ranged Options',
-                                        style: Theme.of(context)
-                                            .textTheme
-                                            .titleSmall),
-                                    const SizedBox(height: 4),
-                                    CheckboxListTile(
-                                      title: const Text('Volley'),
-                                      value: combatState.isVolley,
-                                      onChanged: (combatState.attacker
-                                                      ?.hasBarrage() ??
-                                                  false) &&
-                                              combatState.combatMode ==
-                                                  CombatMode.ranged
-                                          ? (value) {
-                                              combatNotifier
-                                                  .toggleVolley(value ?? false);
-                                            }
-                                          : null,
-                                      dense: true,
-                                      controlAffinity:
-                                          ListTileControlAffinity.leading,
-                                    ),
-                                    CheckboxListTile(
-                                      title: const Text('Aimed'),
-                                      value: combatState
-                                              .specialRulesInEffect['aimed'] ??
-                                          false,
-                                      onChanged: combatState.combatMode ==
-                                                  CombatMode.ranged &&
-                                              combatState.isVolley &&
-                                              (combatState.attacker
-                                                      ?.hasBarrage() ??
-                                                  false)
-                                          ? (value) =>
-                                              combatNotifier.toggleSpecialRule(
-                                                  'aimed', value ?? false)
-                                          : null,
-                                      dense: true,
-                                      controlAffinity:
-                                          ListTileControlAffinity.leading,
-                                    ),
-                                    CheckboxListTile(
-                                      title: const Text('Effective Range'),
-                                      value: combatState.isWithinEffectiveRange,
-                                      onChanged: combatState.combatMode ==
-                                                  CombatMode.ranged &&
-                                              combatState.isVolley &&
-                                              (combatState.attacker
-                                                      ?.hasBarrage() ??
-                                                  false)
-                                          ? (value) => combatNotifier
-                                              .toggleWithinEffectiveRange(
-                                                  value ?? false)
-                                          : null,
-                                      dense: true,
-                                      controlAffinity:
-                                          ListTileControlAffinity.leading,
-                                    ),
-                                  ],
+                            const SizedBox(width: 8),
+                            // Ranged combat section
+                            Expanded(
+                              child: Card(
+                                elevation: 1,
+                                color:
+                                    combatState.combatMode == CombatMode.ranged
+                                        ? Theme.of(context).cardColor
+                                        : Colors.grey.shade300,
+                                child: Padding(
+                                  padding: const EdgeInsets.all(8.0),
+                                  child: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      Text('Ranged Options',
+                                          style: Theme.of(context)
+                                              .textTheme
+                                              .titleSmall),
+                                      const SizedBox(height: 4),
+                                      CheckboxListTile(
+                                        title: const Text('Volley'),
+                                        value: combatState.isVolley,
+                                        onChanged: (combatState.attacker
+                                                        ?.hasBarrage() ??
+                                                    false) &&
+                                                combatState.combatMode ==
+                                                    CombatMode.ranged
+                                            ? (value) {
+                                                combatNotifier.toggleVolley(
+                                                    value ?? false);
+                                              }
+                                            : null,
+                                        dense: true,
+                                        controlAffinity:
+                                            ListTileControlAffinity.leading,
+                                      ),
+                                      CheckboxListTile(
+                                        title: const Text('Aimed'),
+                                        value: combatState.specialRulesInEffect[
+                                                'aimed'] ??
+                                            false,
+                                        onChanged: combatState.combatMode ==
+                                                    CombatMode.ranged &&
+                                                combatState.isVolley &&
+                                                (combatState.attacker
+                                                        ?.hasBarrage() ??
+                                                    false)
+                                            ? (value) => combatNotifier
+                                                .toggleSpecialRule(
+                                                    'aimed', value ?? false)
+                                            : null,
+                                        dense: true,
+                                        controlAffinity:
+                                            ListTileControlAffinity.leading,
+                                      ),
+                                      CheckboxListTile(
+                                        title: const Text('Effective Range'),
+                                        value:
+                                            combatState.isWithinEffectiveRange,
+                                        onChanged: combatState.combatMode ==
+                                                    CombatMode.ranged &&
+                                                combatState.isVolley &&
+                                                (combatState.attacker
+                                                        ?.hasBarrage() ??
+                                                    false)
+                                            ? (value) => combatNotifier
+                                                .toggleWithinEffectiveRange(
+                                                    value ?? false)
+                                            : null,
+                                        dense: true,
+                                        controlAffinity:
+                                            ListTileControlAffinity.leading,
+                                      ),
+                                    ],
+                                  ),
                                 ),
                               ),
                             ),
-                          ),
-                        ],
-                      ),
+                          ],
+                        ),
 
                       const SizedBox(height: 8),
 
                       // Flank/Rear modifier (applies to both melee and ranged)
-                      Card(
-                        elevation: 1,
-                        child: Padding(
-                          padding: const EdgeInsets.all(8.0),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text('Position Modifiers',
-                                  style:
-                                      Theme.of(context).textTheme.titleSmall),
-                              CheckboxListTile(
-                                title: const Text('Flank/Rear Attack'),
-                                value:
-                                    combatState.isFlank || combatState.isRear,
-                                onChanged: (value) {
-                                  if (value != null) {
-                                    if (value) {
-                                      // Enable flank, disable rear
-                                      combatNotifier.toggleFlank(true);
-                                      combatNotifier.toggleRear(false);
-                                    } else {
-                                      // Disable both
-                                      combatNotifier.toggleFlank(false);
-                                      combatNotifier.toggleRear(false);
+                      if (!combatState.attacker?.isCharacter() ??
+                          true) // Don't show for character vs character
+                        Card(
+                          elevation: 1,
+                          child: Padding(
+                            padding: const EdgeInsets.all(8.0),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text('Position Modifiers',
+                                    style:
+                                        Theme.of(context).textTheme.titleSmall),
+                                CheckboxListTile(
+                                  title: const Text('Flank/Rear Attack'),
+                                  value:
+                                      combatState.isFlank || combatState.isRear,
+                                  onChanged: (value) {
+                                    if (value != null) {
+                                      if (value) {
+                                        // Enable flank, disable rear
+                                        combatNotifier.toggleFlank(true);
+                                        combatNotifier.toggleRear(false);
+                                      } else {
+                                        // Disable both
+                                        combatNotifier.toggleFlank(false);
+                                        combatNotifier.toggleRear(false);
+                                      }
                                     }
-                                  }
-                                },
-                                dense: true,
-                                controlAffinity:
-                                    ListTileControlAffinity.leading,
-                              ),
-                            ],
+                                  },
+                                  dense: true,
+                                  controlAffinity:
+                                      ListTileControlAffinity.leading,
+                                ),
+                              ],
+                            ),
                           ),
                         ),
-                      ),
                     ],
                   ),
                 ),
@@ -528,7 +602,9 @@ class CombatCalculatorScreen extends ConsumerWidget {
                     ),
                     // Total destruction
                     chart.Threshold(
-                      value: combatState.numDefenderStands *
+                      value: (combatState.defender!.isCharacter()
+                              ? 1
+                              : combatState.numDefenderStands) *
                           combatState.defender!.wounds,
                       label: 'Destroyed',
                       color: Colors.deepPurple,
@@ -604,11 +680,13 @@ class CombatCalculatorScreen extends ConsumerWidget {
                         _buildSummaryRow(
                           context,
                           'Destruction Probability:',
-                          '${(combatState.simulation!.getProbabilityOfLosingAtLeast(combatState.numDefenderStands) * 100).toStringAsFixed(1)}%',
+                          '${(combatState.simulation!.getProbabilityOfLosingAtLeast(combatState.defender!.isCharacter() ? 1 : combatState.numDefenderStands) * 100).toStringAsFixed(1)}%',
                         ),
                         // Show effective stand counts when characters are attached
                         if (combatState.attackerCharacter != null ||
-                            combatState.defenderCharacter != null) ...[
+                            combatState.defenderCharacter != null ||
+                            combatState.attacker?.isCharacter() == true ||
+                            combatState.defender?.isCharacter() == true) ...[
                           const SizedBox(height: 8),
                           const Divider(),
                           const SizedBox(height: 8),
@@ -765,13 +843,12 @@ class CombatCalculatorScreen extends ConsumerWidget {
                 MaterialPageRoute(
                   builder: (context) => UnitSelectionScreen(
                     faction: 'dweghom',
-                    initialFilter: UnitFilter.regimentsOnly,
-                    title: 'Select Dweghom Regiment',
+                    initialFilter: UnitFilter
+                        .all, // Changed from regimentsOnly to allow all units
+                    title: 'Select Dweghom Unit',
                     onUnitSelected: (regiment) {
-                      // Skip character regiments when selecting the main regiment
-                      if (!regiment.isCharacter()) {
-                        combatNotifier.updateAttacker(regiment);
-                      }
+                      // Allow characters to be selected as attackers (removed the character check)
+                      combatNotifier.updateAttacker(regiment);
                       Navigator.pop(context);
                     },
                   ),
@@ -789,13 +866,11 @@ class CombatCalculatorScreen extends ConsumerWidget {
                 MaterialPageRoute(
                   builder: (context) => UnitSelectionScreen(
                     faction: 'hundred_kingdoms',
-                    initialFilter: UnitFilter.regimentsOnly,
-                    title: 'Select Hundred Kingdoms Regiment',
+                    initialFilter: UnitFilter.all, // Changed from regimentsOnly
+                    title: 'Select Hundred Kingdoms Unit',
                     onUnitSelected: (regiment) {
-                      // Skip character regiments when selecting the main regiment
-                      if (!regiment.isCharacter()) {
-                        combatNotifier.updateAttacker(regiment);
-                      }
+                      // Allow characters to be selected as attackers
+                      combatNotifier.updateAttacker(regiment);
                       Navigator.pop(context);
                     },
                   ),
@@ -813,13 +888,11 @@ class CombatCalculatorScreen extends ConsumerWidget {
                 MaterialPageRoute(
                   builder: (context) => UnitSelectionScreen(
                     faction: 'nords',
-                    initialFilter: UnitFilter.regimentsOnly,
-                    title: 'Select Nords Regiment',
+                    initialFilter: UnitFilter.all, // Changed from regimentsOnly
+                    title: 'Select Nords Unit',
                     onUnitSelected: (regiment) {
-                      // Skip character regiments when selecting the main regiment
-                      if (!regiment.isCharacter()) {
-                        combatNotifier.updateAttacker(regiment);
-                      }
+                      // Allow characters to be selected as attackers
+                      combatNotifier.updateAttacker(regiment);
                       Navigator.pop(context);
                     },
                   ),
@@ -887,6 +960,21 @@ class CombatCalculatorScreen extends ConsumerWidget {
 
   void _selectDefender(BuildContext context, WidgetRef ref) async {
     final combatNotifier = ref.read(combatProvider.notifier);
+    final combatState = ref.read(combatProvider);
+
+    // If attacker is a character, only allow character selection for defender
+    final bool characterVsCharacterMode =
+        combatState.attacker?.isCharacter() ?? false;
+    final UnitFilter initialFilter = characterVsCharacterMode
+        ? UnitFilter.charactersOnly
+        : UnitFilter.regimentsOnly;
+    final Set<UnitFilter> allowedFilters = characterVsCharacterMode
+        ? {UnitFilter.charactersOnly} // Only show characters
+        : {
+            UnitFilter.all,
+            UnitFilter.regimentsOnly,
+            UnitFilter.charactersOnly
+          }; // Show all
 
     showModalBottomSheet(
       context: context,
@@ -903,14 +991,25 @@ class CombatCalculatorScreen extends ConsumerWidget {
                 MaterialPageRoute(
                   builder: (context) => UnitSelectionScreen(
                     faction: 'dweghom',
-                    initialFilter: UnitFilter.regimentsOnly,
-                    title: 'Select Dweghom Regiment',
+                    initialFilter: initialFilter,
+                    allowedFilters:
+                        allowedFilters, // Only allow appropriate filters
+                    title:
+                        'Select Dweghom ${characterVsCharacterMode ? "Character" : "Regiment"}',
                     onUnitSelected: (regiment) {
-                      // Skip character regiments when selecting the main regiment
-                      if (!regiment.isCharacter()) {
+                      // Ensure defender type matches attacker type in character vs character mode
+                      if (characterVsCharacterMode && !regiment.isCharacter()) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(
+                            content: Text(
+                                'When attacker is a character, defender must also be a character'),
+                            backgroundColor: Colors.red,
+                          ),
+                        );
+                      } else {
                         combatNotifier.updateDefender(regiment);
+                        Navigator.pop(context);
                       }
-                      Navigator.pop(context);
                     },
                   ),
                 ),
@@ -927,14 +1026,23 @@ class CombatCalculatorScreen extends ConsumerWidget {
                 MaterialPageRoute(
                   builder: (context) => UnitSelectionScreen(
                     faction: 'hundred_kingdoms',
-                    initialFilter: UnitFilter.regimentsOnly,
-                    title: 'Select Hundred Kingdoms Regiment',
+                    initialFilter: initialFilter,
+                    allowedFilters: allowedFilters,
+                    title:
+                        'Select Hundred Kingdoms ${characterVsCharacterMode ? "Character" : "Regiment"}',
                     onUnitSelected: (regiment) {
-                      // Skip character regiments when selecting the main regiment
-                      if (!regiment.isCharacter()) {
+                      if (characterVsCharacterMode && !regiment.isCharacter()) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(
+                            content: Text(
+                                'When attacker is a character, defender must also be a character'),
+                            backgroundColor: Colors.red,
+                          ),
+                        );
+                      } else {
                         combatNotifier.updateDefender(regiment);
+                        Navigator.pop(context);
                       }
-                      Navigator.pop(context);
                     },
                   ),
                 ),
@@ -951,14 +1059,23 @@ class CombatCalculatorScreen extends ConsumerWidget {
                 MaterialPageRoute(
                   builder: (context) => UnitSelectionScreen(
                     faction: 'nords',
-                    initialFilter: UnitFilter.regimentsOnly,
-                    title: 'Select Nords Regiment',
+                    initialFilter: initialFilter,
+                    allowedFilters: allowedFilters,
+                    title:
+                        'Select Nords ${characterVsCharacterMode ? "Character" : "Regiment"}',
                     onUnitSelected: (regiment) {
-                      // Skip character regiments when selecting the main regiment
-                      if (!regiment.isCharacter()) {
+                      if (characterVsCharacterMode && !regiment.isCharacter()) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(
+                            content: Text(
+                                'When attacker is a character, defender must also be a character'),
+                            backgroundColor: Colors.red,
+                          ),
+                        );
+                      } else {
                         combatNotifier.updateDefender(regiment);
+                        Navigator.pop(context);
                       }
-                      Navigator.pop(context);
                     },
                   ),
                 ),
@@ -1024,6 +1141,21 @@ class CombatCalculatorScreen extends ConsumerWidget {
   }
 
   void _showMoreFactions(BuildContext context, WidgetRef ref, bool isAttacker) {
+    final combatState = ref.read(combatProvider);
+    // If attacker is a character, only allow character selection for defender
+    final bool characterVsCharacterMode =
+        !isAttacker && (combatState.attacker?.isCharacter() ?? false);
+    final UnitFilter initialFilter = characterVsCharacterMode
+        ? UnitFilter.charactersOnly
+        : UnitFilter.regimentsOnly;
+    final Set<UnitFilter> allowedFilters = characterVsCharacterMode
+        ? {UnitFilter.charactersOnly} // Only show characters
+        : {
+            UnitFilter.all,
+            UnitFilter.regimentsOnly,
+            UnitFilter.charactersOnly
+          }; // Show all
+
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
@@ -1041,11 +1173,21 @@ class CombatCalculatorScreen extends ConsumerWidget {
                     MaterialPageRoute(
                       builder: (context) => UnitSelectionScreen(
                         faction: 'old_dominion',
-                        initialFilter: UnitFilter.regimentsOnly,
-                        title: 'Select Old Dominion Regiment',
+                        initialFilter: initialFilter,
+                        allowedFilters: allowedFilters,
+                        title:
+                            'Select Old Dominion ${characterVsCharacterMode ? "Character" : "Regiment"}',
                         onUnitSelected: (regiment) {
-                          // Skip character regiments when selecting the main regiment
-                          if (!regiment.isCharacter()) {
+                          if (characterVsCharacterMode &&
+                              !regiment.isCharacter()) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(
+                                content: Text(
+                                    'When attacker is a character, defender must also be a character'),
+                                backgroundColor: Colors.red,
+                              ),
+                            );
+                          } else {
                             if (isAttacker) {
                               ref
                                   .read(combatProvider.notifier)
@@ -1073,11 +1215,21 @@ class CombatCalculatorScreen extends ConsumerWidget {
                     MaterialPageRoute(
                       builder: (context) => UnitSelectionScreen(
                         faction: 'spires',
-                        initialFilter: UnitFilter.regimentsOnly,
-                        title: 'Select Spires Regiment',
+                        initialFilter: initialFilter,
+                        allowedFilters: allowedFilters,
+                        title:
+                            'Select Spires ${characterVsCharacterMode ? "Character" : "Regiment"}',
                         onUnitSelected: (regiment) {
-                          // Skip character regiments when selecting the main regiment
-                          if (!regiment.isCharacter()) {
+                          if (characterVsCharacterMode &&
+                              !regiment.isCharacter()) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(
+                                content: Text(
+                                    'When attacker is a character, defender must also be a character'),
+                                backgroundColor: Colors.red,
+                              ),
+                            );
+                          } else {
                             if (isAttacker) {
                               ref
                                   .read(combatProvider.notifier)

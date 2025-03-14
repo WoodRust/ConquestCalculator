@@ -63,47 +63,39 @@ class _UnitSelectionScreenState extends ConsumerState<UnitSelectionScreen> {
     final regimentsAsyncValue =
         ref.watch(regimentsByFactionProvider(widget.faction));
 
+    // Add relevant context for character-only selection mode
+    final bool isCharactersOnlyMode =
+        _currentFilter == UnitFilter.charactersOnly ||
+            (widget.allowedFilters.length == 1 &&
+                widget.allowedFilters.contains(UnitFilter.charactersOnly));
+
     return Scaffold(
       appBar: AppBar(
         title: Text(widget.title ?? 'Select ${widget.faction} Unit'),
-        bottom: PreferredSize(
-          preferredSize: const Size.fromHeight(48.0),
-          child: Padding(
-            padding:
-                const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
-            child: TextField(
-              controller: _searchController,
-              decoration: InputDecoration(
-                hintText: 'Search units...',
-                prefixIcon: const Icon(Icons.search),
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(8.0),
-                  borderSide: BorderSide.none,
-                ),
-                filled: true,
-                fillColor: Theme.of(context).colorScheme.surface,
-                contentPadding: const EdgeInsets.symmetric(vertical: 0),
-                suffixIcon: _searchQuery.isNotEmpty
-                    ? IconButton(
-                        icon: const Icon(Icons.clear),
-                        onPressed: () {
-                          setState(() {
-                            _searchController.clear();
-                            _searchQuery = '';
-                          });
-                        },
-                      )
-                    : null,
-              ),
-              onChanged: (value) {
-                setState(() {
-                  _searchQuery = value.toLowerCase();
-                });
+        // Add an info button with explanation when in characters-only mode
+        actions: [
+          if (isCharactersOnlyMode)
+            IconButton(
+              icon: const Icon(Icons.info_outline),
+              tooltip: 'Character Selection Info',
+              onPressed: () {
+                showDialog(
+                  context: context,
+                  builder: (context) => AlertDialog(
+                    title: const Text('Character Selection'),
+                    content: const Text(
+                        'When selecting a character as your attacker, you can only choose another character as the defender.\n\n'
+                        'Character vs character combat is resolved differently from regular combat between regiments.'),
+                    actions: [
+                      TextButton(
+                        onPressed: () => Navigator.pop(context),
+                        child: const Text('OK'),
+                      ),
+                    ],
+                  ),
+                );
               },
             ),
-          ),
-        ),
-        actions: [
           PopupMenuButton<UnitFilter>(
             icon: const Icon(Icons.filter_list),
             tooltip: 'Filter units',
@@ -131,6 +123,69 @@ class _UnitSelectionScreenState extends ConsumerState<UnitSelectionScreen> {
             ],
           ),
         ],
+        // Add a character mode indicator when appropriate
+        bottom: PreferredSize(
+          preferredSize: Size.fromHeight(isCharactersOnlyMode ? 76.0 : 48.0),
+          child: Column(
+            children: [
+              if (isCharactersOnlyMode)
+                Container(
+                  color: Theme.of(context)
+                      .colorScheme
+                      .primaryContainer
+                      .withOpacity(0.3),
+                  padding:
+                      const EdgeInsets.symmetric(vertical: 4, horizontal: 16),
+                  child: Row(
+                    children: [
+                      const Icon(Icons.person, size: 16),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: Text(
+                          'Character vs Character Mode',
+                          style: const TextStyle(fontWeight: FontWeight.bold),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              Padding(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+                child: TextField(
+                  controller: _searchController,
+                  decoration: InputDecoration(
+                    hintText: 'Search units...',
+                    prefixIcon: const Icon(Icons.search),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(8.0),
+                      borderSide: BorderSide.none,
+                    ),
+                    filled: true,
+                    fillColor: Theme.of(context).colorScheme.surface,
+                    contentPadding: const EdgeInsets.symmetric(vertical: 0),
+                    suffixIcon: _searchQuery.isNotEmpty
+                        ? IconButton(
+                            icon: const Icon(Icons.clear),
+                            onPressed: () {
+                              setState(() {
+                                _searchController.clear();
+                                _searchQuery = '';
+                              });
+                            },
+                          )
+                        : null,
+                  ),
+                  onChanged: (value) {
+                    setState(() {
+                      _searchQuery = value.toLowerCase();
+                    });
+                  },
+                ),
+              ),
+            ],
+          ),
+        ),
       ),
       body: regimentsAsyncValue.when(
         data: (regiments) {
@@ -243,8 +298,22 @@ class _UnitSelectionScreenState extends ConsumerState<UnitSelectionScreen> {
   Widget _buildUnitCard(BuildContext context, Regiment regiment) {
     final bool isCharacter = regiment.isCharacter();
 
+    // Use a more distinct visual style for character cards
     return Card(
       margin: const EdgeInsets.symmetric(vertical: 4, horizontal: 8),
+      // For characters, use a slightly different card color
+      color: isCharacter
+          ? Theme.of(context).colorScheme.primaryContainer.withOpacity(0.2)
+          : null,
+      shape: isCharacter
+          ? RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(8),
+              side: BorderSide(
+                color: Theme.of(context).colorScheme.primary,
+                width: 1.5,
+              ),
+            )
+          : null,
       child: ListTile(
         leading: Badge(
           isLabelVisible: isCharacter,
