@@ -72,8 +72,9 @@ class FactionGridDialog extends StatelessWidget {
               children: factions.map((faction) {
                 return InkWell(
                   onTap: () {
+                    // Only call the callback, no navigation here
+                    // The dialog dismissal is handled in showFactionSelectionDialog
                     onFactionSelected(faction['name'] as String);
-                    Navigator.of(context).pop();
                   },
                   borderRadius: BorderRadius.circular(8),
                   child: Ink(

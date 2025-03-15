@@ -16,18 +16,25 @@ void showFactionSelectionDialog({
     context: context,
     builder: (context) => FactionGridDialog(
       onFactionSelected: (faction) {
-        // If callback is provided, use it
-        if (onFactionSelected != null) {
-          onFactionSelected(faction);
-        } else {
-          // Otherwise update the provider directly
-          final combatNotifier = ref.read(combatProvider.notifier);
-          if (isAttacker) {
-            combatNotifier.setAttackerFaction(faction);
+        // Dismiss the dialog first
+        Navigator.of(context).pop();
+
+        // Use a microtask to ensure the dialog dismissal is processed
+        // before continuing with navigation
+        Future.microtask(() {
+          // If callback is provided, use it
+          if (onFactionSelected != null) {
+            onFactionSelected(faction);
           } else {
-            combatNotifier.setDefenderFaction(faction);
+            // Otherwise update the provider directly
+            final combatNotifier = ref.read(combatProvider.notifier);
+            if (isAttacker) {
+              combatNotifier.setAttackerFaction(faction);
+            } else {
+              combatNotifier.setDefenderFaction(faction);
+            }
           }
-        }
+        });
       },
     ),
   );
