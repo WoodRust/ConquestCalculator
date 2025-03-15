@@ -4,7 +4,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../providers/combat_provider.dart';
 import '../widgets/unit_selection_panel.dart';
-import '../widgets/combat_modifiers_panel.dart';
 import '../widgets/combat_results_panel.dart';
 import '../widgets/saved_calculations_panel.dart';
 
@@ -45,15 +44,8 @@ class CombatCalculatorScreen extends ConsumerWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Unit Selection Panel
+              // Unit Selection Panel (now includes combat modifiers)
               const UnitSelectionPanel(),
-
-              const SizedBox(height: 24),
-
-              // Combat Modifiers Panel
-              const CombatModifiersPanel(),
-
-              const SizedBox(height: 24),
 
               // Combat Results Panel
               const CombatResultsPanel(),

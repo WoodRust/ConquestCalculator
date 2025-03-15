@@ -1,7 +1,9 @@
 // lib/presentation/widgets/unit_selection/duel_mode_toggle.dart
 import 'package:flutter/material.dart';
+import 'package:flutter/widgets.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../providers/combat_provider.dart';
+import '../../themes/app_theme.dart';
 
 /// Toggles between normal and duel mode with appropriate feedback
 class DuelModeToggle extends ConsumerWidget {
@@ -14,7 +16,16 @@ class DuelModeToggle extends ConsumerWidget {
 
     return Row(
       children: [
-        const Text('Duel'),
+        Text(
+          'Duel',
+          style: TextStyle(
+            color: combatState.isDuelMode
+                ? AppTheme.claudePrimary
+                : AppTheme.claudeSubtleText,
+            fontWeight:
+                combatState.isDuelMode ? FontWeight.w600 : FontWeight.normal,
+          ),
+        ),
         const SizedBox(width: 4),
         Switch(
           value: combatState.isDuelMode,
@@ -22,7 +33,14 @@ class DuelModeToggle extends ConsumerWidget {
             combatNotifier.toggleDuelMode(value);
             _showDuelModeToggleMessage(context, value);
           },
-          activeColor: Theme.of(context).colorScheme.primary,
+          activeColor: AppTheme.claudePrimary,
+          trackColor: WidgetStateProperty.resolveWith<Color>((states) {
+            if (states.contains(WidgetState.selected)) {
+              return AppTheme.claudePrimary
+                  .withAlpha(128); // Using withAlpha instead of withOpacity
+            }
+            return Colors.grey.shade300;
+          }),
         ),
       ],
     );
@@ -47,9 +65,8 @@ class DuelModeToggle extends ConsumerWidget {
             ),
           ],
         ),
-        backgroundColor: isDuelMode
-            ? Theme.of(context).colorScheme.primary
-            : Theme.of(context).colorScheme.secondary,
+        backgroundColor:
+            isDuelMode ? AppTheme.claudePrimary : Colors.grey.shade700,
         duration: const Duration(seconds: 3),
         behavior: SnackBarBehavior.floating,
         shape: RoundedRectangleBorder(
@@ -67,27 +84,40 @@ class CharacterModeIndicator extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.all(8.0),
-      margin: const EdgeInsets.only(bottom: 12.0),
       decoration: BoxDecoration(
-        color: Theme.of(context).colorScheme.primaryContainer.withOpacity(0.3),
+        color: AppTheme.claudeSurface,
         borderRadius: BorderRadius.circular(8),
         border: Border.all(
-          color: Theme.of(context).colorScheme.primary.withOpacity(0.5),
+          color: AppTheme.claudeBorder,
         ),
       ),
+      padding: const EdgeInsets.all(12.0),
+      margin: const EdgeInsets.only(bottom: 16.0),
       child: Row(
         children: [
-          const Icon(Icons.person, size: 16),
+          Icon(
+            Icons.person,
+            size: 16,
+            color: AppTheme.claudePrimary,
+          ),
           const SizedBox(width: 8),
           const Expanded(
             child: Text(
               'Character vs Character Mode',
-              style: TextStyle(fontWeight: FontWeight.bold),
+              style: TextStyle(
+                fontWeight: FontWeight.w600,
+                color: AppTheme.claudePrimary,
+              ),
             ),
           ),
           IconButton(
-            icon: const Icon(Icons.info_outline, size: 16),
+            icon: Icon(
+              Icons.info_outline,
+              size: 16,
+              color: AppTheme.claudeSubtleText,
+            ),
+            padding: EdgeInsets.zero,
+            constraints: const BoxConstraints(),
             onPressed: () {
               showDialog(
                 context: context,
@@ -98,10 +128,18 @@ class CharacterModeIndicator extends StatelessWidget {
                       '• Only characters can fight other characters\n'
                       '• No stand count selection is needed\n'
                       '• Characters cannot have other characters attached to them'),
+                  backgroundColor: AppTheme.claudeCardSurface,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(8),
+                    side: const BorderSide(color: AppTheme.claudeBorder),
+                  ),
                   actions: [
                     TextButton(
                       onPressed: () => Navigator.pop(context),
                       child: const Text('OK'),
+                      style: TextButton.styleFrom(
+                        foregroundColor: AppTheme.claudePrimary,
+                      ),
                     ),
                   ],
                 ),
