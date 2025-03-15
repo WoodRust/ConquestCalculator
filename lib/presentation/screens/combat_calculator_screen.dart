@@ -60,13 +60,14 @@ class CombatCalculatorScreen extends ConsumerWidget {
                             children: [
                               const Text('Duel'),
                               const SizedBox(width: 4),
-                              Checkbox(
+                              Switch(
                                 value: combatState.isDuelMode,
                                 onChanged: (value) {
-                                  if (value != null) {
-                                    combatNotifier.toggleDuelMode(value);
-                                  }
+                                  combatNotifier.toggleDuelMode(value);
+                                  _showDuelModeToggleMessage(context, value);
                                 },
+                                activeColor:
+                                    Theme.of(context).colorScheme.primary,
                               ),
                             ],
                           ),
@@ -132,41 +133,67 @@ class CombatCalculatorScreen extends ConsumerWidget {
                         ),
 
                       // Attacker selection
-                      Row(
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Expanded(
-                            child: Text(
-                              'Attacker: ${combatState.attacker?.name ?? 'Select a regiment'}',
-                              style:
-                                  const TextStyle(fontWeight: FontWeight.bold),
-                            ),
+                          Row(
+                            children: [
+                              Expanded(
+                                child: AnimatedContainer(
+                                  duration: const Duration(milliseconds: 300),
+                                  padding: const EdgeInsets.symmetric(
+                                      horizontal: 8, vertical: 6),
+                                  decoration: BoxDecoration(
+                                    color: combatState
+                                            .selectionResetDueToModeChange
+                                        ? Theme.of(context)
+                                            .colorScheme
+                                            .errorContainer
+                                            .withOpacity(0.3)
+                                        : Colors.transparent,
+                                    borderRadius: BorderRadius.circular(4),
+                                  ),
+                                  child: Text(
+                                    // Absolutely ensure we display "Select a regiment" when null
+                                    'Attacker: ${combatState.attacker?.name ?? "Select a regiment"}',
+                                    style: TextStyle(
+                                      fontWeight: FontWeight.bold,
+                                      color: combatState
+                                              .selectionResetDueToModeChange
+                                          ? Theme.of(context).colorScheme.error
+                                          : null,
+                                    ),
+                                  ),
+                                ),
+                              ),
+                              if (combatState.attacker != null &&
+                                  !combatState.attacker!.isCharacter() &&
+                                  !combatState.isDuelMode)
+                                TargetSelector(
+                                  selectionLimit: 10,
+                                  initialValue: combatState.numAttackerStands,
+                                  onChanged: (value) => combatNotifier
+                                      .updateAttackerStands(value),
+                                ),
+                              const SizedBox(width: 8),
+                              ElevatedButton(
+                                onPressed: () => _selectAttacker(context, ref),
+                                child: const Text('Select'),
+                              ),
+                              if (combatState.attacker != null &&
+                                  !combatState.attacker!.isCharacter() &&
+                                  combatState.canAttachCharacterToAttacker() &&
+                                  !combatState.isDuelMode)
+                                IconButton(
+                                  icon: const Icon(Icons.person_add),
+                                  tooltip: combatState.attackerCharacter == null
+                                      ? 'Add character stand'
+                                      : 'Change character stand',
+                                  onPressed: () =>
+                                      _selectAttackerCharacter(context, ref),
+                                ),
+                            ],
                           ),
-                          if (combatState.attacker != null &&
-                              !combatState.attacker!.isCharacter() &&
-                              !combatState.isDuelMode)
-                            TargetSelector(
-                              selectionLimit: 10,
-                              initialValue: combatState.numAttackerStands,
-                              onChanged: (value) =>
-                                  combatNotifier.updateAttackerStands(value),
-                            ),
-                          const SizedBox(width: 8),
-                          ElevatedButton(
-                            onPressed: () => _selectAttacker(context, ref),
-                            child: const Text('Select'),
-                          ),
-                          if (combatState.attacker != null &&
-                              !combatState.attacker!.isCharacter() &&
-                              combatState.canAttachCharacterToAttacker() &&
-                              !combatState.isDuelMode)
-                            IconButton(
-                              icon: const Icon(Icons.person_add),
-                              tooltip: combatState.attackerCharacter == null
-                                  ? 'Add character stand'
-                                  : 'Change character stand',
-                              onPressed: () =>
-                                  _selectAttackerCharacter(context, ref),
-                            ),
                         ],
                       ),
 
@@ -249,41 +276,67 @@ class CombatCalculatorScreen extends ConsumerWidget {
                       const SizedBox(height: 16),
 
                       // Defender selection
-                      Row(
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Expanded(
-                            child: Text(
-                              'Defender: ${combatState.defender?.name ?? 'Select a regiment'}',
-                              style:
-                                  const TextStyle(fontWeight: FontWeight.bold),
-                            ),
+                          Row(
+                            children: [
+                              Expanded(
+                                child: AnimatedContainer(
+                                  duration: const Duration(milliseconds: 300),
+                                  padding: const EdgeInsets.symmetric(
+                                      horizontal: 8, vertical: 6),
+                                  decoration: BoxDecoration(
+                                    color: combatState
+                                            .selectionResetDueToModeChange
+                                        ? Theme.of(context)
+                                            .colorScheme
+                                            .errorContainer
+                                            .withOpacity(0.3)
+                                        : Colors.transparent,
+                                    borderRadius: BorderRadius.circular(4),
+                                  ),
+                                  child: Text(
+                                    // Absolutely ensure we display "Select a regiment" when null
+                                    'Defender: ${combatState.defender?.name ?? "Select a regiment"}',
+                                    style: TextStyle(
+                                      fontWeight: FontWeight.bold,
+                                      color: combatState
+                                              .selectionResetDueToModeChange
+                                          ? Theme.of(context).colorScheme.error
+                                          : null,
+                                    ),
+                                  ),
+                                ),
+                              ),
+                              if (combatState.defender != null &&
+                                  !combatState.defender!.isCharacter() &&
+                                  !combatState.isDuelMode)
+                                TargetSelector(
+                                  selectionLimit: 10,
+                                  initialValue: combatState.numDefenderStands,
+                                  onChanged: (value) => combatNotifier
+                                      .updateDefenderStands(value),
+                                ),
+                              const SizedBox(width: 8),
+                              ElevatedButton(
+                                onPressed: () => _selectDefender(context, ref),
+                                child: const Text('Select'),
+                              ),
+                              if (combatState.defender != null &&
+                                  !combatState.defender!.isCharacter() &&
+                                  combatState.canAttachCharacterToDefender() &&
+                                  !combatState.isDuelMode)
+                                IconButton(
+                                  icon: const Icon(Icons.person_add),
+                                  tooltip: combatState.defenderCharacter == null
+                                      ? 'Add character stand'
+                                      : 'Change character stand',
+                                  onPressed: () =>
+                                      _selectDefenderCharacter(context, ref),
+                                ),
+                            ],
                           ),
-                          if (combatState.defender != null &&
-                              !combatState.defender!.isCharacter() &&
-                              !combatState.isDuelMode)
-                            TargetSelector(
-                              selectionLimit: 10,
-                              initialValue: combatState.numDefenderStands,
-                              onChanged: (value) =>
-                                  combatNotifier.updateDefenderStands(value),
-                            ),
-                          const SizedBox(width: 8),
-                          ElevatedButton(
-                            onPressed: () => _selectDefender(context, ref),
-                            child: const Text('Select'),
-                          ),
-                          if (combatState.defender != null &&
-                              !combatState.defender!.isCharacter() &&
-                              combatState.canAttachCharacterToDefender() &&
-                              !combatState.isDuelMode)
-                            IconButton(
-                              icon: const Icon(Icons.person_add),
-                              tooltip: combatState.defenderCharacter == null
-                                  ? 'Add character stand'
-                                  : 'Change character stand',
-                              onPressed: () =>
-                                  _selectDefenderCharacter(context, ref),
-                            ),
                         ],
                       ),
 
@@ -817,6 +870,37 @@ class CombatCalculatorScreen extends ConsumerWidget {
     if (probability < 0.5) return Colors.orange;
     if (probability < 0.75) return Colors.deepOrange;
     return Colors.red;
+  }
+
+  void _showDuelModeToggleMessage(BuildContext context, bool isDuelMode) {
+    ScaffoldMessenger.of(context)
+        .clearSnackBars(); // Clear any existing messages
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Row(
+          children: [
+            Icon(isDuelMode ? Icons.person : Icons.people, color: Colors.white),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Text(
+                isDuelMode
+                    ? 'Switched to Duel Mode. All selections have been reset.'
+                    : 'Exited Duel Mode. All selections have been reset.',
+                style: const TextStyle(fontWeight: FontWeight.bold),
+              ),
+            ),
+          ],
+        ),
+        backgroundColor: isDuelMode
+            ? Theme.of(context).colorScheme.primary
+            : Theme.of(context).colorScheme.secondary,
+        duration: const Duration(seconds: 3),
+        behavior: SnackBarBehavior.floating,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(8),
+        ),
+      ),
+    );
   }
 
   void _showSaveDialog(BuildContext context, CombatNotifier notifier) {

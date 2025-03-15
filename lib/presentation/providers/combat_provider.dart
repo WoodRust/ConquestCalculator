@@ -12,10 +12,10 @@ enum CombatMode { melee, ranged }
 class CombatState {
   final Regiment? attacker;
   final int numAttackerStands;
-  final Regiment? attackerCharacter; // Added: character attached to attacker
+  final Regiment? attackerCharacter;
   final Regiment? defender;
   final int numDefenderStands;
-  final Regiment? defenderCharacter; // Added: character attached to defender
+  final Regiment? defenderCharacter;
   final bool isCharge;
   final bool isImpact;
   final bool isFlank;
@@ -28,15 +28,16 @@ class CombatState {
   final List<SavedCalculation> savedCalculations;
   final bool showCumulativeDistribution;
   final CombatMode combatMode;
-  final bool isDuelMode; // Added: flag for duel mode
+  final bool isDuelMode;
+  final bool selectionResetDueToModeChange; // New flag for visual feedback
 
   CombatState({
     this.attacker,
     this.numAttackerStands = 3,
-    this.attackerCharacter, // Added
+    this.attackerCharacter,
     this.defender,
     this.numDefenderStands = 3,
-    this.defenderCharacter, // Added
+    this.defenderCharacter,
     this.isCharge = false,
     this.isImpact = false,
     this.isFlank = false,
@@ -49,7 +50,8 @@ class CombatState {
     this.savedCalculations = const [],
     this.showCumulativeDistribution = false,
     this.combatMode = CombatMode.melee,
-    this.isDuelMode = false, // Added with default value false
+    this.isDuelMode = false,
+    this.selectionResetDueToModeChange = false, // Initialize with false
   });
 
   CombatState copyWith({
@@ -74,7 +76,8 @@ class CombatState {
     List<SavedCalculation>? savedCalculations,
     bool? showCumulativeDistribution,
     CombatMode? combatMode,
-    bool? isDuelMode, // Added
+    bool? isDuelMode,
+    bool? selectionResetDueToModeChange, // Added to copyWith
   }) {
     return CombatState(
       attacker: attacker ?? this.attacker,
@@ -101,7 +104,9 @@ class CombatState {
       showCumulativeDistribution:
           showCumulativeDistribution ?? this.showCumulativeDistribution,
       combatMode: combatMode ?? this.combatMode,
-      isDuelMode: isDuelMode ?? this.isDuelMode, // Added
+      isDuelMode: isDuelMode ?? this.isDuelMode,
+      selectionResetDueToModeChange:
+          selectionResetDueToModeChange ?? this.selectionResetDueToModeChange,
     );
   }
 
@@ -163,31 +168,51 @@ class CombatNotifier extends StateNotifier<CombatState> {
 
   CombatNotifier(this._calculateCombat) : super(CombatState());
 
-  // Add method to toggle duel mode
+  // Updated toggleDuelMode method with visual feedback
   void toggleDuelMode(bool value) {
-    // Clear selections when toggling duel mode
-    state = state.copyWith(
+    // Get a copy of the current state for debugging
+    final beforeAttacker = state.attacker;
+    final beforeDefender = state.defender;
+
+    // Force the selections to null by creating a new state with explicit nulls
+    final newState = CombatState(
       isDuelMode: value,
+      // Explicitly set to null instead of using copyWith
       attacker: null,
       defender: null,
-      clearAttackerCharacter: true,
-      clearDefenderCharacter: true,
-      clearSimulation: true, // Clear the simulation result as well
+      numAttackerStands: 3,
+      numDefenderStands: 3,
+      // Reset combat modifiers
+      isCharge: false,
+      isImpact: false,
+      isFlank: false,
+      isRear: false,
+      isVolley: false,
+      isWithinEffectiveRange: false,
+      specialRulesInEffect: const {},
+      specialRuleValues: const {},
+      // Visual feedback
+      selectionResetDueToModeChange: true,
+      // These will preserve saved calculations
+      savedCalculations: state.savedCalculations,
+      showCumulativeDistribution: state.showCumulativeDistribution,
+      combatMode: value ? CombatMode.melee : state.combatMode,
     );
 
-    // Reset combat modifiers when entering duel mode
-    if (value) {
-      state = state.copyWith(
-        isCharge: false,
-        isImpact: false,
-        isFlank: false,
-        isRear: false,
-        isVolley: false,
-        isWithinEffectiveRange: false,
-        specialRulesInEffect: {},
-        specialRuleValues: {},
-      );
-    }
+    // Update the state with the new clean state
+    state = newState;
+
+    // Debug output to verify state changes
+    print("toggleDuelMode: isDuelMode=$value");
+    print("BEFORE: attacker=$beforeAttacker, defender=$beforeDefender");
+    print("AFTER: attacker=${state.attacker}, defender=${state.defender}");
+
+    // Clear the visual feedback flag after a short delay
+    Future.delayed(const Duration(milliseconds: 1500), () {
+      if (mounted) {
+        state = state.copyWith(selectionResetDueToModeChange: false);
+      }
+    });
   }
 
   void updateAttacker(Regiment attacker) {
