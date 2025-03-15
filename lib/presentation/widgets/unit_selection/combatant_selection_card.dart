@@ -7,6 +7,7 @@ import '../target_selector.dart';
 import 'character_attachment_row.dart';
 import 'special_rules_section.dart';
 import 'faction_selection.dart';
+import '../../themes/app_theme.dart';
 
 /// A reusable component for selecting either an attacker or defender regiment
 class CombatantSelectionCard extends ConsumerWidget {
@@ -43,16 +44,14 @@ class CombatantSelectionCard extends ConsumerWidget {
                 padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
                 decoration: BoxDecoration(
                   color: combatState.selectionResetDueToModeChange
-                      ? Theme.of(context)
-                          .colorScheme
-                          .errorContainer
-                          .withOpacity(0.3)
+                      ? Theme.of(context).colorScheme.errorContainer.withAlpha(
+                          77) // Using withAlpha instead of withOpacity
                       : Colors.transparent,
                   borderRadius: BorderRadius.circular(4),
                 ),
                 child: Text(
-                  // Absolutely ensure we display "Select a regiment" when null
-                  '${isAttacker ? "Attacker" : "Defender"}: ${regiment?.name ?? "Select a regiment"}',
+                  // Remove prefix and just show selected regiment or prompt
+                  regiment?.name ?? "Select a regiment",
                   style: TextStyle(
                     fontWeight: FontWeight.bold,
                     color: combatState.selectionResetDueToModeChange
