@@ -1,11 +1,11 @@
 // lib/presentation/widgets/unit_selection/combatant_selection_card.dart
+import 'package:conquest_calculator/presentation/widgets/unit_selection/character_attachment_row.dart';
 import 'package:conquest_calculator/presentation/widgets/unit_selection/faction_selection.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../domain/models/regiment.dart';
 import '../../providers/combat_provider.dart';
 import '../target_selector.dart';
-import 'character_attachment_row.dart';
 import '../unit_card.dart';
 import '../../themes/app_theme.dart';
 import '../faction_grid_dialog.dart';
@@ -121,14 +121,15 @@ class CombatantSelectionCard extends ConsumerWidget {
 
             const SizedBox(width: 8),
 
-            // Select regiment button
-            ElevatedButton(
+            // Unit selection icon button (matching character button style)
+            IconButton(
+              icon: const Icon(Icons.group_add),
+              tooltip: 'Add unit',
               onPressed: () => _navigateToUnitSelection(
                 context: context,
                 ref: ref,
                 isAttacker: isAttacker,
               ),
-              child: const Text('Select'),
             ),
 
             // Character attachment button - show if appropriate
@@ -162,13 +163,6 @@ class CombatantSelectionCard extends ConsumerWidget {
           ],
         ),
 
-        // Character attachment - if a character is attached, show the detailed card
-        if (character != null)
-          CharacterAttachmentRow(
-            character: character,
-            isAttacker: isAttacker,
-          ),
-
         // Display unit card
         if (regiment != null)
           Padding(
@@ -182,6 +176,23 @@ class CombatantSelectionCard extends ConsumerWidget {
                 isCompact: true,
                 // Add sufficient padding to prevent content from being cut off
                 padding: const EdgeInsets.fromLTRB(8.0, 8.0, 8.0, 8.0),
+              ),
+            ),
+          ),
+
+        // Display attached character card (without the header row)
+        if (character != null)
+          Padding(
+            padding: const EdgeInsets.only(top: 12.0),
+            child: Container(
+              width: double.infinity,
+              constraints: const BoxConstraints(minWidth: 300),
+              child: UnitCard(
+                regiment: character,
+                isCompact: true,
+                padding: const EdgeInsets.all(12.0),
+                showSpecialRules: true,
+                showDrawEvents: false, // Simplify by hiding draw events
               ),
             ),
           ),
