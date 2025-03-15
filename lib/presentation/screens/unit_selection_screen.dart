@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../providers/regiment_provider.dart';
 import '../../domain/models/regiment.dart';
+import '../widgets/unit_selection/special_rule_chip.dart';
 
 enum UnitFilter {
   all,
@@ -459,20 +460,19 @@ class _UnitSelectionScreenState extends ConsumerState<UnitSelectionScreen> {
                   children: [
                     // Add barrage as a separate special rule
                     if (regiment.hasBarrage())
-                      _buildSpecialRuleChip(
-                          context,
-                          regiment.barrageRange != null &&
-                                  regiment.barrageRange! > 0
-                              ? "Barrage (${regiment.getBarrage()}) (${regiment.getBarrageRange()}\")"
-                              : "Barrage (${regiment.getBarrage()})",
-                          "Perform ranged attacks with ${regiment.getBarrage()} dice per stand."),
+                      SpecialRuleChip(
+                        ruleName: regiment.barrageRange != null &&
+                                regiment.barrageRange! > 0
+                            ? "Barrage (${regiment.getBarrage()}) (${regiment.getBarrageRange()}\")"
+                            : "Barrage (${regiment.getBarrage()})",
+                      ),
 
                     // Add armor piercing as a separate special rule
                     if (regiment.hasArmorPiercing())
-                      _buildSpecialRuleChip(
-                          context,
-                          "Armor Piercing (${regiment.getArmorPiercingValue()})",
-                          "Reduces target's Defense by ${regiment.getArmorPiercingValue()} when resolving attacks."),
+                      SpecialRuleChip(
+                        ruleName:
+                            "Armor Piercing (${regiment.getArmorPiercingValue()})",
+                      ),
 
                     // Add other special rules (excluding barrage and armor piercing that are handled separately)
                     ...regiment.specialRules
@@ -485,31 +485,7 @@ class _UnitSelectionScreenState extends ConsumerState<UnitSelectionScreen> {
                             return const SizedBox.shrink();
                           }
 
-                          // Extract the rule name without any numeric parameters if present
-                          String displayName = rule;
-                          String description = "No description available";
-
-                          // For a real app, you would fetch the actual description from your data
-                          // This is a placeholder for the concept
-                          if (rule.contains('Cleave')) {
-                            description =
-                                "Reduces the target's Defense value when resolving Melee attacks.";
-                          } else if (rule.contains('Shield')) {
-                            description =
-                                "+1 Defense against attacks originating from the unit's front arc.";
-                          } else if (rule.contains('Impact')) {
-                            description =
-                                "Performs additional attacks when charging.";
-                          } else if (rule.contains('Flurry')) {
-                            description =
-                                "Can re-roll failed Hit rolls when making Melee attacks.";
-                          } else if (rule.contains('Aura of Death')) {
-                            description =
-                                "Enemy stands in base contact suffer automatic hits when activated.";
-                          }
-
-                          return _buildSpecialRuleChip(
-                              context, displayName, description);
+                          return SpecialRuleChip(ruleName: rule);
                         })
                         .where((widget) => widget is! SizedBox)
                         .toList(),
@@ -533,69 +509,11 @@ class _UnitSelectionScreenState extends ConsumerState<UnitSelectionScreen> {
                   spacing: 6,
                   runSpacing: 6,
                   children: regiment.drawEvents.map((event) {
-                    // For a real app, you would fetch the actual description from your data
-                    String description =
-                        "Special ability that can be activated with a draw event card.";
-
-                    return _buildSpecialRuleChip(context, event, description);
+                    return SpecialRuleChip(ruleName: event);
                   }).toList(),
                 ),
               ],
             ],
-          ),
-        ),
-      ),
-    );
-  }
-
-  // Helper method to build special rule chips with tooltips
-  Widget _buildSpecialRuleChip(
-      BuildContext context, String ruleName, String description) {
-    return Tooltip(
-      message: description,
-      preferBelow: false,
-      textStyle: const TextStyle(
-        fontSize: 12,
-        color: Colors.white,
-      ),
-      decoration: BoxDecoration(
-        color: Colors.black.withOpacity(0.8),
-        borderRadius: BorderRadius.circular(4),
-      ),
-      child: InkWell(
-        onTap: () {
-          // Show dialog with more detailed information
-          showDialog(
-            context: context,
-            builder: (context) => AlertDialog(
-              title: Text(ruleName),
-              content: Text(description),
-              actions: [
-                TextButton(
-                  onPressed: () => Navigator.pop(context),
-                  child: const Text('Close'),
-                ),
-              ],
-            ),
-          );
-        },
-        borderRadius: BorderRadius.circular(12),
-        child: Container(
-          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-          decoration: BoxDecoration(
-            color: Theme.of(context).colorScheme.primary.withOpacity(0.1),
-            borderRadius: BorderRadius.circular(12),
-            border: Border.all(
-              color: Theme.of(context).colorScheme.primary.withOpacity(0.2),
-              width: 1,
-            ),
-          ),
-          child: Text(
-            ruleName,
-            style: TextStyle(
-              fontSize: 11,
-              color: Theme.of(context).colorScheme.primary,
-            ),
           ),
         ),
       ),

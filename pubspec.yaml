@@ -30,5 +30,6 @@ flutter:
     - assets/data/regiments/
     - assets/data/regiments/dweghom.json
     - assets/data/regiments/hundred_kingdoms.json
+    - assets/data/special_rules.json
   
   uses-material-design: true

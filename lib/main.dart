@@ -4,8 +4,9 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'presentation/screens/combat_calculator_screen.dart';
 import 'presentation/themes/app_theme.dart';
+import 'data/sources/local/special_rules_service.dart';
 
-void main() {
+void main() async {
   // Set preferred orientations
   WidgetsFlutterBinding.ensureInitialized();
   SystemChrome.setPreferredOrientations([
@@ -20,6 +21,9 @@ void main() {
     systemNavigationBarColor: AppTheme.claudeSurface,
     systemNavigationBarIconBrightness: Brightness.dark,
   ));
+
+  // Initialize the special rules service
+  await SpecialRulesService().initialize();
 
   runApp(
     const ProviderScope(
