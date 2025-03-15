@@ -194,6 +194,36 @@ class CombatNotifier extends StateNotifier<CombatState> {
 
   CombatNotifier(this._calculateCombat) : super(CombatState());
 
+  // Manual calculation method that only gets called by the Calculate button
+  void calculateCombat() {
+    if (state.attacker != null && state.defender != null) {
+      // Handle character vs character combat differently
+      bool isCharacterVsCharacter = state.isDuelMode ||
+          (state.attacker!.isCharacter() && state.defender!.isCharacter());
+
+      final simulation = _calculateCombat.calculateExpectedResult(
+        attacker: state.attacker!,
+        numAttackerStands: isCharacterVsCharacter ? 1 : state.numAttackerStands,
+        attackerCharacter:
+            state.attackerCharacter, // Add character to calculation
+        defender: state.defender!,
+        numDefenderStands: isCharacterVsCharacter ? 1 : state.numDefenderStands,
+        defenderCharacter:
+            state.defenderCharacter, // Add character to calculation
+        isCharge: state.isCharge,
+        isImpact: state.isImpact,
+        isFlank: state.isFlank,
+        isRear: state.isRear,
+        isVolley: state.isVolley,
+        isWithinEffectiveRange: state.isWithinEffectiveRange,
+        specialRulesInEffect: state.specialRulesInEffect,
+        impactValues: state.specialRuleValues,
+      );
+
+      state = state.copyWith(simulation: simulation);
+    }
+  }
+
   // Set attacker faction - accepts nullable String
   void setAttackerFaction(String? faction) {
     if (faction == null) {
@@ -249,11 +279,6 @@ class CombatNotifier extends StateNotifier<CombatState> {
       defenderFaction: currentAttackerFaction,
       clearSimulation: true, // Clear the current simulation
     );
-
-    // Recalculate if both units are selected
-    if (state.attacker != null && state.defender != null) {
-      _recalculate();
-    }
   }
 
   // Updated toggleDuelMode method with visual feedback
@@ -345,21 +370,10 @@ class CombatNotifier extends StateNotifier<CombatState> {
         clearSimulation: true, // Clear the simulation
       );
     }
-
-    // Auto-select combat mode based on regiment's capabilities
-    if (regiment.hasBarrage() &&
-        !state.isVolley &&
-        state.combatMode == CombatMode.melee) {
-      // If regiment has barrage ability, prompt user by highlighting ranged combat option
-      // (we don't auto-switch, just make it clear it's available)
-    }
-
-    _recalculate();
   }
 
   void updateAttackerStands(int stands) {
     state = state.copyWith(numAttackerStands: stands, clearSimulation: true);
-    _recalculate();
   }
 
   void attachCharacterToAttacker(Regiment character) {
@@ -372,7 +386,6 @@ class CombatNotifier extends StateNotifier<CombatState> {
       if (character.isCharacter()) {
         state =
             state.copyWith(attackerCharacter: character, clearSimulation: true);
-        _recalculate();
       }
     }
   }
@@ -382,7 +395,6 @@ class CombatNotifier extends StateNotifier<CombatState> {
       // Use the clearAttackerCharacter flag to ensure null is properly applied
       state =
           state.copyWith(clearAttackerCharacter: true, clearSimulation: true);
-      _recalculate();
     }
   }
 
@@ -396,7 +408,6 @@ class CombatNotifier extends StateNotifier<CombatState> {
       if (character.isCharacter()) {
         state =
             state.copyWith(defenderCharacter: character, clearSimulation: true);
-        _recalculate();
       }
     }
   }
@@ -406,7 +417,6 @@ class CombatNotifier extends StateNotifier<CombatState> {
       // Use the clearDefenderCharacter flag to ensure null is properly applied
       state =
           state.copyWith(clearDefenderCharacter: true, clearSimulation: true);
-      _recalculate();
     }
   }
 
@@ -458,13 +468,10 @@ class CombatNotifier extends StateNotifier<CombatState> {
         clearSimulation: true, // Clear the simulation
       );
     }
-
-    _recalculate();
   }
 
   void updateDefenderStands(int stands) {
     state = state.copyWith(numDefenderStands: stands, clearSimulation: true);
-    _recalculate();
   }
 
   // Method to switch between combat modes
@@ -499,8 +506,6 @@ class CombatNotifier extends StateNotifier<CombatState> {
         clearSimulation: true, // Clear the simulation
       );
     }
-
-    _recalculate();
   }
 
   void toggleCharge(bool value) {
@@ -511,7 +516,6 @@ class CombatNotifier extends StateNotifier<CombatState> {
       if (value && (state.attacker?.hasImpact() ?? false)) {
         state = state.copyWith(isImpact: true);
       }
-      _recalculate();
     }
   }
 
@@ -520,7 +524,6 @@ class CombatNotifier extends StateNotifier<CombatState> {
     if (state.combatMode == CombatMode.melee &&
         (state.attacker?.hasImpact() ?? false)) {
       state = state.copyWith(isImpact: value, clearSimulation: true);
-      _recalculate();
     }
   }
 
@@ -530,7 +533,6 @@ class CombatNotifier extends StateNotifier<CombatState> {
     if (value && state.isRear) {
       state = state.copyWith(isRear: false);
     }
-    _recalculate();
   }
 
   void toggleRear(bool value) {
@@ -539,7 +541,6 @@ class CombatNotifier extends StateNotifier<CombatState> {
     if (value && state.isFlank) {
       state = state.copyWith(isFlank: false);
     }
-    _recalculate();
   }
 
   void toggleVolley(bool value) {
@@ -553,8 +554,6 @@ class CombatNotifier extends StateNotifier<CombatState> {
           ..remove('aimed');
         state = state.copyWith(specialRulesInEffect: updatedRules);
       }
-
-      _recalculate();
     }
   }
 
@@ -563,7 +562,6 @@ class CombatNotifier extends StateNotifier<CombatState> {
     if (state.combatMode == CombatMode.ranged && state.isVolley) {
       state =
           state.copyWith(isWithinEffectiveRange: value, clearSimulation: true);
-      _recalculate();
     }
   }
 
@@ -585,8 +583,6 @@ class CombatNotifier extends StateNotifier<CombatState> {
         specialRulesInEffect: updatedRules,
         specialRuleValues: updatedValues,
         clearSimulation: true);
-
-    _recalculate();
   }
 
 // Add this method to allow updating the armor piercing value
@@ -596,8 +592,6 @@ class CombatNotifier extends StateNotifier<CombatState> {
 
     state =
         state.copyWith(specialRuleValues: updatedValues, clearSimulation: true);
-
-    _recalculate();
   }
 
   void toggleSpecialRule(String rule, bool value) {
@@ -605,7 +599,6 @@ class CombatNotifier extends StateNotifier<CombatState> {
     updatedRules[rule] = value;
     state = state.copyWith(
         specialRulesInEffect: updatedRules, clearSimulation: true);
-    _recalculate();
   }
 
   void updateSpecialRuleValue(String rule, int value) {
@@ -613,7 +606,6 @@ class CombatNotifier extends StateNotifier<CombatState> {
     updatedValues[rule] = value;
     state =
         state.copyWith(specialRuleValues: updatedValues, clearSimulation: true);
-    _recalculate();
   }
 
   void toggleCumulativeDistribution(bool value) {
@@ -658,35 +650,6 @@ class CombatNotifier extends StateNotifier<CombatState> {
     updatedSavedCalculations.removeAt(index);
 
     state = state.copyWith(savedCalculations: updatedSavedCalculations);
-  }
-
-  void _recalculate() {
-    if (state.attacker != null && state.defender != null) {
-      // Handle character vs character combat differently
-      bool isCharacterVsCharacter = state.isDuelMode ||
-          (state.attacker!.isCharacter() && state.defender!.isCharacter());
-
-      final simulation = _calculateCombat.calculateExpectedResult(
-        attacker: state.attacker!,
-        numAttackerStands: isCharacterVsCharacter ? 1 : state.numAttackerStands,
-        attackerCharacter:
-            state.attackerCharacter, // Add character to calculation
-        defender: state.defender!,
-        numDefenderStands: isCharacterVsCharacter ? 1 : state.numDefenderStands,
-        defenderCharacter:
-            state.defenderCharacter, // Add character to calculation
-        isCharge: state.isCharge,
-        isImpact: state.isImpact,
-        isFlank: state.isFlank,
-        isRear: state.isRear,
-        isVolley: state.isVolley,
-        isWithinEffectiveRange: state.isWithinEffectiveRange,
-        specialRulesInEffect: state.specialRulesInEffect,
-        impactValues: state.specialRuleValues,
-      );
-
-      state = state.copyWith(simulation: simulation);
-    }
   }
 }
 

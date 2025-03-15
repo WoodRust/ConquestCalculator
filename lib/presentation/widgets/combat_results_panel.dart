@@ -13,35 +13,8 @@ class CombatResultsPanel extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final combatState = ref.watch(combatProvider);
     final combatNotifier = ref.read(combatProvider.notifier);
-
-    // If we don't have a simulation yet, show a placeholder
-    if (combatState.simulation == null ||
-        combatState.simulation!.totalDamageDistribution == null) {
-      return Container(
-        decoration: BoxDecoration(
-          color: AppTheme.claudeCardSurface,
-          borderRadius: BorderRadius.circular(8),
-          border: Border.all(color: AppTheme.claudeBorder),
-        ),
-        padding: const EdgeInsets.all(24),
-        alignment: Alignment.center,
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Icon(Icons.calculate_outlined,
-                size: 48,
-                color: AppTheme.claudeSubtleText
-                    .withAlpha(179)), // Using withAlpha instead of withOpacity
-            const SizedBox(height: 16),
-            const Text(
-              'Select units and configure combat to calculate probabilities',
-              textAlign: TextAlign.center,
-              style: TextStyle(color: AppTheme.claudeSubtleText),
-            ),
-          ],
-        ),
-      );
-    }
+    final hasSimulation = combatState.simulation != null &&
+        combatState.simulation!.totalDamageDistribution != null;
 
     return Card(
       elevation: 0,
@@ -56,180 +29,202 @@ class CombatResultsPanel extends ConsumerWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text('Combat Results',
-                style: Theme.of(context).textTheme.titleLarge),
-            const SizedBox(height: 16),
-
-            // Total damage distribution chart
-            Container(
-              decoration: BoxDecoration(
-                color: AppTheme.claudeSurface,
-                borderRadius: BorderRadius.circular(8),
-                border: Border.all(color: AppTheme.claudeBorder),
-              ),
-              padding: const EdgeInsets.all(12),
-              margin: const EdgeInsets.only(bottom: 16),
-              child: chart.ProbabilityDistributionChart(
-                distribution: combatState.simulation!.totalDamageDistribution!,
-                title: 'Wound Distribution',
-                width: MediaQuery.of(context).size.width - 72,
-                height: 250,
-                showCumulative: combatState.showCumulativeDistribution,
-                thresholds: [
-                  // Stand loss threshold
-                  chart.Threshold(
-                    value: combatState.defender!.wounds,
-                    label: '1 Stand',
-                    color: Colors.orange.shade400,
-                  ),
-                  // Breaking threshold
-                  chart.Threshold(
-                    value: combatState.simulation!.standsToBreak *
-                        combatState.defender!.wounds,
-                    label: 'Breaking',
-                    color: AppTheme.claudeDefenderAccent,
-                  ),
-                  // Total destruction
-                  chart.Threshold(
-                    value: (combatState.defender!.isCharacter()
-                            ? 1
-                            : combatState.numDefenderStands) *
-                        combatState.defender!.wounds,
-                    label: 'Destroyed',
-                    color: AppTheme.claudePrimary,
-                  ),
-                ],
-                primaryColor: AppTheme.claudePrimary
-                    .withAlpha(179), // Using withAlpha instead of withOpacity
-                secondaryColor: AppTheme.claudePrimary
-                    .withAlpha(102), // Using withAlpha instead of withOpacity
-              ),
-            ),
-
-            const SizedBox(height: 16),
-
-            // Hit & wound distribution charts in a row
+            // Always show the heading and Calculate button
             Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                // Hit distribution chart
-                Expanded(
-                  child: Container(
-                    decoration: BoxDecoration(
-                      color: AppTheme.claudeSurface,
-                      borderRadius: BorderRadius.circular(8),
-                      border: Border.all(color: AppTheme.claudeBorder),
-                    ),
-                    padding: const EdgeInsets.all(12),
-                    child: chart.ProbabilityDistributionChart(
-                      distribution: combatState.simulation!.hitDistribution!,
-                      title: 'Hit Distribution',
-                      height: 180,
-                      showCumulative: combatState.showCumulativeDistribution,
-                      primaryColor: AppTheme.claudeAttackerAccent.withAlpha(
-                          179), // Using withAlpha instead of withOpacity
-                      secondaryColor: AppTheme.claudeAttackerAccent.withAlpha(
-                          102), // Using withAlpha instead of withOpacity
-                    ),
+                Text('Combat Results',
+                    style: Theme.of(context).textTheme.titleLarge),
+                ElevatedButton.icon(
+                  icon: const Icon(Icons.calculate),
+                  label: const Text('Calculate'),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: AppTheme.claudePrimary,
+                    foregroundColor: Colors.white,
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                   ),
-                ),
-                const SizedBox(width: 16),
-                // Wound distribution from defense rolls
-                Expanded(
-                  child: Container(
-                    decoration: BoxDecoration(
-                      color: AppTheme.claudeSurface,
-                      borderRadius: BorderRadius.circular(8),
-                      border: Border.all(color: AppTheme.claudeBorder),
-                    ),
-                    padding: const EdgeInsets.all(12),
-                    child: chart.ProbabilityDistributionChart(
-                      distribution: combatState.simulation!.woundDistribution!,
-                      title: 'After Defense',
-                      height: 180,
-                      showCumulative: combatState.showCumulativeDistribution,
-                      primaryColor: AppTheme.claudeDefenderAccent.withAlpha(
-                          179), // Using withAlpha instead of withOpacity
-                      secondaryColor: AppTheme.claudeDefenderAccent.withAlpha(
-                          102), // Using withAlpha instead of withOpacity
-                    ),
-                  ),
+                  onPressed: () {
+                    // Only calculate if both units are selected
+                    if (combatState.attacker != null &&
+                        combatState.defender != null) {
+                      combatNotifier.calculateCombat();
+                    } else {
+                      // Show a snackbar if units aren't selected
+                      ScaffoldMessenger.of(context).clearSnackBars();
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(
+                          content: Text(
+                              'Please select both attacker and defender units'),
+                          backgroundColor: Colors.orange,
+                        ),
+                      );
+                    }
+                  },
                 ),
               ],
             ),
 
-            const SizedBox(height: 24),
+            const SizedBox(height: 16),
 
-            // Results summary
-            Container(
-              decoration: BoxDecoration(
-                color: AppTheme.claudeSurface,
-                borderRadius: BorderRadius.circular(8),
-                border: Border.all(color: AppTheme.claudeBorder),
-              ),
-              padding: const EdgeInsets.all(16),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    'Combat Summary',
-                    style: Theme.of(context).textTheme.titleMedium,
-                  ),
-                  const SizedBox(height: 8),
-                  const Divider(color: AppTheme.claudeBorder),
-                  const SizedBox(height: 8),
-                  SummaryRow(
-                    label: 'Expected Wounds:',
-                    value:
-                        combatState.simulation!.getExpectedWounds().toString(),
-                  ),
-                  SummaryRow(
-                    label: 'Expected Stands Lost:',
-                    value: combatState.simulation!
-                        .getExpectedStandsLost()
-                        .toString(),
-                  ),
-                  SummaryRow(
-                    label: 'Breaking Probability:',
-                    value:
-                        '${(combatState.simulation!.breakingProbability * 100).toStringAsFixed(1)}%',
-                    color: _getBreakingProbabilityColor(
-                        combatState.simulation!.breakingProbability),
-                  ),
-                  SummaryRow(
-                    label: 'Destruction Probability:',
-                    value:
-                        '${(combatState.simulation!.getProbabilityOfLosingAtLeast(combatState.defender!.isCharacter() ? 1 : combatState.numDefenderStands) * 100).toStringAsFixed(1)}%',
-                  ),
-                  // Show effective stand counts when characters are attached
-                  if (combatState.attackerCharacter != null ||
-                      combatState.defenderCharacter != null ||
-                      combatState.attacker?.isCharacter() == true ||
-                      combatState.defender?.isCharacter() == true) ...[
-                    const SizedBox(height: 8),
-                    const Divider(color: AppTheme.claudeBorder),
-                    const SizedBox(height: 8),
-                    Text(
-                      'Stand Counts (including characters)',
-                      style: Theme.of(context).textTheme.titleSmall,
-                    ),
-                    const SizedBox(height: 4),
-                    SummaryRow(
-                      label: 'Attacker Effective Stands:',
-                      value: combatState.effectiveAttackerStands.toString(),
-                    ),
-                    SummaryRow(
-                      label: 'Defender Effective Stands:',
-                      value: combatState.effectiveDefenderStands.toString(),
-                    ),
-                    SummaryRow(
-                      label: 'Defender Stands to Break:',
-                      value: combatState.simulation!.standsToBreak.toString(),
+            // Show either the placeholder message or results based on simulation status
+            if (!hasSimulation)
+              // Placeholder message when no simulation exists
+              Container(
+                decoration: BoxDecoration(
+                  color: AppTheme.claudeSurface,
+                  borderRadius: BorderRadius.circular(8),
+                  border: Border.all(color: AppTheme.claudeBorder),
+                ),
+                padding: const EdgeInsets.all(24),
+                alignment: Alignment.center,
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(Icons.calculate_outlined,
+                        size: 48,
+                        color: AppTheme.claudeSubtleText.withAlpha(179)),
+                    const SizedBox(height: 16),
+                    const Text(
+                      'Select units and configure combat to calculate probabilities',
+                      textAlign: TextAlign.center,
+                      style: TextStyle(color: AppTheme.claudeSubtleText),
                     ),
                   ],
+                ),
+              )
+            else
+              // Full results when simulation exists
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // Total damage distribution chart
+                  Container(
+                    decoration: BoxDecoration(
+                      color: AppTheme.claudeSurface,
+                      borderRadius: BorderRadius.circular(8),
+                      border: Border.all(color: AppTheme.claudeBorder),
+                    ),
+                    padding: const EdgeInsets.all(12),
+                    margin: const EdgeInsets.only(bottom: 16),
+                    child: ClipRect(
+                      child: chart.ProbabilityDistributionChart(
+                        distribution:
+                            combatState.simulation!.totalDamageDistribution!,
+                        title: 'Wound Distribution',
+                        width: MediaQuery.of(context).size.width - 72,
+                        height: 250,
+                        showCumulative: combatState.showCumulativeDistribution,
+                        // Don't limit the x-axis to defender's wounds - show full distribution
+                        maxXValue: combatState.simulation!
+                                .totalDamageDistribution!.probabilities.length -
+                            1,
+                        thresholds: [
+                          // Stand loss threshold
+                          chart.Threshold(
+                            value: combatState.defender!.wounds,
+                            label: '1 Stand',
+                            color: Colors.orange.shade400,
+                          ),
+                          // Breaking threshold
+                          chart.Threshold(
+                            value: combatState.simulation!.standsToBreak *
+                                combatState.defender!.wounds,
+                            label: 'Breaking',
+                            color: AppTheme.claudeDefenderAccent,
+                          ),
+                          // Total destruction
+                          chart.Threshold(
+                            value: (combatState.defender!.isCharacter()
+                                    ? 1
+                                    : combatState.numDefenderStands) *
+                                combatState.defender!.wounds,
+                            label: 'Destroyed',
+                            color: AppTheme.claudePrimary,
+                          ),
+                        ],
+                        primaryColor: AppTheme.claudePrimary.withAlpha(179),
+                        secondaryColor: AppTheme.claudePrimary.withAlpha(102),
+                      ),
+                    ),
+                  ),
+
+                  // Results summary
+                  Container(
+                    decoration: BoxDecoration(
+                      color: AppTheme.claudeSurface,
+                      borderRadius: BorderRadius.circular(8),
+                      border: Border.all(color: AppTheme.claudeBorder),
+                    ),
+                    padding: const EdgeInsets.all(16),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'Combat Summary',
+                          style: Theme.of(context).textTheme.titleMedium,
+                        ),
+                        const SizedBox(height: 8),
+                        const Divider(color: AppTheme.claudeBorder),
+                        const SizedBox(height: 8),
+                        SummaryRow(
+                          label: 'Expected Wounds:',
+                          value: combatState.simulation!
+                              .getExpectedWounds()
+                              .toString(),
+                        ),
+                        SummaryRow(
+                          label: 'Expected Stands Lost:',
+                          value: combatState.simulation!
+                              .getExpectedStandsLost()
+                              .toString(),
+                        ),
+                        SummaryRow(
+                          label: 'Breaking Probability:',
+                          value:
+                              '${(combatState.simulation!.breakingProbability * 100).toStringAsFixed(1)}%',
+                          color: _getBreakingProbabilityColor(
+                              combatState.simulation!.breakingProbability),
+                        ),
+                        SummaryRow(
+                          label: 'Destruction Probability:',
+                          value:
+                              '${(combatState.simulation!.getProbabilityOfLosingAtLeast(combatState.defender!.isCharacter() ? 1 : combatState.numDefenderStands) * 100).toStringAsFixed(1)}%',
+                        ),
+                        // Show effective stand counts when characters are attached
+                        if (combatState.attackerCharacter != null ||
+                            combatState.defenderCharacter != null ||
+                            combatState.attacker?.isCharacter() == true ||
+                            combatState.defender?.isCharacter() == true) ...[
+                          const SizedBox(height: 8),
+                          const Divider(color: AppTheme.claudeBorder),
+                          const SizedBox(height: 8),
+                          Text(
+                            'Stand Counts (including characters)',
+                            style: Theme.of(context).textTheme.titleSmall,
+                          ),
+                          const SizedBox(height: 4),
+                          SummaryRow(
+                            label: 'Attacker Effective Stands:',
+                            value:
+                                combatState.effectiveAttackerStands.toString(),
+                          ),
+                          SummaryRow(
+                            label: 'Defender Effective Stands:',
+                            value:
+                                combatState.effectiveDefenderStands.toString(),
+                          ),
+                          SummaryRow(
+                            label: 'Defender Stands to Break:',
+                            value: combatState.simulation!.standsToBreak
+                                .toString(),
+                          ),
+                        ],
+                      ],
+                    ),
+                  ),
                 ],
               ),
-            ),
           ],
         ),
       ),

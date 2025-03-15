@@ -165,22 +165,30 @@ class ProbabilityDistributionChart extends StatelessWidget {
                     strokeWidth: 1,
                   );
                 },
-                drawVerticalLine: true,
+                drawVerticalLine:
+                    false, // Change to false to prevent vertical lines extending
                 getDrawingVerticalLine: (value) {
-                  // Highlight threshold lines
+                  // Only draw threshold lines
                   bool isThreshold = thresholds.any((t) => t.value == value);
+                  if (!isThreshold) return FlLine(color: Colors.transparent);
+
                   return FlLine(
                     color: isThreshold
                         ? Colors.red.withOpacity(0.3)
-                        : Colors.black12,
-                    strokeWidth: isThreshold ? 2 : 1,
+                        : Colors.transparent,
+                    strokeWidth: isThreshold ? 2 : 0,
                     dashArray: isThreshold ? [5, 5] : null,
                   );
                 },
               ),
               borderData: FlBorderData(
                 show: true,
-                border: Border.all(color: Colors.black26),
+                border: const Border(
+                  bottom: BorderSide(color: Colors.black26, width: 1),
+                  left: BorderSide(color: Colors.black26, width: 1),
+                  top: BorderSide(color: Colors.transparent),
+                  right: BorderSide(color: Colors.transparent),
+                ),
               ),
               barGroups: _createBarGroups(
                 showCumulative ? cumulativeProbabilities : probabilities,
@@ -217,27 +225,40 @@ class ProbabilityDistributionChart extends StatelessWidget {
 
   // Calculate a reasonable max X value to display
   int _calculateEffectiveMaxX(ProbabilityDistribution distribution) {
+    // If maxXValue is specified (total wounds in regiment), use that
+    if (maxXValue > 0) {
+      return maxXValue;
+    }
+
+    // Otherwise calculate based on probabilities
     // Start by finding the last non-zero probability
     int lastNonZero = distribution.probabilities.length - 1;
     while (lastNonZero > 0 && distribution.probabilities[lastNonZero] < 0.001) {
       lastNonZero--;
     }
 
-    // Cap at distribution.mean + 3 * standardDeviation to show the meaningful part
-    int statisticalMax =
-        (distribution.mean + 3 * distribution.standardDeviation).ceil();
+    // Find the last index that has a significant probability (0.5%)
+    int significantIndex = 0;
+    for (int i = 0; i < distribution.probabilities.length; i++) {
+      if (distribution.probabilities[i] >= 0.005) {
+        significantIndex = i;
+      }
+    }
 
-    // Return the smaller of the two values, but at least 1
-    return max(min(lastNonZero, statisticalMax), 1);
+    // Ensure we show at least up to the mean
+    int meanValue = distribution.mean.ceil();
+
+    // Choose the maximum of all these methods, but at least 3
+    return max(max(max(significantIndex, meanValue), lastNonZero), 3);
   }
 
   // Calculate the interval for X axis labels to avoid crowding
   int _calculateXLabelInterval(int maxX) {
-    if (maxX <= 5) return 1;
-    if (maxX <= 10) return 2;
-    if (maxX <= 20) return 5;
-    if (maxX <= 50) return 10;
-    return 20;
+    if (maxX <= 6) return 1; // For small values, show every label
+    if (maxX <= 12) return 2; // For medium values, show every second label
+    if (maxX <= 20) return 4; // Adjusted for better readability
+    if (maxX <= 50) return 5;
+    return 10;
   }
 
   // Calculate max Y value for the chart
