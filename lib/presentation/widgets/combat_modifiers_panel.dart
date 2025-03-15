@@ -150,6 +150,22 @@ class CombatModifiersPanel extends ConsumerWidget {
                             dense: true,
                             controlAffinity: ListTileControlAffinity.leading,
                           ),
+                          // Add Armor Piercing in melee section too for units that have it
+                          if (combatState.attacker?.hasArmorPiercing() ?? false)
+                            CheckboxListTile(
+                              title: const Text('Armor Piercing'),
+                              value: combatState
+                                      .specialRulesInEffect['armorPiercing'] ??
+                                  false,
+                              activeColor: AppTheme.claudePrimary,
+                              onChanged: combatState.combatMode ==
+                                      CombatMode.melee
+                                  ? (value) => combatNotifier.toggleSpecialRule(
+                                      'armorPiercing', value ?? false)
+                                  : null,
+                              dense: true,
+                              controlAffinity: ListTileControlAffinity.leading,
+                            ),
                         ],
                       ),
                     ),
@@ -212,6 +228,23 @@ class CombatModifiersPanel extends ConsumerWidget {
                             dense: true,
                             controlAffinity: ListTileControlAffinity.leading,
                           ),
+                          // Separate armor piercing option
+                          if (combatState.attacker?.hasArmorPiercing() ?? false)
+                            CheckboxListTile(
+                              title: const Text('Armor Piercing'),
+                              value: combatState
+                                      .specialRulesInEffect['armorPiercing'] ??
+                                  false,
+                              activeColor: AppTheme.claudePrimary,
+                              onChanged: combatState.combatMode ==
+                                          CombatMode.ranged &&
+                                      combatState.isVolley
+                                  ? (value) => combatNotifier.toggleSpecialRule(
+                                      'armorPiercing', value ?? false)
+                                  : null,
+                              dense: true,
+                              controlAffinity: ListTileControlAffinity.leading,
+                            ),
                           CheckboxListTile(
                             title: const Text('Effective Range'),
                             value: combatState.isWithinEffectiveRange,

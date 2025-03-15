@@ -572,6 +572,39 @@ class CombatNotifier extends StateNotifier<CombatState> {
     }
   }
 
+  void toggleArmorPiercing(bool value) {
+    // Create a mutable copy of the special rules
+    final updatedRules = Map<String, bool>.from(state.specialRulesInEffect);
+    updatedRules['armorPiercing'] = value;
+
+    // Create a mutable copy of the special rule values
+    final updatedValues = Map<String, int>.from(state.specialRuleValues);
+
+    // If enabling armor piercing, make sure we have the value from the regiment
+    if (value && state.attacker != null && state.attacker!.hasArmorPiercing()) {
+      updatedValues['armorPiercingValue'] =
+          state.attacker!.getArmorPiercingValue();
+    }
+
+    state = state.copyWith(
+        specialRulesInEffect: updatedRules,
+        specialRuleValues: updatedValues,
+        clearSimulation: true);
+
+    _recalculate();
+  }
+
+// Add this method to allow updating the armor piercing value
+  void updateArmorPiercingValue(int value) {
+    final updatedValues = Map<String, int>.from(state.specialRuleValues);
+    updatedValues['armorPiercingValue'] = value;
+
+    state =
+        state.copyWith(specialRuleValues: updatedValues, clearSimulation: true);
+
+    _recalculate();
+  }
+
   void toggleSpecialRule(String rule, bool value) {
     final updatedRules = Map<String, bool>.from(state.specialRulesInEffect);
     updatedRules[rule] = value;

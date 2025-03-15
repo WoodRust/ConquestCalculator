@@ -142,8 +142,16 @@ class CalculateCombat {
     int effectiveDefense = defenseTarget;
 
     // Apply armor piercing for volleys
-    if (isVolley && attacker.armorPiercing) {
-      effectiveDefense = max(defenseTarget - attacker.armorPiercingValue, 0);
+    if (isVolley && attacker.hasArmorPiercing()) {
+      effectiveDefense =
+          max(defenseTarget - attacker.getArmorPiercingValue(), 0);
+    }
+    // Apply armor piercing as a separate rule (not tied to volleys)
+    else if (!isVolley && mutableSpecialRules['armorPiercing'] == true) {
+      int armorPiercingValue =
+          mutableSpecialRules['armorPiercingValue'] as int? ??
+              attacker.getArmorPiercingValue();
+      effectiveDefense = max(defenseTarget - armorPiercingValue, 0);
     }
     // Apply cleave for melee attacks
     else if (!isVolley &&

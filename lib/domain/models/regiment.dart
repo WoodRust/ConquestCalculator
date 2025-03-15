@@ -20,7 +20,7 @@ class Regiment {
   // Special rule numeric values
   final int? barrage; // Number of dice for Barrage attacks
   final int? barrageRange; // Range of Barrage attacks in inches
-  final bool armorPiercing; // Whether Barrage has Armor Piercing
+  final bool armorPiercing; // Whether unit has Armor Piercing
   final int armorPiercingValue; // The value of Armor Piercing if present
   final int? impact; // Impact (X) value
   final int? support; // Support (X) value
@@ -87,9 +87,11 @@ class Regiment {
   int getTrample() => trample ?? 0;
   int getVanguard() => vanguard ?? 0;
   int getSpellDice() => spellDice ?? 0;
+  int getArmorPiercingValue() => armorPiercingValue;
 
   bool isCharacter() => regimentClass == RegimentClass.character;
   bool hasBarrage() => barrage != null && barrage! > 0;
+  bool hasArmorPiercing() => armorPiercing;
   bool hasImpact() => impact != null && impact! > 0;
   bool hasSupport() => support != null && support! > 0;
   bool hasSpellcasting() => spellDice != null && spellDice! > 0;

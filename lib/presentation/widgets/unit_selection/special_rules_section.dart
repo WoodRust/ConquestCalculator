@@ -20,8 +20,16 @@ class SpecialRulesSection extends ConsumerWidget {
     final combatState = ref.watch(combatProvider);
     final combatNotifier = ref.read(combatProvider.notifier);
 
+    // Check if we have any special rules, barrage, or armor piercing to display
+    final bool hasAnyRules = regiment.specialRules.isNotEmpty ||
+        regiment.hasBarrage() ||
+        regiment.hasArmorPiercing() ||
+        regiment.hasImpact() ||
+        regiment.shield ||
+        regiment.getCleave() > 0;
+
     // If no special rules, don't show anything
-    if (regiment.specialRules.isEmpty) {
+    if (!hasAnyRules) {
       return const SizedBox.shrink();
     }
 
@@ -33,6 +41,7 @@ class SpecialRulesSection extends ConsumerWidget {
         const SizedBox(height: 4),
         Wrap(
           spacing: 8,
+          runSpacing: 6,
           children: _buildSpecialRuleChips(combatState, combatNotifier),
         ),
       ],
@@ -45,9 +54,43 @@ class SpecialRulesSection extends ConsumerWidget {
 
     // Add chips based on regiment's special rules
     if (isAttacker) {
-      if (regiment.hasSpecialRule('cleave')) {
+      // Handle barrage separately
+      if (regiment.hasBarrage()) {
+        final barrageText = regiment.barrageRange != null &&
+                regiment.barrageRange! > 0
+            ? "Barrage (${regiment.getBarrage()}) (${regiment.getBarrageRange()}\")"
+            : "Barrage (${regiment.getBarrage()})";
+
         chips.add(FilterChip(
-          label: const Text('Cleave'),
+          label: Text(barrageText),
+          selected: combatState.specialRulesInEffect['barrage'] ?? true,
+          onSelected: (bool selected) =>
+              combatNotifier.toggleSpecialRule('barrage', selected),
+        ));
+      }
+
+      // Handle armor piercing separately
+      if (regiment.hasArmorPiercing()) {
+        chips.add(FilterChip(
+          label: Text('Armor Piercing (${regiment.getArmorPiercingValue()})'),
+          selected: combatState.specialRulesInEffect['armorPiercing'] ?? true,
+          onSelected: (bool selected) =>
+              combatNotifier.toggleSpecialRule('armorPiercing', selected),
+        ));
+      }
+
+      // Handle impact as a separate rule
+      if (regiment.hasImpact()) {
+        chips.add(FilterChip(
+          label: Text('Impact (${regiment.getImpact()})'),
+          selected: combatState.isImpact,
+          onSelected: (bool selected) => combatNotifier.toggleImpact(selected),
+        ));
+      }
+
+      if (regiment.getCleave() > 0 || regiment.hasSpecialRule('cleave')) {
+        chips.add(FilterChip(
+          label: Text('Cleave (${regiment.getCleave()})'),
           selected: combatState.specialRulesInEffect['cleave'] ?? true,
           onSelected: (bool selected) =>
               combatNotifier.toggleSpecialRule('cleave', selected),
@@ -71,9 +114,35 @@ class SpecialRulesSection extends ConsumerWidget {
               combatNotifier.toggleSpecialRule('phalanx', selected),
         ));
       }
+
+      // Add any other special rules not already handled
+      for (final rule in regiment.specialRules) {
+        // Skip rules that we've already added
+        if (rule.contains('Barrage') && regiment.hasBarrage() ||
+            rule.contains('Armor Piercing') && regiment.hasArmorPiercing() ||
+            rule.contains('Impact') && regiment.hasImpact() ||
+            rule.contains('Cleave') && regiment.getCleave() > 0 ||
+            rule.contains('Flurry') ||
+            rule.contains('Phalanx')) {
+          continue;
+        }
+
+        // Add other special rules that might be toggleable
+        // This could be expanded with more rules
+        final String ruleName = rule;
+        if (ruleName.isNotEmpty) {
+          final String ruleKey = ruleName.toLowerCase().replaceAll(' ', '_');
+          chips.add(FilterChip(
+            label: Text(ruleName),
+            selected: combatState.specialRulesInEffect[ruleKey] ?? true,
+            onSelected: (bool selected) =>
+                combatNotifier.toggleSpecialRule(ruleKey, selected),
+          ));
+        }
+      }
     } else {
       // Defender special rules
-      if (regiment.hasSpecialRule('shield')) {
+      if (regiment.shield || regiment.hasSpecialRule('shield')) {
         chips.add(FilterChip(
           label: const Text('Shield'),
           selected: combatState.specialRulesInEffect['shield'] ?? true,
@@ -82,7 +151,20 @@ class SpecialRulesSection extends ConsumerWidget {
         ));
       }
 
-      // Add other defender-specific special rules here
+      // Add any other defender-specific special rules here
+      // For example, you might want to handle Armor Piercing for defenders too
+      if (regiment.hasArmorPiercing()) {
+        chips.add(FilterChip(
+          label: Text('Armor Piercing (${regiment.getArmorPiercingValue()})'),
+          tooltip:
+              'Reduces attacker\'s Defense by ${regiment.getArmorPiercingValue()}',
+          selected:
+              false, // For defenders, this is informational, not toggleable
+          onSelected: null, // Not toggleable for defenders
+        ));
+      }
+
+      // Add other defender special rules here...
     }
 
     return chips;

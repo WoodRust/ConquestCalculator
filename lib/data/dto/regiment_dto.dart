@@ -67,9 +67,12 @@ class RegimentDto {
     // Get values from numericSpecialRules if available, otherwise extract from special rules text
     int? barrage = numericSpecialRules['barrage'] as int?;
     int? barrageRange = numericSpecialRules['barrageRange'] as int?;
+
+    // Separate armor piercing from barrage
     bool armorPiercing = numericSpecialRules['armorPiercing'] as bool? ?? false;
     int armorPiercingValue =
         numericSpecialRules['armorPiercingValue'] as int? ?? 0;
+
     int? impact = numericSpecialRules['impact'] as int?;
     int? support = numericSpecialRules['support'] as int?;
     int? cleave = numericSpecialRules['cleave'] as int?;
@@ -105,7 +108,7 @@ class RegimentDto {
           }
         }
 
-        // Check for Armor Piercing
+        // Check for Armor Piercing - now as a separate special rule
         if (ruleName.contains('Armor Piercing')) {
           armorPiercing = true;
           final apMatch =
