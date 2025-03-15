@@ -106,6 +106,8 @@ void selectCharacterForAttachment({
           UnitFilter.charactersOnly
         }, // Only allow character selection
         title: 'Select $faction Character',
+        isDuelMode:
+            false, // We know this is not duel mode for character attachment
         onUnitSelected: (character) {
           if (character.isCharacter()) {
             if (isAttacker) {

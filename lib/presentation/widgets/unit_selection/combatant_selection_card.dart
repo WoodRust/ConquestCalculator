@@ -1,5 +1,4 @@
 // lib/presentation/widgets/unit_selection/combatant_selection_card.dart
-import 'package:conquest_calculator/presentation/screens/unit_selection_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../domain/models/regiment.dart';
@@ -10,6 +9,7 @@ import 'special_rules_section.dart';
 import 'faction_selection.dart';
 import '../../themes/app_theme.dart';
 import '../faction_grid_dialog.dart';
+import '../../screens/unit_selection_screen.dart';
 
 /// A reusable component for selecting either an attacker or defender regiment
 class CombatantSelectionCard extends ConsumerWidget {
@@ -196,10 +196,11 @@ class CombatantSelectionCard extends ConsumerWidget {
   }
 
   // Navigate to unit selection, using the current faction if available
-  void _navigateToUnitSelection(
-      {required BuildContext context,
-      required WidgetRef ref,
-      required bool isAttacker}) {
+  void _navigateToUnitSelection({
+    required BuildContext context,
+    required WidgetRef ref,
+    required bool isAttacker,
+  }) {
     final combatState = ref.read(combatProvider);
     final combatNotifier = ref.read(combatProvider.notifier);
 
@@ -217,8 +218,9 @@ class CombatantSelectionCard extends ConsumerWidget {
         ref: ref,
         faction: factionPath,
         isAttacker: isAttacker,
-        initialFilter:
-            combatState.isDuelMode ? UnitFilter.charactersOnly : UnitFilter.all,
+        initialFilter: combatState.isDuelMode
+            ? UnitFilter.charactersOnly
+            : UnitFilter.regimentsOnly,
         allowedFilters: combatState.isDuelMode
             ? {UnitFilter.charactersOnly}
             : {
@@ -253,7 +255,7 @@ class CombatantSelectionCard extends ConsumerWidget {
             isAttacker: isAttacker,
             initialFilter: combatState.isDuelMode
                 ? UnitFilter.charactersOnly
-                : UnitFilter.all,
+                : UnitFilter.regimentsOnly,
             allowedFilters: combatState.isDuelMode
                 ? {UnitFilter.charactersOnly}
                 : {

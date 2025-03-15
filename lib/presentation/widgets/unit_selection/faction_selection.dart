@@ -57,6 +57,7 @@ void navigateToUnitSelection({
         initialFilter: initialFilter,
         allowedFilters: allowedFilters,
         title: 'Select Unit',
+        isDuelMode: combatState.isDuelMode, // Pass the duel mode state
         onUnitSelected: (regiment) {
           // Ensure selected unit matches the required type
           if (combatState.isDuelMode && !regiment.isCharacter()) {
