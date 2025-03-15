@@ -8,14 +8,18 @@ import '../../domain/usecases/calculate_combat.dart';
 // Enum to track which combat mode is active
 enum CombatMode { melee, ranged }
 
-// Updated CombatState class with character support
+// Updated CombatState class with faction support
 class CombatState {
   final Regiment? attacker;
   final int numAttackerStands;
   final Regiment? attackerCharacter;
+  final String? attackerFaction; // Store the selected attacker faction
+
   final Regiment? defender;
   final int numDefenderStands;
   final Regiment? defenderCharacter;
+  final String? defenderFaction; // Store the selected defender faction
+
   final bool isCharge;
   final bool isImpact;
   final bool isFlank;
@@ -29,15 +33,17 @@ class CombatState {
   final bool showCumulativeDistribution;
   final CombatMode combatMode;
   final bool isDuelMode;
-  final bool selectionResetDueToModeChange; // New flag for visual feedback
+  final bool selectionResetDueToModeChange;
 
   CombatState({
     this.attacker,
     this.numAttackerStands = 3,
     this.attackerCharacter,
+    this.attackerFaction,
     this.defender,
     this.numDefenderStands = 3,
     this.defenderCharacter,
+    this.defenderFaction,
     this.isCharge = false,
     this.isImpact = false,
     this.isFlank = false,
@@ -51,17 +57,21 @@ class CombatState {
     this.showCumulativeDistribution = false,
     this.combatMode = CombatMode.melee,
     this.isDuelMode = false,
-    this.selectionResetDueToModeChange = false, // Initialize with false
+    this.selectionResetDueToModeChange = false,
   });
 
   CombatState copyWith({
     Regiment? attacker,
     int? numAttackerStands,
     Regiment? attackerCharacter,
+    String? attackerFaction,
+    bool clearAttackerFaction = false,
     bool clearAttackerCharacter = false,
     Regiment? defender,
     int? numDefenderStands,
     Regiment? defenderCharacter,
+    String? defenderFaction,
+    bool clearDefenderFaction = false,
     bool clearDefenderCharacter = false,
     bool? isCharge,
     bool? isImpact,
@@ -77,7 +87,7 @@ class CombatState {
     bool? showCumulativeDistribution,
     CombatMode? combatMode,
     bool? isDuelMode,
-    bool? selectionResetDueToModeChange, // Added to copyWith
+    bool? selectionResetDueToModeChange,
   }) {
     return CombatState(
       attacker: attacker ?? this.attacker,
@@ -85,11 +95,17 @@ class CombatState {
       attackerCharacter: clearAttackerCharacter
           ? null
           : (attackerCharacter ?? this.attackerCharacter),
+      attackerFaction: clearAttackerFaction
+          ? null
+          : (attackerFaction ?? this.attackerFaction),
       defender: defender ?? this.defender,
       numDefenderStands: numDefenderStands ?? this.numDefenderStands,
       defenderCharacter: clearDefenderCharacter
           ? null
           : (defenderCharacter ?? this.defenderCharacter),
+      defenderFaction: clearDefenderFaction
+          ? null
+          : (defenderFaction ?? this.defenderFaction),
       isCharge: isCharge ?? this.isCharge,
       isImpact: isImpact ?? this.isImpact,
       isFlank: isFlank ?? this.isFlank,
@@ -121,18 +137,24 @@ class CombatState {
   bool canAttachCharacterToAttacker() {
     return attacker != null &&
         attacker!.type != RegimentType.monster &&
-        !attacker!.isCharacter(); // Add this check
+        !attacker!.isCharacter();
   }
 
   bool canAttachCharacterToDefender() {
     return defender != null &&
         defender!.type != RegimentType.monster &&
-        !defender!.isCharacter(); // Add this check
+        !defender!.isCharacter();
   }
 
   // Add a helper property to check for character vs character mode
   bool get isCharacterVsCharacterMode =>
       isDuelMode || attacker?.isCharacter() == true;
+
+  // Convert faction string to file path format (lowercase with underscores)
+  static String? factionToPath(String? faction) {
+    if (faction == null) return null;
+    return faction.toLowerCase().replaceAll(' ', '_');
+  }
 }
 
 class SavedCalculation {
@@ -168,6 +190,36 @@ class CombatNotifier extends StateNotifier<CombatState> {
 
   CombatNotifier(this._calculateCombat) : super(CombatState());
 
+  // Set attacker faction - accepts nullable String
+  void setAttackerFaction(String? faction) {
+    if (faction == null) {
+      // If clearing faction, also clear attacker and attacker character
+      state = state.copyWith(
+        clearAttackerFaction: true,
+        attacker: null,
+        clearAttackerCharacter: true,
+        clearSimulation: true,
+      );
+    } else {
+      state = state.copyWith(attackerFaction: faction);
+    }
+  }
+
+  // Set defender faction - accepts nullable String
+  void setDefenderFaction(String? faction) {
+    if (faction == null) {
+      // If clearing faction, also clear defender and defender character
+      state = state.copyWith(
+        clearDefenderFaction: true,
+        defender: null,
+        clearDefenderCharacter: true,
+        clearSimulation: true,
+      );
+    } else {
+      state = state.copyWith(defenderFaction: faction);
+    }
+  }
+
   // Updated toggleDuelMode method with visual feedback
   void toggleDuelMode(bool value) {
     // Get a copy of the current state for debugging
@@ -193,6 +245,9 @@ class CombatNotifier extends StateNotifier<CombatState> {
       specialRuleValues: const {},
       // Visual feedback
       selectionResetDueToModeChange: true,
+      // Preserve faction selections
+      attackerFaction: state.attackerFaction,
+      defenderFaction: state.defenderFaction,
       // These will preserve saved calculations
       savedCalculations: state.savedCalculations,
       showCumulativeDistribution: state.showCumulativeDistribution,
@@ -215,41 +270,57 @@ class CombatNotifier extends StateNotifier<CombatState> {
     });
   }
 
-  void updateAttacker(Regiment attacker) {
-    // In duel mode, only allow character units as attacker
-    if (state.isDuelMode && !attacker.isCharacter()) {
+  void updateAttacker(Regiment? regiment) {
+    // If regiment is null, clear it
+    if (regiment == null) {
+      state = state.copyWith(
+        attacker: null,
+        clearAttackerCharacter: true,
+        clearSimulation: true,
+      );
       return;
     }
+
+    // In duel mode, only allow character units as attacker
+    if (state.isDuelMode && !regiment.isCharacter()) {
+      return;
+    }
+
+    // Automatically update the faction based on the regiment's faction
+    final String regimentFaction = regiment.faction;
 
     // If not in duel mode, ensure consistency with regular mode rules
     if (!state.isDuelMode) {
       // If new attacker is a character and defender is a regular regiment
-      if (attacker.isCharacter() &&
+      if (regiment.isCharacter() &&
           state.defender != null &&
           !state.defender!.isCharacter()) {
         // Clear the defender and defender character if set
         state = state.copyWith(
-          attacker: attacker,
+          attacker: regiment,
+          attackerFaction: regimentFaction,
           defender: null, // Clear defender
           clearDefenderCharacter: true, // Clear any attached character
           clearSimulation: true, // Clear the simulation
         );
       } else {
         state = state.copyWith(
-          attacker: attacker,
+          attacker: regiment,
+          attackerFaction: regimentFaction,
           clearSimulation: true, // Clear the simulation when changing attacker
         );
       }
     } else {
       // In duel mode, simply update the attacker (we already verified it's a character)
       state = state.copyWith(
-        attacker: attacker,
+        attacker: regiment,
+        attackerFaction: regimentFaction,
         clearSimulation: true, // Clear the simulation
       );
     }
 
     // Auto-select combat mode based on regiment's capabilities
-    if (attacker.hasBarrage() &&
+    if (regiment.hasBarrage() &&
         !state.isVolley &&
         state.combatMode == CombatMode.melee) {
       // If regiment has barrage ability, prompt user by highlighting ranged combat option
@@ -312,11 +383,24 @@ class CombatNotifier extends StateNotifier<CombatState> {
     }
   }
 
-  void updateDefender(Regiment defender) {
+  void updateDefender(Regiment? defender) {
+    // If defender is null, clear it
+    if (defender == null) {
+      state = state.copyWith(
+        defender: null,
+        clearDefenderCharacter: true,
+        clearSimulation: true,
+      );
+      return;
+    }
+
     // In duel mode, only allow character units as defender
     if (state.isDuelMode && !defender.isCharacter()) {
       return;
     }
+
+    // Automatically update the faction based on the regiment's faction
+    final String regimentFaction = defender.faction;
 
     // If not in duel mode, ensure consistency with regular mode rules
     if (!state.isDuelMode) {
@@ -327,6 +411,7 @@ class CombatNotifier extends StateNotifier<CombatState> {
         // Clear the attacker and attacker character if set
         state = state.copyWith(
           defender: defender,
+          defenderFaction: regimentFaction,
           attacker: null, // Clear attacker
           clearAttackerCharacter: true, // Clear any attached character
           clearSimulation: true, // Clear the simulation
@@ -334,6 +419,7 @@ class CombatNotifier extends StateNotifier<CombatState> {
       } else {
         state = state.copyWith(
           defender: defender,
+          defenderFaction: regimentFaction,
           clearSimulation: true, // Clear the simulation when changing defender
         );
       }
@@ -341,6 +427,7 @@ class CombatNotifier extends StateNotifier<CombatState> {
       // In duel mode, simply update the defender (we already verified it's a character)
       state = state.copyWith(
         defender: defender,
+        defenderFaction: regimentFaction,
         clearSimulation: true, // Clear the simulation
       );
     }

@@ -53,7 +53,7 @@ class CharacterAttachmentRow extends ConsumerWidget {
   }
 }
 
-/// Utility function to navigate to character selection
+/// Utility function to navigate to character selection using the current faction
 void selectCharacterForAttachment({
   required BuildContext context,
   required WidgetRef ref,
@@ -77,10 +77,22 @@ void selectCharacterForAttachment({
   }
 
   // Get the faction of the currently selected regiment
+  final faction =
+      isAttacker ? combatState.attackerFaction : combatState.defenderFaction;
+
+  if (faction == null) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text('Please select a faction first'),
+        backgroundColor: Colors.orange,
+      ),
+    );
+    return;
+  }
+
   // Convert to lowercase and replace spaces with underscores for file path
-  final String faction = isAttacker
-      ? combatState.attacker!.faction.toLowerCase().replaceAll(' ', '_')
-      : combatState.defender!.faction.toLowerCase().replaceAll(' ', '_');
+  final String factionPath = CombatState.factionToPath(faction) ??
+      faction.toLowerCase().replaceAll(' ', '_');
 
   // Navigate directly to the unified selection screen with character filter
   // and restrict available filters to characters only
@@ -88,13 +100,12 @@ void selectCharacterForAttachment({
     context,
     MaterialPageRoute(
       builder: (context) => UnitSelectionScreen(
-        faction: faction,
+        faction: factionPath,
         initialFilter: UnitFilter.charactersOnly,
         allowedFilters: {
           UnitFilter.charactersOnly
         }, // Only allow character selection
-        title:
-            'Select ${isAttacker ? combatState.attacker!.faction : combatState.defender!.faction} Character',
+        title: 'Select $faction Character',
         onUnitSelected: (character) {
           if (character.isCharacter()) {
             if (isAttacker) {

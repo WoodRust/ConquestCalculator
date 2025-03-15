@@ -1,4 +1,5 @@
 // lib/presentation/widgets/unit_selection/combatant_selection_card.dart
+import 'package:conquest_calculator/presentation/screens/unit_selection_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../domain/models/regiment.dart';
@@ -23,8 +24,10 @@ class CombatantSelectionCard extends ConsumerWidget {
     final combatState = ref.watch(combatProvider);
     final combatNotifier = ref.read(combatProvider.notifier);
 
-    // Get the appropriate regiment and stands count
+    // Get the appropriate regiment, faction, and stands count
     final regiment = isAttacker ? combatState.attacker : combatState.defender;
+    final faction =
+        isAttacker ? combatState.attackerFaction : combatState.defenderFaction;
     final stands = isAttacker
         ? combatState.numAttackerStands
         : combatState.numDefenderStands;
@@ -35,6 +38,72 @@ class CombatantSelectionCard extends ConsumerWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
+        // Faction selection row
+        Row(
+          children: [
+            Expanded(
+              child: InkWell(
+                onTap: () => showFactionSelectionDialog(
+                  context: context,
+                  ref: ref,
+                  isAttacker: isAttacker,
+                  onFactionSelected: (selectedFaction) {
+                    if (isAttacker) {
+                      combatNotifier.setAttackerFaction(selectedFaction);
+                    } else {
+                      combatNotifier.setDefenderFaction(selectedFaction);
+                    }
+                  },
+                ),
+                child: Container(
+                  padding:
+                      const EdgeInsets.symmetric(vertical: 8, horizontal: 12),
+                  decoration: BoxDecoration(
+                    color: Theme.of(context)
+                        .colorScheme
+                        .primaryContainer
+                        .withOpacity(0.1),
+                    borderRadius: BorderRadius.circular(4),
+                    border: Border.all(
+                        color: Theme.of(context)
+                            .colorScheme
+                            .primary
+                            .withOpacity(0.3)),
+                  ),
+                  child: Row(
+                    children: [
+                      Text(
+                        "Faction: ",
+                        style: TextStyle(
+                          fontWeight: FontWeight.bold,
+                          color: Theme.of(context).colorScheme.primary,
+                        ),
+                      ),
+                      Expanded(
+                        child: Text(
+                          faction ?? "Select Faction",
+                          style: TextStyle(
+                            fontStyle: faction == null
+                                ? FontStyle.italic
+                                : FontStyle.normal,
+                          ),
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ),
+                      Icon(
+                        Icons.arrow_drop_down,
+                        color: Theme.of(context).colorScheme.primary,
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+          ],
+        ),
+
+        const SizedBox(height: 12),
+
         // Regiment selection row
         Row(
           children: [
@@ -44,8 +113,10 @@ class CombatantSelectionCard extends ConsumerWidget {
                 padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
                 decoration: BoxDecoration(
                   color: combatState.selectionResetDueToModeChange
-                      ? Theme.of(context).colorScheme.errorContainer.withAlpha(
-                          77) // Using withAlpha instead of withOpacity
+                      ? Theme.of(context)
+                          .colorScheme
+                          .errorContainer
+                          .withOpacity(0.3)
                       : Colors.transparent,
                   borderRadius: BorderRadius.circular(4),
                 ),
@@ -78,7 +149,7 @@ class CombatantSelectionCard extends ConsumerWidget {
               ),
             const SizedBox(width: 8),
             ElevatedButton(
-              onPressed: () => showFactionSelectionDialog(
+              onPressed: () => _navigateToUnitSelection(
                 context: context,
                 ref: ref,
                 isAttacker: isAttacker,
@@ -121,5 +192,77 @@ class CombatantSelectionCard extends ConsumerWidget {
           ),
       ],
     );
+  }
+
+  // Navigate to unit selection, using the current faction if available
+  void _navigateToUnitSelection(
+      {required BuildContext context,
+      required WidgetRef ref,
+      required bool isAttacker}) {
+    final combatState = ref.read(combatProvider);
+    final combatNotifier = ref.read(combatProvider.notifier);
+
+    // Get the current faction if set, otherwise show faction selector first
+    final String? currentFaction =
+        isAttacker ? combatState.attackerFaction : combatState.defenderFaction;
+
+    if (currentFaction != null) {
+      // If faction is already selected, go directly to unit selection
+      final String factionPath = CombatState.factionToPath(currentFaction) ??
+          currentFaction.toLowerCase().replaceAll(' ', '_');
+
+      navigateToUnitSelection(
+        context: context,
+        ref: ref,
+        faction: factionPath,
+        isAttacker: isAttacker,
+        initialFilter:
+            combatState.isDuelMode ? UnitFilter.charactersOnly : UnitFilter.all,
+        allowedFilters: combatState.isDuelMode
+            ? {UnitFilter.charactersOnly}
+            : {
+                UnitFilter.all,
+                UnitFilter.regimentsOnly,
+                UnitFilter.charactersOnly
+              },
+      );
+    } else {
+      // If faction is not selected yet, show faction selection dialog first
+      showFactionSelectionDialog(
+        context: context,
+        ref: ref,
+        isAttacker: isAttacker,
+        onFactionSelected: (selectedFaction) {
+          // Update the faction in state
+          if (isAttacker) {
+            combatNotifier.setAttackerFaction(selectedFaction);
+          } else {
+            combatNotifier.setDefenderFaction(selectedFaction);
+          }
+
+          // Then navigate to unit selection
+          final String factionPath =
+              CombatState.factionToPath(selectedFaction) ??
+                  selectedFaction.toLowerCase().replaceAll(' ', '_');
+
+          navigateToUnitSelection(
+            context: context,
+            ref: ref,
+            faction: factionPath,
+            isAttacker: isAttacker,
+            initialFilter: combatState.isDuelMode
+                ? UnitFilter.charactersOnly
+                : UnitFilter.all,
+            allowedFilters: combatState.isDuelMode
+                ? {UnitFilter.charactersOnly}
+                : {
+                    UnitFilter.all,
+                    UnitFilter.regimentsOnly,
+                    UnitFilter.charactersOnly
+                  },
+          );
+        },
+      );
+    }
   }
 }

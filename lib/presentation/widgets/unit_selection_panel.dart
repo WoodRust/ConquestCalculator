@@ -79,6 +79,23 @@ class UnitSelectionPanel extends ConsumerWidget {
                             color: AppTheme.claudeAttackerAccent,
                           ),
                         ),
+                        const Spacer(),
+                        // Clear faction button
+                        if (combatState.attackerFaction != null)
+                          TextButton.icon(
+                            icon: const Icon(Icons.clear, size: 16),
+                            label: const Text('Clear Faction'),
+                            style: TextButton.styleFrom(
+                              padding:
+                                  const EdgeInsets.symmetric(horizontal: 8),
+                              minimumSize: const Size(0, 36),
+                              tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                            ),
+                            onPressed: () {
+                              // Use the setAttackerFaction method instead
+                              combatNotifier.setAttackerFaction(null);
+                            },
+                          ),
                       ],
                     ),
                   ),
@@ -119,6 +136,23 @@ class UnitSelectionPanel extends ConsumerWidget {
                             color: AppTheme.claudeDefenderAccent,
                           ),
                         ),
+                        const Spacer(),
+                        // Clear faction button
+                        if (combatState.defenderFaction != null)
+                          TextButton.icon(
+                            icon: const Icon(Icons.clear, size: 16),
+                            label: const Text('Clear Faction'),
+                            style: TextButton.styleFrom(
+                              padding:
+                                  const EdgeInsets.symmetric(horizontal: 8),
+                              minimumSize: const Size(0, 36),
+                              tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                            ),
+                            onPressed: () {
+                              // Use the setDefenderFaction method instead
+                              combatNotifier.setDefenderFaction(null);
+                            },
+                          ),
                       ],
                     ),
                   ),

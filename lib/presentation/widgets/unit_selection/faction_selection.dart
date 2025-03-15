@@ -3,41 +3,39 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../providers/combat_provider.dart';
 import '../../screens/unit_selection_screen.dart';
-import '../../screens/unit_selection_screen.dart';
 
 /// Displays the bottom sheet for faction selection
 class FactionSelectionBottomSheet extends ConsumerWidget {
   final bool isAttacker;
+  final Function(String)? onFactionSelected;
 
-  const FactionSelectionBottomSheet({super.key, required this.isAttacker});
+  const FactionSelectionBottomSheet({
+    super.key,
+    required this.isAttacker,
+    this.onFactionSelected,
+  });
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final combatState = ref.read(combatProvider);
 
-    // In duel mode, only allow character selection
-    final UnitFilter initialFilter = combatState.isDuelMode
-        ? UnitFilter.charactersOnly
-        : UnitFilter.regimentsOnly;
-
-    final Set<UnitFilter> allowedFilters = combatState.isDuelMode
-        ? {UnitFilter.charactersOnly} // Only show characters in duel mode
-        : {
-            UnitFilter.all,
-            UnitFilter.regimentsOnly,
-            UnitFilter.charactersOnly
-          }; // Show all normally
-
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
+        Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: Text(
+            'Select Faction',
+            style: Theme.of(context).textTheme.titleLarge,
+            textAlign: TextAlign.center,
+          ),
+        ),
         ListTile(
           leading: const Icon(Icons.shield),
           title: const Text('Dweghom'),
           onTap: () {
             Navigator.pop(context);
-            _navigateToUnitSelection(context, ref, 'dweghom', initialFilter,
-                allowedFilters, isAttacker);
+            _handleFactionSelection('Dweghom', context, ref);
           },
         ),
         ListTile(
@@ -45,8 +43,7 @@ class FactionSelectionBottomSheet extends ConsumerWidget {
           title: const Text('Hundred Kingdoms'),
           onTap: () {
             Navigator.pop(context);
-            _navigateToUnitSelection(context, ref, 'hundred_kingdoms',
-                initialFilter, allowedFilters, isAttacker);
+            _handleFactionSelection('Hundred Kingdoms', context, ref);
           },
         ),
         ListTile(
@@ -54,8 +51,7 @@ class FactionSelectionBottomSheet extends ConsumerWidget {
           title: const Text('Nords'),
           onTap: () {
             Navigator.pop(context);
-            _navigateToUnitSelection(context, ref, 'nords', initialFilter,
-                allowedFilters, isAttacker);
+            _handleFactionSelection('Nords', context, ref);
           },
         ),
         ListTile(
@@ -63,11 +59,38 @@ class FactionSelectionBottomSheet extends ConsumerWidget {
           title: const Text('More Factions...'),
           onTap: () {
             Navigator.pop(context);
-            _showMoreFactions(context, ref, isAttacker);
+            _showMoreFactions(context, ref);
           },
         ),
       ],
     );
+  }
+
+  void _handleFactionSelection(
+      String faction, BuildContext context, WidgetRef ref) {
+    // If callback is provided, use it
+    if (onFactionSelected != null) {
+      onFactionSelected!(faction);
+    } else {
+      // Otherwise use the legacy flow (direct navigation to unit selection)
+      final combatState = ref.read(combatProvider);
+
+      final UnitFilter initialFilter = combatState.isDuelMode
+          ? UnitFilter.charactersOnly
+          : UnitFilter.regimentsOnly;
+
+      final Set<UnitFilter> allowedFilters = combatState.isDuelMode
+          ? {UnitFilter.charactersOnly} // Only show characters in duel mode
+          : {
+              UnitFilter.all,
+              UnitFilter.regimentsOnly,
+              UnitFilter.charactersOnly
+            }; // Show all normally
+
+      final String factionPath = faction.toLowerCase().replaceAll(' ', '_');
+      _navigateToUnitSelection(
+          context, ref, factionPath, initialFilter, allowedFilters);
+    }
   }
 
   void _navigateToUnitSelection(
@@ -75,8 +98,7 @@ class FactionSelectionBottomSheet extends ConsumerWidget {
       WidgetRef ref,
       String faction,
       UnitFilter initialFilter,
-      Set<UnitFilter> allowedFilters,
-      bool isAttacker) {
+      Set<UnitFilter> allowedFilters) {
     final combatState = ref.read(combatProvider);
     final combatNotifier = ref.read(combatProvider.notifier);
 
@@ -120,81 +142,88 @@ class FactionSelectionBottomSheet extends ConsumerWidget {
       ),
     );
   }
+
+  /// Shows the dialog for additional factions
+  void _showMoreFactions(BuildContext context, WidgetRef ref) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Select Faction'),
+        content: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              ListTile(
+                title: const Text('Old Dominion'),
+                onTap: () {
+                  Navigator.pop(context);
+                  _handleFactionSelection('Old Dominion', context, ref);
+                },
+              ),
+              ListTile(
+                title: const Text('Spires'),
+                onTap: () {
+                  Navigator.pop(context);
+                  _handleFactionSelection('Spires', context, ref);
+                },
+              ),
+              ListTile(
+                title: const Text('Wadrhun'),
+                onTap: () {
+                  Navigator.pop(context);
+                  _handleFactionSelection('Wadrhun', context, ref);
+                },
+              ),
+              ListTile(
+                title: const Text('City States'),
+                onTap: () {
+                  Navigator.pop(context);
+                  _handleFactionSelection('City States', context, ref);
+                },
+              ),
+            ],
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Cancel'),
+          ),
+        ],
+      ),
+    );
+  }
 }
 
-/// Shows the dialog for additional faction selection
-void showFactionSelectionDialog(
-    {required BuildContext context,
-    required WidgetRef ref,
-    required bool isAttacker}) {
+/// Shows the dialog for faction selection
+void showFactionSelectionDialog({
+  required BuildContext context,
+  required WidgetRef ref,
+  required bool isAttacker,
+  Function(String)? onFactionSelected,
+}) {
   showModalBottomSheet(
     context: context,
-    builder: (context) => FactionSelectionBottomSheet(isAttacker: isAttacker),
-  );
-}
-
-/// Shows the dialog for additional (more) factions selection
-void _showMoreFactions(BuildContext context, WidgetRef ref, bool isAttacker) {
-  final combatState = ref.read(combatProvider);
-
-  // In duel mode, only allow character selection
-  final UnitFilter initialFilter = combatState.isDuelMode
-      ? UnitFilter.charactersOnly
-      : UnitFilter.regimentsOnly;
-
-  final Set<UnitFilter> allowedFilters = combatState.isDuelMode
-      ? {UnitFilter.charactersOnly} // Only show characters in duel mode
-      : {
-          UnitFilter.all,
-          UnitFilter.regimentsOnly,
-          UnitFilter.charactersOnly
-        }; // Show all normally
-
-  showDialog(
-    context: context,
-    builder: (context) => AlertDialog(
-      title: const Text('Select Faction'),
-      content: SingleChildScrollView(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            ListTile(
-              title: const Text('Old Dominion'),
-              onTap: () {
-                Navigator.pop(context);
-                _navigateToMoreFactionSelection(context, ref, 'old_dominion',
-                    initialFilter, allowedFilters, isAttacker);
-              },
-            ),
-            ListTile(
-              title: const Text('Spires'),
-              onTap: () {
-                Navigator.pop(context);
-                _navigateToMoreFactionSelection(context, ref, 'spires',
-                    initialFilter, allowedFilters, isAttacker);
-              },
-            ),
-            // Additional factions can be added here
-          ],
-        ),
-      ),
-      actions: [
-        TextButton(
-          onPressed: () => Navigator.pop(context),
-          child: const Text('Cancel'),
-        ),
-      ],
+    builder: (context) => FactionSelectionBottomSheet(
+      isAttacker: isAttacker,
+      onFactionSelected: onFactionSelected,
     ),
   );
 }
 
-void _navigateToMoreFactionSelection(
-    BuildContext context,
-    WidgetRef ref,
-    String faction,
-    UnitFilter initialFilter,
-    Set<UnitFilter> allowedFilters,
-    bool isAttacker) {
+/// Navigate directly to unit selection with the specified faction
+void navigateToUnitSelection({
+  required BuildContext context,
+  required WidgetRef ref,
+  required String faction,
+  required bool isAttacker,
+  UnitFilter initialFilter = UnitFilter.all,
+  Set<UnitFilter> allowedFilters = const {
+    UnitFilter.all,
+    UnitFilter.regimentsOnly,
+    UnitFilter.charactersOnly
+  },
+}) {
   final combatState = ref.read(combatProvider);
   final combatNotifier = ref.read(combatProvider.notifier);
 
@@ -205,8 +234,7 @@ void _navigateToMoreFactionSelection(
         faction: faction,
         initialFilter: initialFilter,
         allowedFilters: allowedFilters,
-        title:
-            'Select $faction ${combatState.isDuelMode ? "Character" : "Regiment"}',
+        title: 'Select Unit',
         onUnitSelected: (regiment) {
           // Ensure selected unit matches the required type
           if (combatState.isDuelMode && !regiment.isCharacter()) {
