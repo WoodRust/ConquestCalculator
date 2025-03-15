@@ -26,6 +26,12 @@ class CalculateCombat {
     Map<String, bool> specialRulesInEffect = const {},
     Map<String, int> impactValues = const {},
   }) {
+    // Create mutable copies of the maps to avoid modifying unmodifiable maps
+    final Map<String, bool> mutableSpecialRules =
+        Map<String, bool>.from(specialRulesInEffect);
+    final Map<String, int> mutableImpactValues =
+        Map<String, int>.from(impactValues);
+
     // 1. Calculate total attacks and hit target
     int totalAttacks;
     int hitTarget;
@@ -43,12 +49,12 @@ class CalculateCombat {
         numAttackerStands: numAttackerStands,
         attackerCharacter: attackerCharacter, // Add character
         isWithinEffectiveRange: isWithinEffectiveRange,
-        specialRulesInEffect: specialRulesInEffect,
+        specialRulesInEffect: mutableSpecialRules,
       );
 
       // Set base hit target and apply aimed modifier
       hitTarget = attacker.volley;
-      if (specialRulesInEffect['aimed'] == true ||
+      if (mutableSpecialRules['aimed'] == true ||
           attacker.hasSpecialRule('deadshots')) {
         // Aimed shot adds +1 to Volley characteristic
         hitTarget += 1;
@@ -56,7 +62,7 @@ class CalculateCombat {
         // If aimed would raise Volley to 5+, use re-roll instead
         if (hitTarget >= 5) {
           hitTarget = attacker.volley; // Reset to base value
-          specialRulesInEffect['aimedReroll'] = true;
+          mutableSpecialRules['aimedReroll'] = true;
         }
       }
     } else if (isImpact) {
@@ -72,21 +78,21 @@ class CalculateCombat {
         attackerCharacter: attackerCharacter, // Add character
         isCharge: isCharge,
         isImpact: isImpact,
-        specialRulesInEffect: specialRulesInEffect,
-        impactValues: impactValues,
+        specialRulesInEffect: mutableSpecialRules,
+        impactValues: mutableImpactValues,
       );
     } else {
       // For clash attacks, use the base clash value with potential modifier bonuses
       hitTarget = attacker.clash;
 
       // Apply Inspired bonus to Clash
-      if (specialRulesInEffect['inspired'] == true) {
+      if (mutableSpecialRules['inspired'] == true) {
         hitTarget += 1;
 
         // If Inspired would raise Clash to 5+, use re-roll instead
         if (hitTarget >= 5) {
           hitTarget = attacker.clash; // Reset to base value
-          specialRulesInEffect['inspiredReroll'] = true;
+          mutableSpecialRules['inspiredReroll'] = true;
         }
       }
 
@@ -101,8 +107,8 @@ class CalculateCombat {
         attackerCharacter: attackerCharacter, // Add character
         isCharge: isCharge,
         isImpact: isImpact,
-        specialRulesInEffect: specialRulesInEffect,
-        impactValues: impactValues,
+        specialRulesInEffect: mutableSpecialRules,
+        impactValues: mutableImpactValues,
       );
     }
 
@@ -110,9 +116,9 @@ class CalculateCombat {
     ProbabilityDistribution hitDistribution;
 
     // Handle re-roll special cases
-    if (specialRulesInEffect['aimedReroll'] == true ||
-        specialRulesInEffect['inspiredReroll'] == true ||
-        specialRulesInEffect['flurry'] == true) {
+    if (mutableSpecialRules['aimedReroll'] == true ||
+        mutableSpecialRules['inspiredReroll'] == true ||
+        mutableSpecialRules['flurry'] == true) {
       // For re-rolls, we simulate by increasing the hit probability
       hitDistribution = _calculateDistributionWithRerolls(
           dice: totalAttacks, target: hitTarget, rerollFails: true);
@@ -141,18 +147,18 @@ class CalculateCombat {
     }
     // Apply cleave for melee attacks
     else if (!isVolley &&
-        (attacker.getCleave() > 0 || specialRulesInEffect['cleave'] == true)) {
+        (attacker.getCleave() > 0 || mutableSpecialRules['cleave'] == true)) {
       // Get cleave value either from regiment or special rules
       int cleaveValue =
-          specialRulesInEffect['cleaveValue'] as int? ?? attacker.getCleave();
+          mutableSpecialRules['cleaveValue'] as int? ?? attacker.getCleave();
       effectiveDefense = max(defenseTarget - cleaveValue, 0);
     }
     // Apply brutal impact for impact attacks
     else if (isImpact &&
         (attacker.getBrutalImpact() > 0 ||
-            specialRulesInEffect['brutalImpact'] == true)) {
+            mutableSpecialRules['brutalImpact'] == true)) {
       int brutalImpactValue =
-          specialRulesInEffect['brutalImpactValue'] as int? ??
+          mutableSpecialRules['brutalImpactValue'] as int? ??
               attacker.getBrutalImpact();
       effectiveDefense = max(defenseTarget - brutalImpactValue, 0);
     }
@@ -228,7 +234,7 @@ class CalculateCombat {
       isRear: isRear,
       isVolley: isVolley,
       isWithinEffectiveRange: isWithinEffectiveRange,
-      specialRulesInEffect: specialRulesInEffect,
+      specialRulesInEffect: mutableSpecialRules,
       hitRoll: hitRoll,
       defenseRoll: defenseRoll,
       resolveRoll: resolveRoll,
@@ -253,6 +259,11 @@ class CalculateCombat {
     Map<String, int> specialRuleValues = const {},
   }) {
     int totalAttacks;
+    // Create mutable copies to avoid unmodifiable map errors
+    final Map<String, bool> mutableSpecialRules =
+        Map<String, bool>.from(specialRulesInEffect);
+    final Map<String, int> mutableSpecialRuleValues =
+        Map<String, int>.from(specialRuleValues);
 
     if (isImpact) {
       // For impact attacks, get the impact value
@@ -272,13 +283,14 @@ class CalculateCombat {
 
       // Apply glorious charge - updates the clash but not number of attacks
       if (isCharge && attacker.hasSpecialRule('glorious charge')) {
-        specialRulesInEffect['gloriousCharge'] = true;
+        mutableSpecialRules['gloriousCharge'] = true;
       }
 
       // Apply brutal impact - updates the defense reduction but not number of attacks
       if (attacker.getBrutalImpact() > 0) {
-        specialRulesInEffect['brutalImpact'] = true;
-        specialRuleValues['brutalImpactValue'] = attacker.getBrutalImpact();
+        mutableSpecialRules['brutalImpact'] = true;
+        mutableSpecialRuleValues['brutalImpactValue'] =
+            attacker.getBrutalImpact();
       }
     } else {
       // For regular clash, use the attacks characteristic
@@ -313,21 +325,24 @@ class CalculateCombat {
 
     // Apply special rules modifications
     if (attacker.hasSpecialRule('flurry') ||
-        specialRulesInEffect['flurry'] == true) {
+        mutableSpecialRules['flurry'] == true) {
       // Flurry allows re-rolling failed hits
       // Let this be handled by our reroll-aware hit calculation instead
-      specialRulesInEffect['flurry'] = true;
+      mutableSpecialRules['flurry'] = true;
     }
 
     // Apply shock special rule - impacts clash characteristic, not attack count
     if (isCharge && attacker.hasSpecialRule('shock')) {
-      specialRulesInEffect['shock'] = true;
+      mutableSpecialRules['shock'] = true;
     }
 
     // Apply inspired rerolls - impacts the hit probability calculation
-    if (specialRulesInEffect['inspired'] == true && attacker.clash >= 4) {
-      specialRulesInEffect['inspiredReroll'] = true;
+    if (mutableSpecialRules['inspired'] == true && attacker.clash >= 4) {
+      mutableSpecialRules['inspiredReroll'] = true;
     }
+
+    // Copy any changes back to the original map
+    specialRulesInEffect.addAll(mutableSpecialRules);
 
     return totalAttacks;
   }
@@ -340,6 +355,10 @@ class CalculateCombat {
     required bool isWithinEffectiveRange,
     required Map<String, bool> specialRulesInEffect,
   }) {
+    // Create mutable copy of the map
+    final Map<String, bool> mutableSpecialRules =
+        Map<String, bool>.from(specialRulesInEffect);
+
     if (!attacker.hasBarrage()) {
       return 0; // No barrage capability
     }
@@ -353,7 +372,7 @@ class CalculateCombat {
 
     // Apply special rules for volleys
     if (attacker.hasSpecialRule('rapid volley') ||
-        specialRulesInEffect['rapidVolley'] == true) {
+        mutableSpecialRules['rapidVolley'] == true) {
       // Rapid volley grants an additional hit on rolls of 1
       // Simulate by increasing expected hits by 1/6 of the total shots
       double rapidVolleyBonus = totalVolleys * (1.0 / 6.0);
@@ -361,7 +380,7 @@ class CalculateCombat {
     }
 
     if (attacker.hasSpecialRule('torrential fire') ||
-        specialRulesInEffect['torrentialFire'] == true) {
+        mutableSpecialRules['torrentialFire'] == true) {
       // Torrential fire grants an additional hit for every 2 hits
       // Simulate by increasing expected hits by half the success rate
       double successRate = attacker.volley / 6.0;
@@ -370,7 +389,7 @@ class CalculateCombat {
     }
 
     // Apply aimed re-rolls for failed hits
-    if (specialRulesInEffect['aimedReroll'] == true) {
+    if (mutableSpecialRules['aimedReroll'] == true) {
       // Similar effect to flurry for melee
       double missRate = (6.0 - attacker.volley) / 6.0;
       double rerollSuccessRate = missRate * (attacker.volley / 6.0);
@@ -381,20 +400,23 @@ class CalculateCombat {
     // Apply deadshots special rule (always under effects of aimed special rule)
     if (attacker.hasSpecialRule('deadshots')) {
       // This is handled in hit target adjustment, not in volley count
-      specialRulesInEffect['aimed'] = true;
+      mutableSpecialRules['aimed'] = true;
     }
 
     // Apply sureshot (ignores obscuring terrain penalties)
     if (attacker.hasSpecialRule('sureshot') ||
-        specialRulesInEffect['sureshot'] == true) {
+        mutableSpecialRules['sureshot'] == true) {
       // This doesn't affect volley count directly, but affects other calculations
-      specialRulesInEffect['sureshot'] = true;
+      mutableSpecialRules['sureshot'] = true;
     }
 
     // Penalize for being outside effective range - halved shots
     if (!isWithinEffectiveRange) {
       totalVolleys = (totalVolleys * 0.5).round();
     }
+
+    // Copy any changes back to the original map
+    specialRulesInEffect.addAll(mutableSpecialRules);
 
     return totalVolleys;
   }
