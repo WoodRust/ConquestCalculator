@@ -1,12 +1,12 @@
 // lib/presentation/widgets/unit_selection/combatant_selection_card.dart
+import 'package:conquest_calculator/presentation/widgets/unit_selection/faction_selection.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../domain/models/regiment.dart';
 import '../../providers/combat_provider.dart';
 import '../target_selector.dart';
 import 'character_attachment_row.dart';
-import 'special_rules_section.dart';
-import 'faction_selection.dart';
+import '../unit_card.dart';
 import '../../themes/app_theme.dart';
 import '../faction_grid_dialog.dart';
 import '../../screens/unit_selection_screen.dart';
@@ -39,9 +39,10 @@ class CombatantSelectionCard extends ConsumerWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        // Faction selection row
+        // Combined row with faction selection, stands, and buttons
         Row(
           children: [
+            // Faction selection
             Expanded(
               child: InkWell(
                 onTap: () => showFactionSelectionDialog(
@@ -100,39 +101,8 @@ class CombatantSelectionCard extends ConsumerWidget {
                 ),
               ),
             ),
-          ],
-        ),
+            const SizedBox(width: 8),
 
-        const SizedBox(height: 12),
-
-        // Regiment selection row
-        Row(
-          children: [
-            Expanded(
-              child: AnimatedContainer(
-                duration: const Duration(milliseconds: 300),
-                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
-                decoration: BoxDecoration(
-                  color: combatState.selectionResetDueToModeChange
-                      ? Theme.of(context)
-                          .colorScheme
-                          .errorContainer
-                          .withOpacity(0.3)
-                      : Colors.transparent,
-                  borderRadius: BorderRadius.circular(4),
-                ),
-                child: Text(
-                  // Remove prefix and just show selected regiment or prompt
-                  regiment?.name ?? "Select a regiment",
-                  style: TextStyle(
-                    fontWeight: FontWeight.bold,
-                    color: combatState.selectionResetDueToModeChange
-                        ? Theme.of(context).colorScheme.error
-                        : null,
-                  ),
-                ),
-              ),
-            ),
             // Only show stand selector if regiment is selected and not a character
             if (regiment != null &&
                 !regiment.isCharacter() &&
@@ -148,7 +118,10 @@ class CombatantSelectionCard extends ConsumerWidget {
                   }
                 },
               ),
+
             const SizedBox(width: 8),
+
+            // Select regiment button
             ElevatedButton(
               onPressed: () => _navigateToUnitSelection(
                 context: context,
@@ -157,6 +130,7 @@ class CombatantSelectionCard extends ConsumerWidget {
               ),
               child: const Text('Select'),
             ),
+
             // Character attachment button - show if appropriate
             if (regiment != null &&
                 !regiment.isCharacter() &&
@@ -185,11 +159,21 @@ class CombatantSelectionCard extends ConsumerWidget {
             isAttacker: isAttacker,
           ),
 
-        // Special rules section if a regiment is selected
+        // Display unit card
         if (regiment != null)
-          SpecialRulesSection(
-            regiment: regiment,
-            isAttacker: isAttacker,
+          Padding(
+            padding: const EdgeInsets.only(top: 12.0),
+            child: Container(
+              width: double.infinity,
+              // Use a container with padding to ensure content doesn't get cut off
+              constraints: const BoxConstraints(minWidth: 300),
+              child: UnitCard(
+                regiment: regiment,
+                isCompact: true,
+                // Add sufficient padding to prevent content from being cut off
+                padding: const EdgeInsets.fromLTRB(8.0, 8.0, 8.0, 8.0),
+              ),
+            ),
           ),
       ],
     );
