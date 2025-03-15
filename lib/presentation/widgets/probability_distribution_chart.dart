@@ -13,6 +13,7 @@ class ProbabilityDistributionChart extends StatelessWidget {
   final Color primaryColor;
   final Color secondaryColor;
   final int maxXValue;
+  final int? attackerAttacks;
 
   const ProbabilityDistributionChart({
     Key? key,
@@ -24,7 +25,8 @@ class ProbabilityDistributionChart extends StatelessWidget {
     this.showCumulative = false,
     this.primaryColor = Colors.deepPurple,
     this.secondaryColor = Colors.deepPurpleAccent,
-    this.maxXValue = -1, // -1 means auto-calculate
+    this.maxXValue = -1,
+    this.attackerAttacks,
   }) : super(key: key);
 
   @override
@@ -42,6 +44,11 @@ class ProbabilityDistributionChart extends StatelessWidget {
 
     final List<double> cumulativeProbabilities =
         showCumulative ? _calculateCumulativeProbabilities(probabilities) : [];
+
+    // Debug: print some values to check if they're valid
+    print('Distribution mean: ${distribution.mean}');
+    print('First 5 probabilities: ${probabilities.take(5).toList()}');
+    print('Max probability: ${_calculateMaxY(probabilities)}');
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.center,
@@ -158,15 +165,15 @@ class ProbabilityDistributionChart extends StatelessWidget {
               ),
               gridData: FlGridData(
                 show: true,
-                checkToShowHorizontalLine: (value) => value % 0.2 == 0,
+                checkToShowHorizontalLine: (value) =>
+                    value % 0.1 == 0, // Changed to 0.1 for finer grid
                 getDrawingHorizontalLine: (value) {
                   return FlLine(
                     color: Colors.black12,
                     strokeWidth: 1,
                   );
                 },
-                drawVerticalLine:
-                    false, // Change to false to prevent vertical lines extending
+                drawVerticalLine: false,
                 getDrawingVerticalLine: (value) {
                   // Only draw threshold lines
                   bool isThreshold = thresholds.any((t) => t.value == value);
@@ -230,26 +237,38 @@ class ProbabilityDistributionChart extends StatelessWidget {
       return maxXValue;
     }
 
-    // Otherwise calculate based on probabilities
+    // If attacker's attacks are provided, use that as a basis for reasonable max wounds
+    // Maximum wounds will be roughly attacks * 2 (direct hits + morale failures)
+    if (attackerAttacks != null) {
+      // Use a realistic maximum: direct wounds + morale wounds (approximately 2x attacks)
+      // Add a small buffer for special rules that might increase this
+      return min(
+          distribution.probabilities.length - 1, attackerAttacks! * 2 + 5);
+    }
+
     // Start by finding the last non-zero probability
-    int lastNonZero = distribution.probabilities.length - 1;
+    int lastNonZero = min(distribution.probabilities.length - 1,
+        60); // Cap at 60 to prevent extreme cases
     while (lastNonZero > 0 && distribution.probabilities[lastNonZero] < 0.001) {
       lastNonZero--;
     }
 
     // Find the last index that has a significant probability (0.5%)
     int significantIndex = 0;
-    for (int i = 0; i < distribution.probabilities.length; i++) {
+    for (int i = 0; i < min(distribution.probabilities.length, 60); i++) {
       if (distribution.probabilities[i] >= 0.005) {
         significantIndex = i;
       }
     }
 
-    // Ensure we show at least up to the mean
+    // Ensure we show at least up to the mean + 2x standard deviation
     int meanValue = distribution.mean.ceil();
+    int stdDevValue = (distribution.standardDeviation * 2).ceil();
+    int meanPlusStdDev = meanValue + stdDevValue;
 
-    // Choose the maximum of all these methods, but at least 3
-    return max(max(max(significantIndex, meanValue), lastNonZero), 3);
+    // Choose the maximum of all these methods, but at least 3 and not more than 60
+    return min(
+        max(max(max(significantIndex, meanPlusStdDev), lastNonZero), 3), 60);
   }
 
   // Calculate the interval for X axis labels to avoid crowding
@@ -268,8 +287,13 @@ class ProbabilityDistributionChart extends StatelessWidget {
       if (prob > maxProb) maxProb = prob;
     }
 
-    // Round up to next 0.1 increment
-    return ((maxProb * 10).ceil() / 10) + 0.05;
+    // If max probability is very small, use a minimum value to show bars
+    if (maxProb < 0.01) {
+      return 0.05; // Set a minimum value of 5%
+    }
+
+    // Round up to next 0.05 increment for better visualization
+    return ((maxProb * 20).ceil() / 20) + 0.05;
   }
 
   // Calculate cumulative probabilities for the chart
@@ -288,6 +312,12 @@ class ProbabilityDistributionChart extends StatelessWidget {
     for (int i = 0; i <= maxX; i++) {
       // If we're beyond the distribution's array, use zero
       double value = i < values.length ? values[i] : 0.0;
+
+      // Ensure the value is never completely zero for visualization
+      // A very small non-zero value will still render as a tiny bar
+      if (value < 0.001 && value > 0) {
+        value = 0.001; // Minimum visible value
+      }
 
       // Check if this is a threshold value
       bool isThreshold = thresholds.any((t) => t.value == i);

@@ -40,7 +40,8 @@ class ProbabilityDistribution {
     }
 
     // Calculate success probability on a d6
-    final double p = targetValue / 6.0;
+    // If targetValue is 3, that means 3+ succeeds, so probability is (6-3+1)/6 = 4/6
+    final double p = (7 - targetValue) / 6.0;
 
     // Calculate binomial probabilities for 0 to n successes
     List<double> probs = List<double>.filled(dice + 1, 0.0);
@@ -76,35 +77,60 @@ class ProbabilityDistribution {
   }
 
   /// Calculate binomial coefficient C(n,k) = n! / (k! * (n-k)!)
-  /// Implemented with logarithms to avoid factorial overflow
+  /// Using direct calculation for better numerical stability
   static double _binomialCoefficient(int n, int k) {
     // Optimize for edge cases
     if (k == 0 || k == n) return 1.0;
     if (k == 1 || k == n - 1) return n.toDouble();
 
-    // Use logarithm method for larger values to avoid overflow
-    double logResult = 0.0;
-    for (int i = 1; i <= k; i++) {
-      logResult += math.log(n - k + i) - math.log(i);
+    // Take advantage of symmetry
+    if (k > n - k) {
+      k = n - k;
     }
-    return math.exp(logResult);
+
+    // Calculate directly
+    double c = 1.0;
+    for (int i = 0; i < k; i++) {
+      c = c * (n - i) / (i + 1);
+    }
+
+    return c;
   }
 
   /// Factory method to combine two probability distributions
   /// Used for combining hit, wound, and morale distributions
   factory ProbabilityDistribution.combine(
     ProbabilityDistribution dist1,
-    ProbabilityDistribution dist2,
-  ) {
-    // Using convolution to combine distributions
-    int maxOutcome =
+    ProbabilityDistribution dist2, {
+    int? maxOutcome,
+  }) {
+    // Calculate the standard convolution length
+    int standardMaxOutcome =
         dist1.probabilities.length + dist2.probabilities.length - 1;
-    List<double> combined = List<double>.filled(maxOutcome, 0.0);
 
-    // Discrete convolution
-    for (int i = 0; i < dist1.probabilities.length; i++) {
-      for (int j = 0; j < dist2.probabilities.length; j++) {
-        combined[i + j] += dist1.probabilities[i] * dist2.probabilities[j];
+    // If maxOutcome is specified, use it to limit the array size
+    int actualMaxOutcome = maxOutcome ?? standardMaxOutcome;
+
+    // Cap to a reasonable size to prevent enormous arrays
+    actualMaxOutcome = math.min(actualMaxOutcome, 60);
+
+    List<double> combined = List<double>.filled(actualMaxOutcome, 0.0);
+
+    // Discrete convolution with limited output size
+    for (int i = 0;
+        i < math.min(dist1.probabilities.length, actualMaxOutcome);
+        i++) {
+      double prob1 = dist1.probabilities[i];
+      if (prob1 < 1e-10)
+        continue; // Skip near-zero probabilities for efficiency
+
+      for (int j = 0;
+          j < math.min(dist2.probabilities.length, actualMaxOutcome - i);
+          j++) {
+        double prob2 = dist2.probabilities[j];
+        if (prob2 < 1e-10) continue; // Skip near-zero probabilities
+
+        combined[i + j] += prob1 * prob2;
       }
     }
 
@@ -132,7 +158,7 @@ class ProbabilityDistribution {
     return cumulative;
   }
 
-  /// Get probability of exceeding a threshold: P(X ≥ k)
+  /// Get probability of exceeding a threshold: P(X > k)
   double getProbabilityOfExceeding(int threshold) {
     if (threshold < 0) return 1.0;
     if (threshold >= probabilities.length) return 0.0;
@@ -163,7 +189,7 @@ class ProbabilityDistribution {
 
     // Normalize the truncated distribution
     double sum = truncated.fold(0.0, (a, b) => a + b);
-    if (sum < 1.0) {
+    if (sum < 1.0 && sum > 0.0) {
       truncated = truncated.map((p) => (p / sum).toDouble()).toList();
     }
 

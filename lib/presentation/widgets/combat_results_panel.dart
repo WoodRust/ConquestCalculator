@@ -115,10 +115,9 @@ class CombatResultsPanel extends ConsumerWidget {
                         width: MediaQuery.of(context).size.width - 72,
                         height: 250,
                         showCumulative: combatState.showCumulativeDistribution,
-                        // Don't limit the x-axis to defender's wounds - show full distribution
-                        maxXValue: combatState.simulation!
-                                .totalDamageDistribution!.probabilities.length -
-                            1,
+                        // Calculate total attacks for realistic max wounds
+                        attackerAttacks: _calculateTotalAttacks(combatState),
+                        // Don't limit the x-axis to defender's wounds - use intelligent limits
                         thresholds: [
                           // Stand loss threshold
                           chart.Threshold(
@@ -236,5 +235,34 @@ class CombatResultsPanel extends ConsumerWidget {
     if (probability < 0.5) return Colors.orange.shade700;
     if (probability < 0.75) return Colors.deepOrange.shade700;
     return AppTheme.claudeDefenderAccent;
+  }
+
+  // Calculate total attacks to determine realistic maximum wounds
+  int _calculateTotalAttacks(CombatState state) {
+    if (state.attacker == null) return 0;
+
+    // For a character, just use its attacks value
+    if (state.attacker!.isCharacter()) {
+      return state.attacker!.attacks;
+    }
+
+    // For regular regiments, calculate total attacks based on stands and support
+    int baseAttacks = state.attacker!.attacks * state.numAttackerStands;
+
+    // Add character attacks if present
+    if (state.attackerCharacter != null) {
+      baseAttacks += state.attackerCharacter!.attacks;
+    }
+
+    // For impact, use the impact value if available
+    if (state.isImpact && state.attacker!.hasImpact()) {
+      baseAttacks = state.attacker!.getImpact() * state.numAttackerStands;
+      if (state.attackerCharacter != null &&
+          state.attackerCharacter!.hasImpact()) {
+        baseAttacks += state.attackerCharacter!.getImpact();
+      }
+    }
+
+    return baseAttacks;
   }
 }

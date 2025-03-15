@@ -1,11 +1,11 @@
 // lib/domain/usecases/calculate_combat.dart
-import 'dart:math';
+import 'dart:math' as math;
 import '../models/regiment.dart';
 import '../models/combat_simulation.dart';
 import '../models/probability_distribution.dart';
 
 class CalculateCombat {
-  final Random _random = Random();
+  final math.Random _random = math.Random();
 
   // Calculate expected result based on probabilities
   // Update the calculateExpectedResult method in the CalculateCombat class
@@ -136,7 +136,7 @@ class CalculateCombat {
     );
 
     // 3. Calculate defense parameters
-    int defenseTarget = max(defender.defense, defender.evasion);
+    int defenseTarget = math.max(defender.defense, defender.evasion);
 
     // Adjust for special rules affecting defense
     int effectiveDefense = defenseTarget;
@@ -144,14 +144,14 @@ class CalculateCombat {
     // Apply armor piercing for volleys
     if (isVolley && attacker.hasArmorPiercing()) {
       effectiveDefense =
-          max(defenseTarget - attacker.getArmorPiercingValue(), 0);
+          math.max(defenseTarget - attacker.getArmorPiercingValue(), 0);
     }
     // Apply armor piercing as a separate rule (not tied to volleys)
     else if (!isVolley && mutableSpecialRules['armorPiercing'] == true) {
       int armorPiercingValue =
           mutableSpecialRules['armorPiercingValue'] as int? ??
               attacker.getArmorPiercingValue();
-      effectiveDefense = max(defenseTarget - armorPiercingValue, 0);
+      effectiveDefense = math.max(defenseTarget - armorPiercingValue, 0);
     }
     // Apply cleave for melee attacks
     else if (!isVolley &&
@@ -159,7 +159,7 @@ class CalculateCombat {
       // Get cleave value either from regiment or special rules
       int cleaveValue =
           mutableSpecialRules['cleaveValue'] as int? ?? attacker.getCleave();
-      effectiveDefense = max(defenseTarget - cleaveValue, 0);
+      effectiveDefense = math.max(defenseTarget - cleaveValue, 0);
     }
     // Apply brutal impact for impact attacks
     else if (isImpact &&
@@ -168,13 +168,13 @@ class CalculateCombat {
       int brutalImpactValue =
           mutableSpecialRules['brutalImpactValue'] as int? ??
               attacker.getBrutalImpact();
-      effectiveDefense = max(defenseTarget - brutalImpactValue, 0);
+      effectiveDefense = math.max(defenseTarget - brutalImpactValue, 0);
     }
 
     // Adjust for flanking/rear attack - ignore shield
     if (isFlank || isRear) {
       if (defender.hasSpecialRule('shield') || defender.shield) {
-        effectiveDefense = max(effectiveDefense - 1, 0);
+        effectiveDefense = math.max(effectiveDefense - 1, 0);
       }
     }
 
@@ -206,8 +206,8 @@ class CalculateCombat {
     // Adjust for flanking/rear attack
     if (isFlank || isRear) {
       // Units attacked from flank/rear must re-roll successful resolve tests
-      resolveTarget =
-          max(resolveTarget - 1, 0); // Simulate re-rolls by reducing target
+      resolveTarget = math.max(
+          resolveTarget - 1, 0); // Simulate re-rolls by reducing target
     }
 
     // Calculate morale wound distribution based on wounds already suffered
@@ -223,7 +223,7 @@ class CalculateCombat {
     // 6. Calculate total damage distribution by combining wounds and resolve failures
     ProbabilityDistribution totalDamageDistribution =
         _calculateTotalDamageDistribution(
-            woundDistribution, resolveDistribution);
+            woundDistribution, resolveDistribution, totalAttacks);
 
     // 7. Calculate breaking threshold based on effective stand count
     int standsToBreak = (effectiveDefenderStands / 2).ceil();
@@ -458,7 +458,7 @@ class CalculateCombat {
     // This is an approximation since true reroll distribution is more complex
     double mean = dice * adjustedProbability;
     double variance = dice * adjustedProbability * (1 - adjustedProbability);
-    double stdDev = sqrt(variance);
+    double stdDev = math.sqrt(variance);
 
     // Generate approximate probability distribution
     List<double> probabilities = List<double>.filled(dice + 1, 0.0);
@@ -488,67 +488,26 @@ class CalculateCombat {
     }
 
     // Calculate probability
-    return coefficient * pow(p, k) * pow(1 - p, n - k);
+    return coefficient * math.pow(p, k) * math.pow(1 - p, n - k);
   }
 
   // Calculate wound distribution based on hit distribution and defense target
   ProbabilityDistribution _calculateWoundDistribution(
       ProbabilityDistribution hitDistribution, int defenseTarget) {
-    // Calculate probability of failing a defense roll
-    double defenseProbability = defenseTarget / 6.0;
-    double failProbability = 1.0 - defenseProbability;
+    // For a defense target of 2, the unit saves on a 2+, so probability of success is 5/6
+    // This means we want to calculate the probability of defense *failures*
+    // For failure, we need 7-defenseTarget or higher (e.g., for defense 3+, we need 4+ to fail)
+    int failureTarget = 7 - defenseTarget;
 
-    // For each possible hit outcome, calculate wound distribution
-    List<ProbabilityDistribution> woundDistributions = [];
+    // Create binomial distribution for direct defense rolls
+    // We'll use the mean number of hits as a basis for our calculation
+    int expectedHits = hitDistribution.mean.round();
 
-    for (int hits = 0; hits < hitDistribution.probabilities.length; hits++) {
-      // Skip if probability is effectively zero
-      if (hitDistribution.probabilities[hits] < 0.00001) continue;
-
-      // Create binomial distribution for defense rolls
-      ProbabilityDistribution defenseDistribution =
-          ProbabilityDistribution.binomial(
-        dice: hits,
-        targetValue: 6 - defenseTarget, // Invert for failures
-      );
-
-      // Scale by probability of getting this many hits
-      List<double> scaledProbs = defenseDistribution.probabilities
-          .map((p) => p * hitDistribution.probabilities[hits])
-          .toList();
-
-      // Create a distribution for this outcome
-      woundDistributions.add(ProbabilityDistribution(
-        probabilities: scaledProbs,
-        mean: defenseDistribution.mean * hitDistribution.probabilities[hits],
-        standardDeviation: defenseDistribution.standardDeviation *
-            hitDistribution.probabilities[hits],
-        diceCount: hits,
-        targetValue: 6 - defenseTarget,
-      ));
-    }
-
-    // Combine all distributions
-    if (woundDistributions.isEmpty) {
-      // Return empty distribution if no hits
-      return ProbabilityDistribution(
-        probabilities: [1.0],
-        mean: 0.0,
-        standardDeviation: 0.0,
-        diceCount: 0,
-        targetValue: 0,
-      );
-    }
-
-    // Start with first distribution
-    ProbabilityDistribution result = woundDistributions[0];
-
-    // Combine with rest
-    for (int i = 1; i < woundDistributions.length; i++) {
-      result = _combineProbabilityDistributions(result, woundDistributions[i]);
-    }
-
-    return result;
+    // Create a direct binomial distribution for defense failures
+    return ProbabilityDistribution.binomial(
+      dice: expectedHits,
+      targetValue: failureTarget,
+    );
   }
 
   // Calculate resolve test distribution based on wound distribution
@@ -556,125 +515,111 @@ class CalculateCombat {
       ProbabilityDistribution woundDistribution,
       int resolveTarget,
       int indomitableValue) {
-    // Calculate probability of failing a resolve test
-    double resolveProbability = resolveTarget / 6.0;
-    double failProbability = 1.0 - resolveProbability;
+    // Calculate resolve test failures
+    int failureTarget = 7 - resolveTarget;
 
-    // For each wound outcome, calculate morale wound distribution
-    List<ProbabilityDistribution> moraleDistributions = [];
+    // Use the expected number of wounds as the basis for resolve tests
+    int expectedWounds = woundDistribution.mean.round();
 
-    for (int wounds = 0;
-        wounds < woundDistribution.probabilities.length;
-        wounds++) {
-      // Skip if probability is effectively zero
-      if (woundDistribution.probabilities[wounds] < 0.00001) continue;
+    // Create binomial distribution for resolve failures
+    ProbabilityDistribution resolveDistribution =
+        ProbabilityDistribution.binomial(
+      dice: expectedWounds,
+      targetValue: failureTarget,
+    );
 
-      // Create binomial distribution for resolve rolls
-      ProbabilityDistribution resolveDistribution =
-          ProbabilityDistribution.binomial(
-        dice: wounds,
-        targetValue: 6 - resolveTarget, // Invert for failures
-      );
+    // Apply Indomitable effect if present
+    if (indomitableValue > 0) {
+      // This is a simple approximation - we subtract indomitable from the mean
+      // and create a new distribution with adjusted mean and standard deviation
+      double adjustedMean =
+          math.max(0.0, resolveDistribution.mean - indomitableValue);
 
-      // Apply Indomitable effect - convert some failures to successes
-      if (indomitableValue > 0) {
-        // This is a simplified approximation - indomitable lets you ignore X failed tests
-        List<double> adjustedProbs =
-            List<double>.from(resolveDistribution.probabilities);
+      // Create a new binomial distribution with appropriate mean
+      if (adjustedMean > 0) {
+        // Calculate probability that would give this adjusted mean
+        double p = adjustedMean / expectedWounds;
+        if (p > 0 && p < 1) {
+          int adjustedTarget = (6 * (1 - p)).round() + 1;
+          adjustedTarget = math.min(math.max(adjustedTarget, 1), 6);
 
-        // Shift probability distribution to account for indomitable
-        for (int i = indomitableValue; i < adjustedProbs.length; i++) {
-          // Move some probability from i to i-indomitableValue
-          double probToMove = adjustedProbs[i] * (indomitableValue / i);
-          adjustedProbs[i] -= probToMove;
-          adjustedProbs[i - indomitableValue] += probToMove;
+          resolveDistribution = ProbabilityDistribution.binomial(
+            dice: expectedWounds,
+            targetValue: adjustedTarget,
+          );
         }
-
-        // Create adjusted distribution
+      } else {
+        // If indomitable would reduce to 0, create a distribution with just a 0
         resolveDistribution = ProbabilityDistribution(
-          probabilities: adjustedProbs,
-          mean: resolveDistribution.mean - indomitableValue.toDouble(),
-          standardDeviation: resolveDistribution.standardDeviation,
-          diceCount: resolveDistribution.diceCount,
-          targetValue: resolveDistribution.targetValue,
+          probabilities: [1.0], // 100% chance of 0 wounds
+          mean: 0.0,
+          standardDeviation: 0.0,
+          diceCount: expectedWounds,
+          targetValue: failureTarget,
         );
       }
-
-      // Scale by probability of this wound outcome
-      List<double> scaledProbs = resolveDistribution.probabilities
-          .map((p) => p * woundDistribution.probabilities[wounds])
-          .toList();
-
-      // Create a distribution for this outcome
-      moraleDistributions.add(ProbabilityDistribution(
-        probabilities: scaledProbs,
-        mean:
-            resolveDistribution.mean * woundDistribution.probabilities[wounds],
-        standardDeviation: resolveDistribution.standardDeviation *
-            woundDistribution.probabilities[wounds],
-        diceCount: wounds,
-        targetValue: 6 - resolveTarget,
-      ));
     }
 
-    // Combine all distributions
-    if (moraleDistributions.isEmpty) {
-      // Return empty distribution if no wounds
-      return ProbabilityDistribution(
-        probabilities: [1.0],
-        mean: 0.0,
-        standardDeviation: 0.0,
-        diceCount: 0,
-        targetValue: 0,
-      );
-    }
-
-    // Start with first distribution
-    ProbabilityDistribution result = moraleDistributions[0];
-
-    // Combine with rest
-    for (int i = 1; i < moraleDistributions.length; i++) {
-      result = _combineProbabilityDistributions(result, moraleDistributions[i]);
-    }
-
-    return result;
+    return resolveDistribution;
   }
 
   // Calculate total damage by combining wound and resolve distributions
   ProbabilityDistribution _calculateTotalDamageDistribution(
       ProbabilityDistribution woundDistribution,
-      ProbabilityDistribution resolveDistribution) {
-    return _combineProbabilityDistributions(
-        woundDistribution, resolveDistribution);
+      ProbabilityDistribution resolveDistribution,
+      int totalAttacks) {
+    // Calculate a reasonable maximum for the total damage distribution
+    // Typically, worst case is all attacks hit, all defense rolls fail, all morale tests fail
+    // So roughly 2x the total attack dice is a reasonable upper bound
+    int reasonableMaxOutcome = totalAttacks * 2;
+
+    // Add a buffer for special rules that might increase damage
+    reasonableMaxOutcome += 5;
+
+    // Ensure we capture at least the mean + 3 standard deviations of both distributions
+    int statisticalMax = (woundDistribution.mean +
+            resolveDistribution.mean +
+            3 *
+                (woundDistribution.standardDeviation +
+                    resolveDistribution.standardDeviation))
+        .ceil();
+
+    // Use the smaller of our calculated max and statistical max, but ensure it's at least 10
+    int maxOutcome =
+        math.max(10, math.min(reasonableMaxOutcome, statisticalMax));
+
+    return ProbabilityDistribution.combine(
+        woundDistribution, resolveDistribution,
+        maxOutcome: maxOutcome);
   }
 
-  // Helper method to combine two probability distributions
-  ProbabilityDistribution _combineProbabilityDistributions(
-      ProbabilityDistribution dist1, ProbabilityDistribution dist2) {
-    int maxOutcome =
-        dist1.probabilities.length + dist2.probabilities.length - 1;
-    List<double> combined = List<double>.filled(maxOutcome, 0.0);
+// Add this simplified method for direct calculation if needed for testing
+  ProbabilityDistribution calculateSimplifiedWoundDistribution(
+      int totalAttacks, int hitTarget, int defenseValue, int resolveValue) {
+    // 1. Calculate hit probability distribution
+    ProbabilityDistribution hitDistribution = ProbabilityDistribution.binomial(
+      dice: totalAttacks,
+      targetValue: hitTarget,
+    );
 
-    // Discrete convolution
-    for (int i = 0; i < dist1.probabilities.length; i++) {
-      for (int j = 0; j < dist2.probabilities.length; j++) {
-        combined[i + j] +=
-            (dist1.probabilities[i] * dist2.probabilities[j]).toDouble();
-      }
-    }
+    // 2. Calculate direct wounds distribution
+    ProbabilityDistribution woundDistribution =
+        ProbabilityDistribution.binomial(
+      dice: hitDistribution.mean.round(),
+      targetValue: 7 - defenseValue,
+    );
 
-    // Calculate combined mean and stddev
-    double mean = dist1.mean + dist2.mean;
-    double variance = (dist1.standardDeviation * dist1.standardDeviation) +
-        (dist2.standardDeviation * dist2.standardDeviation);
-    double standardDeviation = sqrt(variance);
+    // 3. Calculate morale wounds distribution
+    ProbabilityDistribution moraleDistribution =
+        ProbabilityDistribution.binomial(
+      dice: woundDistribution.mean.round(),
+      targetValue: 7 - resolveValue,
+    );
 
-    return ProbabilityDistribution(
-      probabilities: combined,
-      mean: mean,
-      standardDeviation: standardDeviation,
-      diceCount: dist1.diceCount + dist2.diceCount,
-      targetValue: max(dist1.targetValue, dist2.targetValue),
+    // 4. Combine direct and morale wounds
+    return ProbabilityDistribution.combine(
+      woundDistribution,
+      moraleDistribution,
     );
   }
 }
