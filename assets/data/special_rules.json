@@ -259,6 +259,34 @@
         {
             "name": "Wizard",
             "description": "This Regiment or Character Stand can perform the Spellcasting Action during its Activation. The X value is this Stand's Magic Level. If the Regiment or Character Stand does not have any Spells available, then it only counts toward Enemy Interference."
+        },
+        {
+            "name": "Leader",
+            "description": "A command stand containing a leader adds +1 attack to the command stands characteristic profile. If the command stand has the Barrage(x) special rule, then it also increases the command stand's Barrage(x) value by +1."
+        },
+        {
+            "name": "Standard Bearer",
+            "description": "A regiment with a Standard Bearer gains the unstoppable specila rule. In addition the standard Bearer asdds +1 to the regiment's and currently attached Character stand's March characteristic on the second march action the regiment performs durng its activation until the end of that march action."
+        },
+        {
+            "name": "Captain",
+            "description": "The Regiment's Command Stand counts as 1 Additional Stand for the purposes of Seizing Objective Zones."
+        },
+        {
+            "name": "Savage",
+            "description": "This Regiment may perform a free additional Charge Action during its Activation."
+        },
+        {
+            "name": "Shield Biter",
+            "description": "The Regiment's Command Stand may Die Fighting! as if it was a [Character] Stand regardless of whether the Regiment has Acted this Round. In addition currently attached [Character] Stands may Die Fighting! regardless of whether the Regiment has Acted this Round."
+        },
+        {
+            "name": "Skald",
+            "description": "This Regiment adds +1 to their Resolve Characteristic and gains the Bravery Special Rule."
+        },
+        {
+            "name": "Thegn",
+            "description": "This Regiment gains the Bastion (1) Draw Event. Currently attached Character Stands do not gain the Draw Event."
         }
     ],
     "draw_events": [
