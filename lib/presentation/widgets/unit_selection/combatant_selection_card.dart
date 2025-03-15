@@ -9,6 +9,7 @@ import 'character_attachment_row.dart';
 import 'special_rules_section.dart';
 import 'faction_selection.dart';
 import '../../themes/app_theme.dart';
+import '../faction_grid_dialog.dart';
 
 /// A reusable component for selecting either an attacker or defender regiment
 class CombatantSelectionCard extends ConsumerWidget {

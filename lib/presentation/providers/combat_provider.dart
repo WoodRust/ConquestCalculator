@@ -220,6 +220,38 @@ class CombatNotifier extends StateNotifier<CombatState> {
     }
   }
 
+  // Method to swap attacker and defender
+  void swapAttackerAndDefender() {
+    // Store the current values
+    final currentAttacker = state.attacker;
+    final currentAttackerStands = state.numAttackerStands;
+    final currentAttackerCharacter = state.attackerCharacter;
+    final currentAttackerFaction = state.attackerFaction;
+
+    final currentDefender = state.defender;
+    final currentDefenderStands = state.numDefenderStands;
+    final currentDefenderCharacter = state.defenderCharacter;
+    final currentDefenderFaction = state.defenderFaction;
+
+    // Swap the values
+    state = state.copyWith(
+      attacker: currentDefender,
+      numAttackerStands: currentDefenderStands,
+      attackerCharacter: currentDefenderCharacter,
+      attackerFaction: currentDefenderFaction,
+      defender: currentAttacker,
+      numDefenderStands: currentAttackerStands,
+      defenderCharacter: currentAttackerCharacter,
+      defenderFaction: currentAttackerFaction,
+      clearSimulation: true, // Clear the current simulation
+    );
+
+    // Recalculate if both units are selected
+    if (state.attacker != null && state.defender != null) {
+      _recalculate();
+    }
+  }
+
   // Updated toggleDuelMode method with visual feedback
   void toggleDuelMode(bool value) {
     // Get a copy of the current state for debugging

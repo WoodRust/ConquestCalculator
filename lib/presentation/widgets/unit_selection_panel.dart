@@ -6,6 +6,60 @@ import 'unit_selection/combatant_selection_card.dart';
 import 'unit_selection/duel_mode_toggle.dart';
 import '../themes/app_theme.dart';
 
+// Custom SwapButton widget
+class SwapButton extends ConsumerWidget {
+  const SwapButton({super.key});
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final combatState = ref.watch(combatProvider);
+    final combatNotifier = ref.read(combatProvider.notifier);
+
+    final bool hasSelections = combatState.attackerFaction != null ||
+        combatState.defenderFaction != null;
+
+    return IconButton(
+      icon: const Icon(Icons.swap_horiz),
+      tooltip: 'Swap attacker and defender',
+      onPressed: hasSelections
+          ? () {
+              combatNotifier.swapAttackerAndDefender();
+
+              // Show a snackbar to confirm the swap
+              ScaffoldMessenger.of(context).clearSnackBars();
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: Row(
+                    children: [
+                      const Icon(Icons.swap_horiz, color: Colors.white),
+                      const SizedBox(width: 12),
+                      const Text('Attacker and defender swapped'),
+                    ],
+                  ),
+                  duration: const Duration(seconds: 2),
+                  behavior: SnackBarBehavior.floating,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                ),
+              );
+            }
+          : null, // Disable if no factions selected
+      style: IconButton.styleFrom(
+        foregroundColor: hasSelections ? AppTheme.claudePrimary : Colors.grey,
+        backgroundColor: AppTheme.claudeSurface,
+        padding: const EdgeInsets.all(12),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(8),
+          side: BorderSide(
+            color: hasSelections ? AppTheme.claudeBorder : Colors.grey.shade300,
+          ),
+        ),
+      ),
+    );
+  }
+}
+
 class UnitSelectionPanel extends ConsumerWidget {
   const UnitSelectionPanel({super.key});
 
@@ -31,13 +85,20 @@ class UnitSelectionPanel extends ConsumerWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Combat Setup title with Duel mode checkbox
+            // Combat Setup title with Duel mode checkbox and swap button
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Text('Combat Setup',
                     style: Theme.of(context).textTheme.titleLarge),
-                const DuelModeToggle(),
+                Row(
+                  children: [
+                    // Swap button
+                    const SwapButton(),
+                    const SizedBox(width: 12),
+                    const DuelModeToggle(),
+                  ],
+                ),
               ],
             ),
             const SizedBox(height: 12),
