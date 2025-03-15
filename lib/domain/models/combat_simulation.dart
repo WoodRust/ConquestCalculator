@@ -3,6 +3,7 @@ import 'package:conquest_calculator/domain/models/regiment.dart';
 import 'package:conquest_calculator/domain/models/probability_distribution.dart';
 
 /// Represents the outcome of a simple dice roll with success and failure count
+/// Represents the outcome of a simple dice roll with success and failure count
 class DiceResult {
   final int successes;
   final int failures;
@@ -15,7 +16,8 @@ class DiceResult {
   });
 
   factory DiceResult.fromRoll({required int dice, required int target}) {
-    // Calculate expected successes for a given number of dice and target
+    // FIXED: In Conquest, success is rolling less than or equal to the target
+    // So for a target of 3, the success rate is 3/6 = 0.5
     final double successRate = target / 6.0;
     final int expectedSuccesses = (dice * successRate).round();
     return DiceResult(

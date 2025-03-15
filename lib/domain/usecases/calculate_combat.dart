@@ -494,10 +494,13 @@ class CalculateCombat {
   // Calculate wound distribution based on hit distribution and defense target
   ProbabilityDistribution _calculateWoundDistribution(
       ProbabilityDistribution hitDistribution, int defenseTarget) {
-    // For a defense target of 2, the unit saves on a 2+, so probability of success is 5/6
-    // This means we want to calculate the probability of defense *failures*
-    // For failure, we need 7-defenseTarget or higher (e.g., for defense 3+, we need 4+ to fail)
-    int failureTarget = 7 - defenseTarget;
+    // FIXED: For Conquest, a defense target of 2 means the unit saves on a roll of 1-2
+    // To calculate defense failures, we need a roll above the defenseTarget value (3-6 in this example)
+    // So the probability of a failure is (6-defenseTarget)/6
+
+    // For defense roll failures, we need to roll higher than the defense target
+    // E.g., if defense is 2, rolls of 3, 4, 5, 6 are failures
+    int failureTarget = 6 - defenseTarget;
 
     // Create binomial distribution for direct defense rolls
     // We'll use the mean number of hits as a basis for our calculation
@@ -515,8 +518,9 @@ class CalculateCombat {
       ProbabilityDistribution woundDistribution,
       int resolveTarget,
       int indomitableValue) {
-    // Calculate resolve test failures
-    int failureTarget = 7 - resolveTarget;
+    // FIXED: For resolve tests, a roll above the resolveTarget is a failure
+    // E.g., if resolve is 3, rolls of 4, 5, 6 are failures
+    int failureTarget = 6 - resolveTarget;
 
     // Use the expected number of wounds as the basis for resolve tests
     int expectedWounds = woundDistribution.mean.round();
@@ -540,8 +544,8 @@ class CalculateCombat {
         // Calculate probability that would give this adjusted mean
         double p = adjustedMean / expectedWounds;
         if (p > 0 && p < 1) {
-          int adjustedTarget = (6 * (1 - p)).round() + 1;
-          adjustedTarget = math.min(math.max(adjustedTarget, 1), 6);
+          int adjustedTarget = (6 * p).round();
+          adjustedTarget = math.min(math.max(adjustedTarget, 0), 6);
 
           resolveDistribution = ProbabilityDistribution.binomial(
             dice: expectedWounds,

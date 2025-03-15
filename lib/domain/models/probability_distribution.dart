@@ -40,8 +40,9 @@ class ProbabilityDistribution {
     }
 
     // Calculate success probability on a d6
-    // If targetValue is 3, that means 3+ succeeds, so probability is (6-3+1)/6 = 4/6
-    final double p = (7 - targetValue) / 6.0;
+    // FIXED: In Conquest, rolling less than or equal to the target is a success
+    // So for targetValue of 3, probability is 3/6 = 0.5
+    final double p = targetValue / 6.0;
 
     // Calculate binomial probabilities for 0 to n successes
     List<double> probs = List<double>.filled(dice + 1, 0.0);
@@ -97,8 +98,34 @@ class ProbabilityDistribution {
     return c;
   }
 
-  /// Factory method to combine two probability distributions
-  /// Used for combining hit, wound, and morale distributions
+  /// Get survival probability function: P(X ≥ k)
+  List<double> getSurvivalDistribution() {
+    List<double> survival = List<double>.filled(probabilities.length, 0.0);
+
+    // Start from the end and accumulate backward
+    double sum = 0.0;
+    for (int i = probabilities.length - 1; i >= 0; i--) {
+      sum += probabilities[i];
+      survival[i] = sum;
+    }
+
+    return survival;
+  }
+
+  /// Get probability of being greater than or equal to a threshold: P(X ≥ k)
+  double getProbabilityOfAtLeast(int threshold) {
+    if (threshold >= probabilities.length) return 0.0;
+    if (threshold <= 0) return 1.0;
+
+    double probability = 0.0;
+    for (int i = threshold; i < probabilities.length; i++) {
+      probability += probabilities[i];
+    }
+
+    return probability;
+  }
+
+  // Factory method to combine two probability distributions
   factory ProbabilityDistribution.combine(
     ProbabilityDistribution dist1,
     ProbabilityDistribution dist2, {

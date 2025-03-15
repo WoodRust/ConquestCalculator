@@ -42,8 +42,9 @@ class ProbabilityDistributionChart extends StatelessWidget {
                 distribution.probabilities.sublist(0, effectiveMaxX + 1))
             : List<double>.from(distribution.probabilities);
 
-    final List<double> cumulativeProbabilities =
-        showCumulative ? _calculateCumulativeProbabilities(probabilities) : [];
+    // MODIFIED: Calculate the survival function (P(X ≥ k)) instead of the cumulative distribution (P(X ≤ k))
+    final List<double> survivalProbabilities =
+        showCumulative ? _calculateSurvivalProbabilities(probabilities) : [];
 
     // Debug: print some values to check if they're valid
     print('Distribution mean: ${distribution.mean}');
@@ -91,8 +92,9 @@ class ProbabilityDistributionChart extends StatelessWidget {
                 touchTooltipData: BarTouchTooltipData(
                   tooltipBgColor: Colors.black87,
                   getTooltipItem: (group, groupIndex, rod, rodIndex) {
+                    // MODIFIED: Updated tooltip text to reflect P(X ≥ k) instead of P(X ≤ k)
                     String label = showCumulative
-                        ? 'P(X ≤ ${groupIndex}) = ${(rod.toY * 100).toStringAsFixed(1)}%'
+                        ? 'P(X ≥ ${groupIndex}) = ${(rod.toY * 100).toStringAsFixed(1)}%'
                         : 'P(X = ${groupIndex}) = ${(rod.toY * 100).toStringAsFixed(1)}%';
 
                     // Add threshold information if applicable
@@ -198,7 +200,7 @@ class ProbabilityDistributionChart extends StatelessWidget {
                 ),
               ),
               barGroups: _createBarGroups(
-                showCumulative ? cumulativeProbabilities : probabilities,
+                showCumulative ? survivalProbabilities : probabilities,
                 effectiveMaxX,
               ),
             ),
@@ -296,13 +298,18 @@ class ProbabilityDistributionChart extends StatelessWidget {
     return ((maxProb * 20).ceil() / 20) + 0.05;
   }
 
-  // Calculate cumulative probabilities for the chart
-  List<double> _calculateCumulativeProbabilities(List<double> probabilities) {
-    List<double> cumulative = List<double>.from(probabilities);
-    for (int i = 1; i < cumulative.length; i++) {
-      cumulative[i] += cumulative[i - 1];
+  // MODIFIED: Calculate survival probabilities (P(X ≥ k)) instead of cumulative probabilities (P(X ≤ k))
+  List<double> _calculateSurvivalProbabilities(List<double> probabilities) {
+    List<double> survival = List<double>.filled(probabilities.length, 0.0);
+
+    // Start from the end and go backward
+    double sum = 0.0;
+    for (int i = probabilities.length - 1; i >= 0; i--) {
+      sum += probabilities[i];
+      survival[i] = sum;
     }
-    return cumulative;
+
+    return survival;
   }
 
   // Create bar groups for FL Chart
