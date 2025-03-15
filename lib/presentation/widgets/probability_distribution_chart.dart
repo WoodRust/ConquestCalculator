@@ -46,11 +46,6 @@ class ProbabilityDistributionChart extends StatelessWidget {
     final List<double> survivalProbabilities =
         showCumulative ? _calculateSurvivalProbabilities(probabilities) : [];
 
-    // Debug: print some values to check if they're valid
-    print('Distribution mean: ${distribution.mean}');
-    print('First 5 probabilities: ${probabilities.take(5).toList()}');
-    print('Max probability: ${_calculateMaxY(probabilities)}');
-
     return Column(
       crossAxisAlignment: CrossAxisAlignment.center,
       children: [
@@ -63,16 +58,14 @@ class ProbabilityDistributionChart extends StatelessWidget {
           ),
         ),
 
-        // Stats row
+        // Stats row - simplified to only show standard deviation
         Padding(
           padding: const EdgeInsets.only(bottom: 8.0),
           child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceAround,
+            mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Text('Mean: ${distribution.mean.toStringAsFixed(1)}'),
               Text(
-                  'Std Dev: ${distribution.standardDeviation.toStringAsFixed(1)}'),
-              Text('Dice: ${distribution.diceCount}'),
+                  'Standard Deviation: ${distribution.standardDeviation.toStringAsFixed(1)}'),
             ],
           ),
         ),

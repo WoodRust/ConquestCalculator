@@ -166,11 +166,21 @@ class CombatResultsPanel extends ConsumerWidget {
                         const SizedBox(height: 8),
                         const Divider(color: AppTheme.claudeBorder),
                         const SizedBox(height: 8),
+                        // Add Total Attacks and Expected Hits information
+                        SummaryRow(
+                          label: 'Total Attacks:',
+                          value: _calculateTotalAttacks(combatState).toString(),
+                        ),
+                        SummaryRow(
+                          label: 'Expected Hits:',
+                          value: _calculateExpectedHits(combatState)
+                              .toStringAsFixed(1),
+                        ),
                         SummaryRow(
                           label: 'Expected Wounds:',
-                          value: combatState.simulation!
-                              .getExpectedWounds()
-                              .toString(),
+                          value: combatState
+                              .simulation!.totalDamageDistribution!.mean
+                              .toStringAsFixed(1),
                         ),
                         SummaryRow(
                           label: 'Expected Stands Lost:',
@@ -178,18 +188,14 @@ class CombatResultsPanel extends ConsumerWidget {
                               .getExpectedStandsLost()
                               .toString(),
                         ),
-                        SummaryRow(
-                          label: 'Breaking Probability:',
-                          value:
-                              '${(combatState.simulation!.breakingProbability * 100).toStringAsFixed(1)}%',
-                          color: _getBreakingProbabilityColor(
-                              combatState.simulation!.breakingProbability),
-                        ),
-                        SummaryRow(
-                          label: 'Destruction Probability:',
-                          value:
-                              '${(combatState.simulation!.getProbabilityOfLosingAtLeast(combatState.defender!.isCharacter() ? 1 : combatState.numDefenderStands) * 100).toStringAsFixed(1)}%',
-                        ),
+
+                        // Add stand loss probabilities section
+                        const SizedBox(height: 8),
+                        const Divider(color: AppTheme.claudeBorder),
+                        const SizedBox(height: 8),
+                        // Generate stand loss probabilities dynamically based on defender stand count
+                        ..._buildStandLossProbabilities(context, combatState),
+
                         // Show effective stand counts when characters are attached
                         if (combatState.attackerCharacter != null ||
                             combatState.defenderCharacter != null ||
@@ -254,6 +260,11 @@ class CombatResultsPanel extends ConsumerWidget {
       baseAttacks += state.attackerCharacter!.attacks;
     }
 
+    // Add +1 for Leader special rule if present
+    if (state.attacker!.hasSpecialRule('leader')) {
+      baseAttacks += 1;
+    }
+
     // For impact, use the impact value if available
     if (state.isImpact && state.attacker!.hasImpact()) {
       baseAttacks = state.attacker!.getImpact() * state.numAttackerStands;
@@ -264,5 +275,108 @@ class CombatResultsPanel extends ConsumerWidget {
     }
 
     return baseAttacks;
+  }
+
+  // Calculate the expected number of hits properly accounting for rerolls
+  double _calculateExpectedHits(CombatState state) {
+    if (state.attacker == null) return 0.0;
+
+    // Get the total attacks
+    int totalAttacks = _calculateTotalAttacks(state);
+
+    // Get the hit target (clash value or volley value)
+    int hitTarget =
+        state.isVolley ? state.attacker!.volley : state.attacker!.clash;
+
+    // Apply any modifiers to the hit target
+    // Inspired adds +1 to Clash
+    if (state.specialRulesInEffect['inspired'] == true && !state.isVolley) {
+      hitTarget += 1;
+      // If Inspired would raise Clash to 5+, use re-roll instead (no bonus)
+      if (hitTarget >= 5) {
+        hitTarget = state.attacker!.clash;
+      }
+    }
+
+    // Apply Shock bonus when charging
+    if (state.isCharge &&
+        state.attacker!.hasSpecialRule('shock') &&
+        !state.isVolley) {
+      hitTarget += 1;
+    }
+
+    // Calculate the base hit probability
+    double hitProbability = hitTarget / 6.0;
+
+    // Check if rerolls apply
+    bool hasRerolls = state.specialRulesInEffect['flurry'] == true ||
+        state.specialRulesInEffect['aimedReroll'] == true ||
+        state.specialRulesInEffect['inspiredReroll'] == true ||
+        (state.attacker!.hasSpecialRule('opportunists') &&
+            (state.isFlank || state.isRear) &&
+            !state.isImpact);
+
+    // Adjust hit probability for rerolls
+    double adjustedHitProbability = hitProbability;
+    if (hasRerolls) {
+      // Probability with rerolls = original + (missed * original)
+      adjustedHitProbability =
+          hitProbability + ((1 - hitProbability) * hitProbability);
+    }
+
+    // Calculate expected hits
+    return totalAttacks * adjustedHitProbability;
+  }
+
+  // Build a list of stand loss probability rows
+  List<Widget> _buildStandLossProbabilities(
+      BuildContext context, CombatState state) {
+    final List<Widget> rows = [];
+
+    // Get needed values
+    final simulation = state.simulation!;
+    final defender = state.defender!;
+    final int standCount = defender.isCharacter() ? 1 : state.numDefenderStands;
+    final int woundsPerStand = defender.wounds;
+    final int standsToBreak = simulation.standsToBreak;
+
+    // For each stand up to the total stand count
+    for (int i = 1; i <= standCount; i++) {
+      // Create the label based on whether this is the breaking point
+      String label = 'Lose $i Stand${i > 1 ? 's' : ''}:';
+      if (i == standsToBreak) {
+        label = 'Breaking ($i Stand${i > 1 ? 's' : ''}):';
+      } else if (i == standCount) {
+        label = 'Destruction ($i Stand${i > 1 ? 's' : ''}):';
+      }
+
+      // Calculate the probability for this stand loss
+      double probability;
+      if (i == standCount) {
+        // For total destruction - use probability of losing at least all stands
+        probability = simulation.getProbabilityOfLosingAtLeast(standCount);
+      } else {
+        // For losing exactly i stands
+        probability = simulation.getProbabilityOfLosing(i);
+      }
+
+      // Add a row with appropriate highlighting for breaking and destruction
+      Color? textColor;
+      if (i == standsToBreak) {
+        textColor = _getBreakingProbabilityColor(probability);
+      } else if (i == standCount) {
+        textColor = probability > 0.5 ? Colors.red.shade700 : null;
+      }
+
+      rows.add(
+        SummaryRow(
+          label: label,
+          value: '${(probability * 100).toStringAsFixed(1)}%',
+          color: textColor,
+        ),
+      );
+    }
+
+    return rows;
   }
 }

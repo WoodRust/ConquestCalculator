@@ -115,11 +115,18 @@ class CalculateCombat {
     // 2. Calculate hit probability distribution
     ProbabilityDistribution hitDistribution;
 
+    // Check for opportunists special rule (reroll fails when attacking flank/rear)
+    bool hasOpportunists = attacker.hasSpecialRule('opportunists');
+    bool opportunistsActive =
+        hasOpportunists && (isFlank || isRear) && !isImpact;
+
     // Handle re-roll special cases
     if (mutableSpecialRules['aimedReroll'] == true ||
         mutableSpecialRules['inspiredReroll'] == true ||
-        mutableSpecialRules['flurry'] == true) {
+        mutableSpecialRules['flurry'] == true ||
+        opportunistsActive) {
       // For re-rolls, we simulate by increasing the hit probability
+      // Note: Opportunists doesn't stack with flurry (can only reroll once)
       hitDistribution = _calculateDistributionWithRerolls(
           dice: totalAttacks, target: hitTarget, rerollFails: true);
     } else {
@@ -349,6 +356,11 @@ class CalculateCombat {
       mutableSpecialRules['inspiredReroll'] = true;
     }
 
+    // Add +1 attack if regiment has leader special rule
+    if (attacker.hasSpecialRule('leader')) {
+      totalAttacks += 1;
+    }
+
     // Copy any changes back to the original map
     specialRulesInEffect.addAll(mutableSpecialRules);
 
@@ -416,6 +428,11 @@ class CalculateCombat {
         mutableSpecialRules['sureshot'] == true) {
       // This doesn't affect volley count directly, but affects other calculations
       mutableSpecialRules['sureshot'] = true;
+    }
+
+    // Add +1 barrage if regiment has leader special rule
+    if (attacker.hasSpecialRule('leader')) {
+      totalVolleys += 1;
     }
 
     // Penalize for being outside effective range - halved shots
