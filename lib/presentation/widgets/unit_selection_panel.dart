@@ -5,6 +5,7 @@ import '../providers/combat_provider.dart';
 import 'unit_selection/combatant_selection_card.dart';
 import 'unit_selection/duel_mode_toggle.dart';
 import '../themes/app_theme.dart';
+import 'combat_modifiers_panel.dart';
 
 // Custom SwapButton widget
 class SwapButton extends ConsumerWidget {
@@ -66,7 +67,6 @@ class UnitSelectionPanel extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final combatState = ref.watch(combatProvider);
-    final combatNotifier = ref.read(combatProvider.notifier);
 
     // Don't show combat modifiers for character vs character
     final bool isCharacterVsCharacterMode = combatState.isDuelMode ||
@@ -104,9 +104,7 @@ class UnitSelectionPanel extends ConsumerWidget {
             const SizedBox(height: 12),
 
             // Character vs Character mode indicator
-            if (combatState.isDuelMode ||
-                combatState.attacker?.isCharacter() == true)
-              const CharacterModeIndicator(),
+            if (isCharacterVsCharacterMode) const CharacterModeIndicator(),
 
             // Attacker section
             Container(
@@ -153,7 +151,9 @@ class UnitSelectionPanel extends ConsumerWidget {
                               tapTargetSize: MaterialTapTargetSize.shrinkWrap,
                             ),
                             onPressed: () {
-                              // Use the setAttackerFaction method instead
+                              // Clear attacker faction
+                              final combatNotifier =
+                                  ref.read(combatProvider.notifier);
                               combatNotifier.setAttackerFaction(null);
                             },
                           ),
@@ -210,7 +210,9 @@ class UnitSelectionPanel extends ConsumerWidget {
                               tapTargetSize: MaterialTapTargetSize.shrinkWrap,
                             ),
                             onPressed: () {
-                              // Use the setDefenderFaction method instead
+                              // Clear defender faction
+                              final combatNotifier =
+                                  ref.read(combatProvider.notifier);
                               combatNotifier.setDefenderFaction(null);
                             },
                           ),
@@ -222,266 +224,8 @@ class UnitSelectionPanel extends ConsumerWidget {
               ),
             ),
 
-            // Combat Mode Selection (Radio buttons) - don't show for character vs character
-            if (!isCharacterVsCharacterMode)
-              Container(
-                decoration: BoxDecoration(
-                  color: AppTheme.claudeSurface,
-                  borderRadius: BorderRadius.circular(8),
-                  border: Border.all(color: AppTheme.claudeBorder),
-                ),
-                padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 4),
-                margin: const EdgeInsets.only(bottom: 16),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Padding(
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 16, vertical: 8),
-                      child: Text(
-                        'Combat Mode',
-                        style: TextStyle(
-                          fontWeight: FontWeight.w600,
-                          color: AppTheme.claudeText,
-                        ),
-                      ),
-                    ),
-                    Row(
-                      children: [
-                        Expanded(
-                          child: RadioListTile<CombatMode>(
-                            title: const Text('Melee Combat'),
-                            groupValue: combatState.combatMode,
-                            value: CombatMode.melee,
-                            activeColor: AppTheme.claudePrimary,
-                            onChanged: (CombatMode? value) {
-                              if (value != null) {
-                                combatNotifier.setCombatMode(value);
-                              }
-                            },
-                            dense: true,
-                          ),
-                        ),
-                        Expanded(
-                          child: RadioListTile<CombatMode>(
-                            title: const Text('Ranged Combat'),
-                            groupValue: combatState.combatMode,
-                            value: CombatMode.ranged,
-                            activeColor: AppTheme.claudePrimary,
-                            onChanged:
-                                (combatState.attacker?.hasBarrage() ?? false)
-                                    ? (CombatMode? value) {
-                                        if (value != null) {
-                                          combatNotifier.setCombatMode(value);
-                                        }
-                                      }
-                                    : null,
-                            dense: true,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ],
-                ),
-              ),
-
-            // Divide combat modifiers into two clear sections - don't show for character vs character
-            if (!isCharacterVsCharacterMode)
-              Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  // Melee combat section
-                  Expanded(
-                    child: Container(
-                      decoration: BoxDecoration(
-                        color: combatState.combatMode == CombatMode.melee
-                            ? AppTheme.claudeSurface
-                            : const Color(
-                                0xFFF2F2F2), // Even lighter when inactive
-                        borderRadius: BorderRadius.circular(8),
-                        border: Border.all(
-                          color: combatState.combatMode == CombatMode.melee
-                              ? AppTheme.claudeDarkerBorder
-                              : AppTheme.claudeBorder,
-                        ),
-                      ),
-                      padding: const EdgeInsets.all(12),
-                      margin: const EdgeInsets.only(bottom: 16, right: 6),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text('Melee Options',
-                              style: TextStyle(
-                                fontWeight: FontWeight.w600,
-                                color:
-                                    combatState.combatMode == CombatMode.melee
-                                        ? AppTheme.claudeText
-                                        : AppTheme.claudeSubtleText,
-                              )),
-                          CheckboxListTile(
-                            title: const Text('Clash'),
-                            value: combatState.isCharge,
-                            activeColor: AppTheme.claudePrimary,
-                            onChanged: combatState.combatMode ==
-                                    CombatMode.melee
-                                ? (value) =>
-                                    combatNotifier.toggleCharge(value ?? false)
-                                : null,
-                            dense: true,
-                            controlAffinity: ListTileControlAffinity.leading,
-                          ),
-                          CheckboxListTile(
-                            title: const Text('Inspired'),
-                            value:
-                                combatState.specialRulesInEffect['inspired'] ??
-                                    false,
-                            activeColor: AppTheme.claudePrimary,
-                            onChanged: combatState.combatMode ==
-                                    CombatMode.melee
-                                ? (value) => combatNotifier.toggleSpecialRule(
-                                    'inspired', value ?? false)
-                                : null,
-                            dense: true,
-                            controlAffinity: ListTileControlAffinity.leading,
-                          ),
-                          CheckboxListTile(
-                            title: const Text('Impact'),
-                            value: combatState.isImpact,
-                            activeColor: AppTheme.claudePrimary,
-                            onChanged: combatState.combatMode ==
-                                        CombatMode.melee &&
-                                    (combatState.attacker?.hasImpact() ?? false)
-                                ? (value) =>
-                                    combatNotifier.toggleImpact(value ?? false)
-                                : null,
-                            dense: true,
-                            controlAffinity: ListTileControlAffinity.leading,
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-                  // Ranged combat section
-                  Expanded(
-                    child: Container(
-                      decoration: BoxDecoration(
-                        color: combatState.combatMode == CombatMode.ranged
-                            ? AppTheme.claudeSurface
-                            : const Color(
-                                0xFFF2F2F2), // Even lighter when inactive
-                        borderRadius: BorderRadius.circular(8),
-                        border: Border.all(
-                          color: combatState.combatMode == CombatMode.ranged
-                              ? AppTheme.claudeDarkerBorder
-                              : AppTheme.claudeBorder,
-                        ),
-                      ),
-                      padding: const EdgeInsets.all(12),
-                      margin: const EdgeInsets.only(bottom: 16, left: 6),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text('Ranged Options',
-                              style: TextStyle(
-                                fontWeight: FontWeight.w600,
-                                color:
-                                    combatState.combatMode == CombatMode.ranged
-                                        ? AppTheme.claudeText
-                                        : AppTheme.claudeSubtleText,
-                              )),
-                          CheckboxListTile(
-                            title: const Text('Volley'),
-                            value: combatState.isVolley,
-                            activeColor: AppTheme.claudePrimary,
-                            onChanged: (combatState.attacker?.hasBarrage() ??
-                                        false) &&
-                                    combatState.combatMode == CombatMode.ranged
-                                ? (value) {
-                                    combatNotifier.toggleVolley(value ?? false);
-                                  }
-                                : null,
-                            dense: true,
-                            controlAffinity: ListTileControlAffinity.leading,
-                          ),
-                          CheckboxListTile(
-                            title: const Text('Aimed'),
-                            value: combatState.specialRulesInEffect['aimed'] ??
-                                false,
-                            activeColor: AppTheme.claudePrimary,
-                            onChanged: combatState.combatMode ==
-                                        CombatMode.ranged &&
-                                    combatState.isVolley &&
-                                    (combatState.attacker?.hasBarrage() ??
-                                        false)
-                                ? (value) => combatNotifier.toggleSpecialRule(
-                                    'aimed', value ?? false)
-                                : null,
-                            dense: true,
-                            controlAffinity: ListTileControlAffinity.leading,
-                          ),
-                          CheckboxListTile(
-                            title: const Text('Effective Range'),
-                            value: combatState.isWithinEffectiveRange,
-                            activeColor: AppTheme.claudePrimary,
-                            onChanged: combatState.combatMode ==
-                                        CombatMode.ranged &&
-                                    combatState.isVolley &&
-                                    (combatState.attacker?.hasBarrage() ??
-                                        false)
-                                ? (value) => combatNotifier
-                                    .toggleWithinEffectiveRange(value ?? false)
-                                : null,
-                            dense: true,
-                            controlAffinity: ListTileControlAffinity.leading,
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-
-            // Flank/Rear modifier (applies to both melee and ranged) - don't show for character vs character
-            if (!isCharacterVsCharacterMode)
-              Container(
-                decoration: BoxDecoration(
-                  color: AppTheme.claudeSurface,
-                  borderRadius: BorderRadius.circular(8),
-                  border: Border.all(color: AppTheme.claudeBorder),
-                ),
-                padding: const EdgeInsets.all(12),
-                margin: const EdgeInsets.only(bottom: 4),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text('Position Modifiers',
-                        style: TextStyle(
-                          fontWeight: FontWeight.w600,
-                          color: AppTheme.claudeText,
-                        )),
-                    CheckboxListTile(
-                      title: const Text('Flank/Rear Attack'),
-                      value: combatState.isFlank || combatState.isRear,
-                      activeColor: AppTheme.claudePrimary,
-                      onChanged: (value) {
-                        if (value != null) {
-                          if (value) {
-                            // Enable flank, disable rear
-                            combatNotifier.toggleFlank(true);
-                            combatNotifier.toggleRear(false);
-                          } else {
-                            // Disable both
-                            combatNotifier.toggleFlank(false);
-                            combatNotifier.toggleRear(false);
-                          }
-                        }
-                      },
-                      dense: true,
-                      controlAffinity: ListTileControlAffinity.leading,
-                    ),
-                  ],
-                ),
-              ),
+            // Combat modifiers panel
+            if (!isCharacterVsCharacterMode) const CombatModifiersPanel(),
           ],
         ),
       ),

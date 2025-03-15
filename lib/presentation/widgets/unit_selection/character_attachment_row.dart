@@ -4,6 +4,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../domain/models/regiment.dart';
 import '../../providers/combat_provider.dart';
 import '../../screens/unit_selection_screen.dart';
+import '../unit_card.dart';
+import '../../themes/app_theme.dart';
 
 /// Displays information about an attached character with an option to remove it
 class CharacterAttachmentRow extends ConsumerWidget {
@@ -21,31 +23,48 @@ class CharacterAttachmentRow extends ConsumerWidget {
     final combatNotifier = ref.read(combatProvider.notifier);
 
     return Padding(
-      padding: const EdgeInsets.only(left: 16.0, top: 4.0),
-      child: Row(
+      padding: const EdgeInsets.only(top: 12.0),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Icon(Icons.person, size: 16),
-          const SizedBox(width: 8),
-          Expanded(
-            child: Text(
-              'Character: ${character.name}',
-              style: TextStyle(
-                fontStyle: FontStyle.italic,
-                color: Theme.of(context).colorScheme.secondary,
-              ),
+          // Character header with remove button
+          Padding(
+            padding: const EdgeInsets.only(left: 8.0, right: 8.0, bottom: 4.0),
+            child: Row(
+              children: [
+                const Icon(Icons.person, size: 16),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: Text(
+                    'Attached Character',
+                    style: TextStyle(
+                      fontWeight: FontWeight.w600,
+                      color: Theme.of(context).colorScheme.secondary,
+                    ),
+                  ),
+                ),
+                // Remove button
+                IconButton(
+                  icon: const Icon(Icons.person_remove, size: 18),
+                  tooltip: 'Remove character stand',
+                  onPressed: () {
+                    if (isAttacker) {
+                      combatNotifier.detachCharacterFromAttacker();
+                    } else {
+                      combatNotifier.detachCharacterFromDefender();
+                    }
+                  },
+                ),
+              ],
             ),
           ),
-          // Remove button next to character info
-          IconButton(
-            icon: const Icon(Icons.person_remove, size: 18),
-            tooltip: 'Remove character stand',
-            onPressed: () {
-              if (isAttacker) {
-                combatNotifier.detachCharacterFromAttacker();
-              } else {
-                combatNotifier.detachCharacterFromDefender();
-              }
-            },
+          // Use the full UnitCard for better visualization
+          UnitCard(
+            regiment: character,
+            isCompact: true,
+            padding: const EdgeInsets.all(12.0),
+            showSpecialRules: true,
+            showDrawEvents: false, // Simplify by hiding draw events
           ),
         ],
       ),

@@ -62,12 +62,14 @@ class CombatState {
 
   CombatState copyWith({
     Regiment? attacker,
+    bool clearAttacker = false, // Added explicit flag to clear attacker
     int? numAttackerStands,
     Regiment? attackerCharacter,
     String? attackerFaction,
     bool clearAttackerFaction = false,
     bool clearAttackerCharacter = false,
     Regiment? defender,
+    bool clearDefender = false, // Added explicit flag to clear defender
     int? numDefenderStands,
     Regiment? defenderCharacter,
     String? defenderFaction,
@@ -90,7 +92,8 @@ class CombatState {
     bool? selectionResetDueToModeChange,
   }) {
     return CombatState(
-      attacker: attacker ?? this.attacker,
+      // Use clearAttacker flag to explicitly set attacker to null
+      attacker: clearAttacker ? null : (attacker ?? this.attacker),
       numAttackerStands: numAttackerStands ?? this.numAttackerStands,
       attackerCharacter: clearAttackerCharacter
           ? null
@@ -98,7 +101,8 @@ class CombatState {
       attackerFaction: clearAttackerFaction
           ? null
           : (attackerFaction ?? this.attackerFaction),
-      defender: defender ?? this.defender,
+      // Use clearDefender flag to explicitly set defender to null
+      defender: clearDefender ? null : (defender ?? this.defender),
       numDefenderStands: numDefenderStands ?? this.numDefenderStands,
       defenderCharacter: clearDefenderCharacter
           ? null
@@ -193,12 +197,12 @@ class CombatNotifier extends StateNotifier<CombatState> {
   // Set attacker faction - accepts nullable String
   void setAttackerFaction(String? faction) {
     if (faction == null) {
-      // If clearing faction, also clear attacker and attacker character
+      // If clearing faction, explicitly clear attacker and attacker character
       state = state.copyWith(
         clearAttackerFaction: true,
-        attacker: null,
-        clearAttackerCharacter: true,
-        clearSimulation: true,
+        clearAttacker: true, // Explicitly clear attacker
+        clearAttackerCharacter: true, // Clear any attached character
+        clearSimulation: true, // Clear the simulation
       );
     } else {
       state = state.copyWith(attackerFaction: faction);
@@ -208,12 +212,12 @@ class CombatNotifier extends StateNotifier<CombatState> {
   // Set defender faction - accepts nullable String
   void setDefenderFaction(String? faction) {
     if (faction == null) {
-      // If clearing faction, also clear defender and defender character
+      // If clearing faction, explicitly clear defender and defender character
       state = state.copyWith(
         clearDefenderFaction: true,
-        defender: null,
-        clearDefenderCharacter: true,
-        clearSimulation: true,
+        clearDefender: true, // Explicitly clear defender
+        clearDefenderCharacter: true, // Clear any attached character
+        clearSimulation: true, // Clear the simulation
       );
     } else {
       state = state.copyWith(defenderFaction: faction);
@@ -254,16 +258,12 @@ class CombatNotifier extends StateNotifier<CombatState> {
 
   // Updated toggleDuelMode method with visual feedback
   void toggleDuelMode(bool value) {
-    // Get a copy of the current state for debugging
-    final beforeAttacker = state.attacker;
-    final beforeDefender = state.defender;
-
     // Force the selections to null by creating a new state with explicit nulls
     final newState = CombatState(
       isDuelMode: value,
       // Explicitly set to null instead of using copyWith
-      attacker: null,
-      defender: null,
+      attacker: null, // Clear attacker
+      defender: null, // Clear defender
       numAttackerStands: 3,
       numDefenderStands: 3,
       // Reset combat modifiers
@@ -289,11 +289,6 @@ class CombatNotifier extends StateNotifier<CombatState> {
     // Update the state with the new clean state
     state = newState;
 
-    // Debug output to verify state changes
-    print("toggleDuelMode: isDuelMode=$value");
-    print("BEFORE: attacker=$beforeAttacker, defender=$beforeDefender");
-    print("AFTER: attacker=${state.attacker}, defender=${state.defender}");
-
     // Clear the visual feedback flag after a short delay
     Future.delayed(const Duration(milliseconds: 1500), () {
       if (mounted) {
@@ -306,7 +301,7 @@ class CombatNotifier extends StateNotifier<CombatState> {
     // If regiment is null, clear it
     if (regiment == null) {
       state = state.copyWith(
-        attacker: null,
+        clearAttacker: true, // Use explicit clearing
         clearAttackerCharacter: true,
         clearSimulation: true,
       );
@@ -331,7 +326,7 @@ class CombatNotifier extends StateNotifier<CombatState> {
         state = state.copyWith(
           attacker: regiment,
           attackerFaction: regimentFaction,
-          defender: null, // Clear defender
+          clearDefender: true, // Use explicit clearing
           clearDefenderCharacter: true, // Clear any attached character
           clearSimulation: true, // Clear the simulation
         );
@@ -419,7 +414,7 @@ class CombatNotifier extends StateNotifier<CombatState> {
     // If defender is null, clear it
     if (defender == null) {
       state = state.copyWith(
-        defender: null,
+        clearDefender: true, // Use explicit clearing
         clearDefenderCharacter: true,
         clearSimulation: true,
       );
@@ -444,7 +439,7 @@ class CombatNotifier extends StateNotifier<CombatState> {
         state = state.copyWith(
           defender: defender,
           defenderFaction: regimentFaction,
-          attacker: null, // Clear attacker
+          clearAttacker: true, // Use explicit clearing
           clearAttackerCharacter: true, // Clear any attached character
           clearSimulation: true, // Clear the simulation
         );

@@ -138,21 +138,31 @@ class CombatantSelectionCard extends ConsumerWidget {
                 ((isAttacker && combatState.canAttachCharacterToAttacker()) ||
                     (!isAttacker &&
                         combatState.canAttachCharacterToDefender())))
+              // Toggle between add and remove button based on whether a character is attached
               IconButton(
-                icon: const Icon(Icons.person_add),
+                icon: Icon(
+                    character == null ? Icons.person_add : Icons.person_remove),
                 tooltip: character == null
                     ? 'Add character stand'
-                    : 'Change character stand',
-                onPressed: () => selectCharacterForAttachment(
-                  context: context,
-                  ref: ref,
-                  isAttacker: isAttacker,
-                ),
+                    : 'Remove character stand',
+                onPressed: character == null
+                    ? () => selectCharacterForAttachment(
+                          context: context,
+                          ref: ref,
+                          isAttacker: isAttacker,
+                        )
+                    : () {
+                        if (isAttacker) {
+                          combatNotifier.detachCharacterFromAttacker();
+                        } else {
+                          combatNotifier.detachCharacterFromDefender();
+                        }
+                      },
               ),
           ],
         ),
 
-        // Character attachment info if a character is attached
+        // Character attachment - if a character is attached, show the detailed card
         if (character != null)
           CharacterAttachmentRow(
             character: character,
