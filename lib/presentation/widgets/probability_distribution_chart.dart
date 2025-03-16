@@ -229,9 +229,9 @@ class ProbabilityDistributionChart extends StatelessWidget {
                       const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                   child: Text(
                     '${threshold.label}: ${threshold.value}',
-                    style: TextStyle(
+                    style: const TextStyle(
                       fontSize: 12,
-                      color: threshold.color.withOpacity(0.9),
+                      color: Colors.black, // Changed to black
                       fontWeight: FontWeight.w500,
                     ),
                   ),

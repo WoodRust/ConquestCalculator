@@ -20,7 +20,8 @@ class AppTheme {
 
   // Combat outcome colors - used for thresholds and probability indicators
   static const Color noLossColor = Color(0xFF388E3C); // Dark green
-  static const Color singleStandLossColor = Color(0xFFFFA726); // Light orange
+  static const Color singleStandLossColor =
+      Color.fromARGB(255, 22, 138, 247); // Light orange
   static const Color breakingColor = Color(0xFFF57C00); // Deep orange
   static const Color destroyedColor = Color(0xFFD32F2F); // Red
 
