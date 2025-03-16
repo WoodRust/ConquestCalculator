@@ -44,11 +44,11 @@ class AppTheme {
   static Color getThresholdColor(
       int standCount, int totalStands, int standsToBreak) {
     if (standCount == totalStands) {
-      return const Color.fromARGB(255, 233, 11, 11);
+      return destroyedColor;
     } else if (standCount >= standsToBreak) {
       return breakingColor;
     } else {
-      return const Color.fromARGB(255, 255, 187, 86);
+      return singleStandLossColor;
     }
   }
 

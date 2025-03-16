@@ -392,18 +392,9 @@ class CombatResultsPanel extends ConsumerWidget {
         probability = simulation.getProbabilityOfLosing(i);
       }
 
-      // Add a row with appropriate highlighting for breaking and destruction
-      Color? textColor;
-      if (i == standCount) {
-        // Destruction threshold
-        textColor = AppTheme.destroyedColor;
-      } else if (i >= standsToBreak) {
-        // Breaking threshold
-        textColor = AppTheme.breakingColor;
-      } else {
-        // Single stand lost
-        textColor = AppTheme.singleStandLossColor;
-      }
+      // Use the standardized getThresholdColor method for consistent threshold-based coloring
+      Color textColor =
+          AppTheme.getThresholdColor(i, standCount, standsToBreak);
 
       rows.add(
         SummaryRow(
