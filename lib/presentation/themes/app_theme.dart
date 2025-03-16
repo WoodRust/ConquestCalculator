@@ -18,6 +18,40 @@ class AppTheme {
   static const Color claudeDefenderAccent =
       Color(0xFFD32F2F); // Red for defender
 
+  // Combat outcome colors - used for thresholds and probability indicators
+  static const Color noLossColor = Color(0xFF388E3C); // Dark green
+  static const Color singleStandLossColor = Color(0xFFFFA726); // Light orange
+  static const Color breakingColor = Color(0xFFF57C00); // Deep orange
+  static const Color destroyedColor = Color(0xFFD32F2F); // Red
+
+  // Combat probability gradient - from good to bad outcomes
+  static const List<Color> probabilityGradient = [
+    noLossColor,
+    singleStandLossColor,
+    breakingColor,
+    destroyedColor,
+  ];
+
+  // Get a color for probability based on the value (0-1)
+  static Color getProbabilityColor(double probability) {
+    if (probability < 0.25) return noLossColor;
+    if (probability < 0.5) return singleStandLossColor;
+    if (probability < 0.75) return breakingColor;
+    return destroyedColor;
+  }
+
+  // Get threshold color based on the stand count and breaking threshold
+  static Color getThresholdColor(
+      int standCount, int totalStands, int standsToBreak) {
+    if (standCount == totalStands) {
+      return const Color.fromARGB(255, 233, 11, 11);
+    } else if (standCount >= standsToBreak) {
+      return breakingColor;
+    } else {
+      return const Color.fromARGB(255, 255, 187, 86);
+    }
+  }
+
   static final ThemeData lightTheme = ThemeData(
     useMaterial3: true,
     colorScheme: const ColorScheme.light(

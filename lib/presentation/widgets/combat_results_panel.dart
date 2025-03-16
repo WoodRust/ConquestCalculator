@@ -117,31 +117,14 @@ class CombatResultsPanel extends ConsumerWidget {
                         showCumulative: combatState.showCumulativeDistribution,
                         // Calculate total attacks for realistic max wounds
                         attackerAttacks: _calculateTotalAttacks(combatState),
-                        // Don't limit the x-axis to defender's wounds - use intelligent limits
-                        thresholds: [
-                          // Stand loss threshold
-                          chart.Threshold(
-                            value: combatState.defender!.wounds,
-                            label: '1 Stand',
-                            color: Colors.orange.shade400,
-                          ),
-                          // Breaking threshold
-                          chart.Threshold(
-                            value: combatState.simulation!.standsToBreak *
-                                combatState.defender!.wounds,
-                            label: 'Breaking',
-                            color: AppTheme.claudeDefenderAccent,
-                          ),
-                          // Total destruction
-                          chart.Threshold(
-                            value: (combatState.defender!.isCharacter()
-                                    ? 1
-                                    : combatState.numDefenderStands) *
-                                combatState.defender!.wounds,
-                            label: 'Destroyed',
-                            color: AppTheme.claudePrimary,
-                          ),
-                        ],
+                        // Generate thresholds for each stand and breaking point
+                        thresholds: _generateStandThresholds(
+                          combatState.defender!.wounds,
+                          combatState.defender!.isCharacter()
+                              ? 1
+                              : combatState.numDefenderStands,
+                          combatState.simulation!.standsToBreak,
+                        ),
                         primaryColor: AppTheme.claudePrimary.withAlpha(179),
                         secondaryColor: AppTheme.claudePrimary.withAlpha(102),
                       ),
@@ -236,11 +219,42 @@ class CombatResultsPanel extends ConsumerWidget {
     );
   }
 
+  // Generate threshold markers for each stand
+  List<chart.Threshold> _generateStandThresholds(
+      int woundsPerStand, int totalStands, int standsToBreak) {
+    final List<chart.Threshold> thresholds = [];
+
+    // Generate a threshold for each stand
+    for (int i = 1; i <= totalStands; i++) {
+      final int standThreshold = i * woundsPerStand;
+
+      // Determine color and label based on the stand count
+      String label;
+
+      if (i == totalStands) {
+        label = 'Destroyed';
+      } else if (i == standsToBreak) {
+        label = 'Breaking';
+      } else {
+        label = '$i Stand${i > 1 ? 's' : ''}';
+      }
+
+      // Use the standardized color scheme from AppTheme
+      Color thresholdColor =
+          AppTheme.getThresholdColor(i, totalStands, standsToBreak);
+
+      thresholds.add(chart.Threshold(
+        value: standThreshold,
+        label: label,
+        color: thresholdColor,
+      ));
+    }
+
+    return thresholds;
+  }
+
   Color _getBreakingProbabilityColor(double probability) {
-    if (probability < 0.25) return Colors.green.shade700;
-    if (probability < 0.5) return Colors.orange.shade700;
-    if (probability < 0.75) return Colors.deepOrange.shade700;
-    return AppTheme.claudeDefenderAccent;
+    return AppTheme.getProbabilityColor(probability);
   }
 
   // Calculate total attacks to determine realistic maximum wounds
@@ -340,6 +354,24 @@ class CombatResultsPanel extends ConsumerWidget {
     final int woundsPerStand = defender.wounds;
     final int standsToBreak = simulation.standsToBreak;
 
+    // Calculate probability of losing 0 stands (fewer wounds than needed to destroy 1 stand)
+    final totalDistribution = simulation.totalDamageDistribution!;
+    double noLossProbability = 0.0;
+    for (int i = 0;
+        i < woundsPerStand && i < totalDistribution.probabilities.length;
+        i++) {
+      noLossProbability += totalDistribution.probabilities[i];
+    }
+
+    // Add "Lose 0 Stands" row with appropriate coloring (always green as it's good for defender)
+    rows.add(
+      SummaryRow(
+        label: 'Lose 0 Stands:',
+        value: '${(noLossProbability * 100).toStringAsFixed(1)}%',
+        color: AppTheme.noLossColor,
+      ),
+    );
+
     // For each stand up to the total stand count
     for (int i = 1; i <= standCount; i++) {
       // Create the label based on whether this is the breaking point
@@ -362,10 +394,15 @@ class CombatResultsPanel extends ConsumerWidget {
 
       // Add a row with appropriate highlighting for breaking and destruction
       Color? textColor;
-      if (i == standsToBreak) {
-        textColor = _getBreakingProbabilityColor(probability);
-      } else if (i == standCount) {
-        textColor = probability > 0.5 ? Colors.red.shade700 : null;
+      if (i == standCount) {
+        // Destruction threshold
+        textColor = AppTheme.destroyedColor;
+      } else if (i >= standsToBreak) {
+        // Breaking threshold
+        textColor = AppTheme.breakingColor;
+      } else {
+        // Single stand lost
+        textColor = AppTheme.singleStandLossColor;
       }
 
       rows.add(

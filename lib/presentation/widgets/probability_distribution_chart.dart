@@ -2,6 +2,7 @@
 import 'package:flutter/material.dart';
 import 'package:fl_chart/fl_chart.dart';
 import '../../domain/models/probability_distribution.dart';
+import '../themes/app_theme.dart';
 
 class ProbabilityDistributionChart extends StatelessWidget {
   final ProbabilityDistribution distribution;
@@ -168,18 +169,27 @@ class ProbabilityDistributionChart extends StatelessWidget {
                     strokeWidth: 1,
                   );
                 },
-                drawVerticalLine: false,
+                drawVerticalLine:
+                    true, // Changed to true to show threshold lines
                 getDrawingVerticalLine: (value) {
-                  // Only draw threshold lines
-                  bool isThreshold = thresholds.any((t) => t.value == value);
+                  // Check if this value corresponds to a threshold
+                  bool isThreshold = false;
+                  Color thresholdColor = Colors.transparent;
+
+                  for (final threshold in thresholds) {
+                    if (threshold.value == value) {
+                      isThreshold = true;
+                      thresholdColor = threshold.color;
+                      break;
+                    }
+                  }
+
                   if (!isThreshold) return FlLine(color: Colors.transparent);
 
                   return FlLine(
-                    color: isThreshold
-                        ? Colors.red.withOpacity(0.3)
-                        : Colors.transparent,
-                    strokeWidth: isThreshold ? 2 : 0,
-                    dashArray: isThreshold ? [5, 5] : null,
+                    color: thresholdColor.withOpacity(0.4),
+                    strokeWidth: 2,
+                    dashArray: [5, 5],
                   );
                 },
               ),
@@ -203,18 +213,28 @@ class ProbabilityDistributionChart extends StatelessWidget {
         // Threshold legend
         if (thresholds.isNotEmpty)
           Padding(
-            padding: const EdgeInsets.only(top: 8.0),
+            padding: const EdgeInsets.only(top: 12.0),
             child: Wrap(
               spacing: 8,
-              runSpacing: 4,
+              runSpacing: 8,
+              alignment: WrapAlignment.center,
               children: thresholds.map((threshold) {
-                return Chip(
-                  label: Text(
-                    '${threshold.label}: ${threshold.value}',
-                    style: const TextStyle(fontSize: 12),
+                return Container(
+                  decoration: BoxDecoration(
+                    color: threshold.color.withOpacity(0.15),
+                    borderRadius: BorderRadius.circular(4),
+                    border: Border.all(color: threshold.color.withOpacity(0.5)),
                   ),
-                  backgroundColor: threshold.color.withOpacity(0.2),
-                  side: BorderSide(color: threshold.color),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                  child: Text(
+                    '${threshold.label}: ${threshold.value}',
+                    style: TextStyle(
+                      fontSize: 12,
+                      color: threshold.color.withOpacity(0.9),
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
                 );
               }).toList(),
             ),
@@ -319,8 +339,16 @@ class ProbabilityDistributionChart extends StatelessWidget {
         value = 0.001; // Minimum visible value
       }
 
-      // Check if this is a threshold value
-      bool isThreshold = thresholds.any((t) => t.value == i);
+      // Determine bar color based on thresholds
+      Color barColor = primaryColor;
+
+      // Find if this value corresponds to a threshold and use its color
+      for (final threshold in thresholds) {
+        if (threshold.value == i) {
+          barColor = threshold.color;
+          break;
+        }
+      }
 
       // Create bar
       groups.add(BarChartGroupData(
@@ -328,7 +356,7 @@ class ProbabilityDistributionChart extends StatelessWidget {
         barRods: [
           BarChartRodData(
               toY: value,
-              color: isThreshold ? Colors.red : primaryColor,
+              color: barColor,
               width: 8,
               borderRadius: BorderRadius.circular(0),
               backDrawRodData: BackgroundBarChartRodData(
