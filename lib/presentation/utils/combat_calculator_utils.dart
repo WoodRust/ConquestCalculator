@@ -51,7 +51,7 @@ class CombatCalculatorUtils {
     return totalImpacts * hitProbability;
   }
 
-  /// Calculate expected wounds from impact attacks
+  /// Calculate expected wounds from impact attacks (including morale wounds)
   static double calculateExpectedImpactWounds(CombatState state) {
     if (state.attacker == null || !state.isImpact || state.defender == null)
       return 0.0;
@@ -59,9 +59,19 @@ class CombatCalculatorUtils {
     // Calculate expected hits
     double expectedHits = calculateExpectedImpactHits(state);
 
-    // Get defense target
+    // Get base defense target
     int defenseTarget =
         math.max(state.defender!.defense, state.defender!.evasion);
+
+    // IMPROVED: Robust Shield detection
+    bool hasShield = state.defender!.shield ||
+        state.defender!.hasSpecialRule('shield') ||
+        state.specialRulesInEffect['shield'] == true;
+
+    // Only apply shield bonus for front attacks
+    if (!state.isFlank && !state.isRear && hasShield) {
+      defenseTarget += 1;
+    }
 
     // Apply brutal impact if present
     if (state.attacker!.getBrutalImpact() > 0 ||
@@ -71,23 +81,18 @@ class CombatCalculatorUtils {
       defenseTarget = math.max(defenseTarget - brutalImpactValue, 0);
     }
 
-    // Adjust for flanking/rear attack - ignore shield
-    if (state.isFlank || state.isRear) {
-      if (state.defender!.hasSpecialRule('shield') || state.defender!.shield) {
-        defenseTarget = math.max(defenseTarget - 1, 0);
-      }
-    }
-
     // Calculate defense success rate (target/6)
     double defenseSuccessRate = defenseTarget / 6.0;
 
-    // Calculate expected wounds (hits * (1 - defense success rate))
+    // Calculate direct wounds
     double expectedDirectWounds = expectedHits * (1 - defenseSuccessRate);
 
-    // Calculate expected morale wounds (simplified - approx 30% of direct wounds)
-    // This is a rough approximation - the actual calculation would be more complex
-    double expectedMoraleWounds = expectedDirectWounds * 0.3;
+    // Calculate morale wounds - which we DO want included as per correction
+    int resolveTarget = state.defender!.getResolve();
+    double moraleFailRate = (6 - resolveTarget) / 6.0;
+    double expectedMoraleWounds = expectedDirectWounds * moraleFailRate;
 
+    // Return total expected wounds (direct + morale)
     return expectedDirectWounds + expectedMoraleWounds;
   }
 
