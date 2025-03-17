@@ -194,6 +194,26 @@ class CombatNotifier extends StateNotifier<CombatState> {
 
   CombatNotifier(this._calculateCombat) : super(CombatState());
 
+  // Helper method to set default melee options based on attacker
+  void _setDefaultMeleeOptions() {
+    if (state.attacker != null && state.combatMode == CombatMode.melee) {
+      // Enable charge by default
+      state = state.copyWith(isCharge: true);
+
+      // Enable impact by default if attacker has impact, otherwise disable it
+      if (state.attacker!.hasImpact()) {
+        state = state.copyWith(isImpact: true);
+      } else {
+        state = state.copyWith(isImpact: false);
+      }
+
+      // Enable inspired by default
+      final updatedRules = Map<String, bool>.from(state.specialRulesInEffect);
+      updatedRules['inspired'] = true;
+      state = state.copyWith(specialRulesInEffect: updatedRules);
+    }
+  }
+
   // Manual calculation method that only gets called by the Calculate button
   void calculateCombat() {
     if (state.attacker != null && state.defender != null) {
@@ -279,6 +299,9 @@ class CombatNotifier extends StateNotifier<CombatState> {
       defenderFaction: currentAttackerFaction,
       clearSimulation: true, // Clear the current simulation
     );
+
+    // Apply default melee options after swapping
+    _setDefaultMeleeOptions();
   }
 
   // Updated toggleDuelMode method with visual feedback
@@ -362,6 +385,9 @@ class CombatNotifier extends StateNotifier<CombatState> {
           clearSimulation: true, // Clear the simulation when changing attacker
         );
       }
+
+      // After setting attacker, set default melee options
+      _setDefaultMeleeOptions();
     } else {
       // In duel mode, simply update the attacker (we already verified it's a character)
       state = state.copyWith(
@@ -492,6 +518,9 @@ class CombatNotifier extends StateNotifier<CombatState> {
         specialRulesInEffect: updatedRules,
         clearSimulation: true, // Clear the simulation
       );
+
+      // Set default melee options
+      _setDefaultMeleeOptions();
     } else {
       // Switching to ranged mode
       final updatedRules = Map<String, bool>.from(state.specialRulesInEffect)
@@ -512,10 +541,7 @@ class CombatNotifier extends StateNotifier<CombatState> {
     // Only allow toggling charge in melee mode
     if (state.combatMode == CombatMode.melee) {
       state = state.copyWith(isCharge: value, clearSimulation: true);
-      // If turning on charge and regiment has impact, enable impact too
-      if (value && (state.attacker?.hasImpact() ?? false)) {
-        state = state.copyWith(isImpact: true);
-      }
+      // No longer auto-toggles impact - these are now independent
     }
   }
 

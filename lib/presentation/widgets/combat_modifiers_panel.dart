@@ -141,6 +141,7 @@ class CombatModifiersPanel extends ConsumerWidget {
                             title: const Text('Impact'),
                             value: combatState.isImpact,
                             activeColor: AppTheme.claudePrimary,
+                            // Only enable this checkbox if attacker has impacts
                             onChanged: combatState.combatMode ==
                                         CombatMode.melee &&
                                     (combatState.attacker?.hasImpact() ?? false)
