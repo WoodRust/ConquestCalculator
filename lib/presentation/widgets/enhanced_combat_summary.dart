@@ -40,8 +40,8 @@ class _EnhancedCombatSummaryState extends State<EnhancedCombatSummary> {
         ? CombatCalculatorUtils.calculateExpectedImpactWounds(widget.state)
         : 0.0;
 
-    int expectedImpactStandsLost =
-        (expectedImpactWounds / (widget.state.defender?.wounds ?? 1)).floor();
+    double expectedImpactStandsLost =
+        (expectedImpactWounds / (widget.state.defender?.wounds ?? 1));
 
     // Calculate regular attack values
     int totalAttacks =
@@ -50,14 +50,26 @@ class _EnhancedCombatSummaryState extends State<EnhancedCombatSummary> {
         CombatCalculatorUtils.calculateExpectedHits(widget.state);
     double expectedWounds =
         CombatCalculatorUtils.calculateExpectedWounds(widget.state);
-    int expectedStandsLost =
-        (expectedWounds / (widget.state.defender?.wounds ?? 1)).floor();
+    double expectedStandsLost =
+        (expectedWounds / (widget.state.defender?.wounds ?? 1));
 
     // Calculate totals
     double totalExpectedWounds = expectedImpactWounds + expectedWounds;
-    int totalExpectedStandsLost = expectedImpactStandsLost + expectedStandsLost;
+    double totalExpectedStandsLost =
+        expectedImpactStandsLost + expectedStandsLost;
     double breakingProbability =
         widget.state.simulation!.breakingProbability * 100;
+
+    // Calculate destruction probability
+    double destructionProbability = 0.0;
+    final totalDistribution = widget.state.simulation!.totalDamageDistribution;
+    if (totalDistribution != null && widget.state.defender != null) {
+      int woundsToDestroy =
+          widget.state.defender!.wounds * widget.state.numDefenderStands;
+      destructionProbability =
+          totalDistribution.getProbabilityOfExceeding(woundsToDestroy - 1) *
+              100;
+    }
 
     return Card(
       elevation: 0,
@@ -70,7 +82,7 @@ class _EnhancedCombatSummaryState extends State<EnhancedCombatSummary> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Total Summary Header - Always visible
+          // Total Summary Header - Always visible with Total Attacks in the top row
           Container(
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
@@ -86,6 +98,7 @@ class _EnhancedCombatSummaryState extends State<EnhancedCombatSummary> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
+                // Header row with title, total attacks and expand/collapse button
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
@@ -97,35 +110,55 @@ class _EnhancedCombatSummaryState extends State<EnhancedCombatSummary> {
                         color: AppTheme.claudePrimary,
                       ),
                     ),
-                    IconButton(
-                      icon: Icon(
-                        _showDetails ? Icons.expand_less : Icons.expand_more,
-                        color: AppTheme.claudePrimary,
-                      ),
-                      onPressed: () {
-                        setState(() {
-                          _showDetails = !_showDetails;
-                        });
-                      },
-                      tooltip: _showDetails ? 'Show less' : 'Show details',
-                      padding: EdgeInsets.zero,
-                      constraints: const BoxConstraints(),
+                    Row(
+                      children: [
+                        _buildTotalStat(
+                            'Total Attacks', '${totalImpacts + totalAttacks}',
+                            isCompact: true),
+                        const SizedBox(width: 8),
+                        IconButton(
+                          icon: Icon(
+                            _showDetails
+                                ? Icons.expand_less
+                                : Icons.expand_more,
+                            color: AppTheme.claudePrimary,
+                          ),
+                          onPressed: () {
+                            setState(() {
+                              _showDetails = !_showDetails;
+                            });
+                          },
+                          tooltip: _showDetails ? 'Show less' : 'Show details',
+                          padding: EdgeInsets.zero,
+                          constraints: const BoxConstraints(),
+                        ),
+                      ],
                     ),
                   ],
                 ),
                 const SizedBox(height: 12),
+                // Stats row
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                   children: [
                     _buildTotalStat(
-                        'Total Attacks', '${totalImpacts + totalAttacks}'),
-                    _buildTotalStat('Expected Wounds',
-                        totalExpectedWounds.toStringAsFixed(1)),
-                    _buildTotalStat('Stands Lost', '$totalExpectedStandsLost'),
+                        'Wounds', totalExpectedWounds.toStringAsFixed(1)),
+                    _buildTotalStat('Stands Lost',
+                        totalExpectedStandsLost.toStringAsFixed(1)),
+                    _buildTotalStat(
+                      '1 Stand Loss',
+                      '${_calculateOneStandLossProbability().toStringAsFixed(1)}%',
+                      color: AppTheme.singleStandLossColor,
+                    ),
                     _buildTotalStat(
                       'Breaking',
                       '${breakingProbability.toStringAsFixed(1)}%',
-                      color: _getBreakingColor(breakingProbability),
+                      color: AppTheme.breakingColor,
+                    ),
+                    _buildTotalStat(
+                      'Destruction',
+                      '${destructionProbability.toStringAsFixed(1)}%',
+                      color: AppTheme.destroyedColor,
                     ),
                   ],
                 ),
@@ -153,7 +186,8 @@ class _EnhancedCombatSummaryState extends State<EnhancedCombatSummary> {
                             'Hits', expectedImpactHits.toStringAsFixed(1)),
                         _buildDetailStat(
                             'Wounds', expectedImpactWounds.toStringAsFixed(1)),
-                        _buildDetailStat('Stands', '$expectedImpactStandsLost'),
+                        _buildDetailStat('Stands',
+                            expectedImpactStandsLost.toStringAsFixed(1)),
                       ],
                     ),
                     const Divider(height: 32),
@@ -169,7 +203,8 @@ class _EnhancedCombatSummaryState extends State<EnhancedCombatSummary> {
                       _buildDetailStat('Hits', expectedHits.toStringAsFixed(1)),
                       _buildDetailStat(
                           'Wounds', expectedWounds.toStringAsFixed(1)),
-                      _buildDetailStat('Stands', '$expectedStandsLost'),
+                      _buildDetailStat(
+                          'Stands', expectedStandsLost.toStringAsFixed(1)),
                     ],
                   ),
                 ],
@@ -181,7 +216,40 @@ class _EnhancedCombatSummaryState extends State<EnhancedCombatSummary> {
   }
 
   // Helper widget for the total stats in header
-  Widget _buildTotalStat(String label, String value, {Color? color}) {
+  Widget _buildTotalStat(String label, String value,
+      {Color? color, bool isCompact = false}) {
+    if (isCompact) {
+      return Container(
+        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+        decoration: BoxDecoration(
+          color: AppTheme.claudeSurface.withOpacity(0.5),
+          borderRadius: BorderRadius.circular(4),
+          border: Border.all(color: AppTheme.claudeBorder.withOpacity(0.5)),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(
+              label,
+              style: const TextStyle(
+                fontSize: 12,
+                color: AppTheme.claudeSubtleText,
+              ),
+            ),
+            const SizedBox(width: 6),
+            Text(
+              value,
+              style: TextStyle(
+                fontSize: 14,
+                fontWeight: FontWeight.bold,
+                color: color ?? AppTheme.claudeText,
+              ),
+            ),
+          ],
+        ),
+      );
+    }
+
     return Column(
       children: [
         Text(
@@ -258,5 +326,46 @@ class _EnhancedCombatSummaryState extends State<EnhancedCombatSummary> {
     if (probability < 50) return AppTheme.singleStandLossColor;
     if (probability < 75) return AppTheme.breakingColor;
     return AppTheme.destroyedColor;
+  }
+
+  // Helper method to determine destruction probability color
+  Color _getDestructionColor(double probability) {
+    if (probability < 10) return AppTheme.noLossColor;
+    if (probability < 25) return AppTheme.singleStandLossColor;
+    if (probability < 50) return AppTheme.breakingColor;
+    return AppTheme.destroyedColor;
+  }
+
+  // Helper method to determine stand loss probability color
+  Color _getStandLossColor(double probability) {
+    if (probability < 30) return AppTheme.noLossColor;
+    if (probability < 60) return AppTheme.singleStandLossColor;
+    if (probability < 80) return AppTheme.breakingColor;
+    return AppTheme.destroyedColor;
+  }
+
+  // Calculate the probability of losing exactly 1 stand
+  double _calculateOneStandLossProbability() {
+    if (widget.state.simulation?.totalDamageDistribution == null ||
+        widget.state.defender == null) {
+      return 0.0;
+    }
+
+    final totalDistribution = widget.state.simulation!.totalDamageDistribution!;
+    final woundsPerStand = widget.state.defender!.wounds;
+
+    // Calculate the range of wounds that corresponds to losing exactly 1 stand
+    final minWounds = woundsPerStand;
+    final maxWounds = (2 * woundsPerStand) - 1;
+
+    // Sum the probabilities for wounds in this range
+    double probability = 0.0;
+    for (int wounds = minWounds; wounds <= maxWounds; wounds++) {
+      if (wounds < totalDistribution.probabilities.length) {
+        probability += totalDistribution.probabilities[wounds];
+      }
+    }
+
+    return probability * 100; // Convert to percentage
   }
 }
