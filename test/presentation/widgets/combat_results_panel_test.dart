@@ -5,11 +5,14 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:conquest_calculator/domain/models/regiment.dart';
 import 'package:conquest_calculator/domain/models/combat_simulation.dart';
 import 'package:conquest_calculator/domain/models/probability_distribution.dart';
+import 'package:conquest_calculator/domain/usecases/calculate_combat.dart';
 import 'package:conquest_calculator/presentation/providers/combat_provider.dart';
 import 'package:conquest_calculator/presentation/utils/combat_calculator_utils.dart';
 import 'package:mocktail/mocktail.dart';
 
 // Mock classes
+class MockCalculateCombat extends Mock implements CalculateCombat {}
+
 class MockRegiment extends Mock implements Regiment {
   final String _name;
   final bool _isCharacter;
@@ -140,6 +143,7 @@ class MockCombatSimulation extends Mock implements CombatSimulation {
 void main() {
   late ProviderContainer container;
   late CombatNotifier combatNotifier;
+  late MockCalculateCombat mockCalculateCombat;
 
   // Create a simple mock ProbabilityDistribution for testing
   final mockDistribution = ProbabilityDistribution(
@@ -151,10 +155,12 @@ void main() {
   );
 
   setUp(() {
+    // Create a mock CalculateCombat
+    mockCalculateCombat = MockCalculateCombat();
+
     // Create a StateNotifierProvider for testing
     final providerToTest = StateNotifierProvider<CombatNotifier, CombatState>(
-      (ref) =>
-          CombatNotifier(null), // We don't need CalculateCombat for these tests
+      (ref) => CombatNotifier(mockCalculateCombat), // Use mock instead of null
     );
 
     container = ProviderContainer(
