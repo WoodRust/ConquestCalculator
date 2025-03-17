@@ -7,6 +7,7 @@ import 'probability_distribution_chart.dart' as chart;
 import 'summary_row.dart';
 import '../themes/app_theme.dart';
 import 'enhanced_combat_summary.dart';
+import 'dart:math' as math;
 
 class CombatResultsPanel extends ConsumerWidget {
   const CombatResultsPanel({super.key});
@@ -135,7 +136,7 @@ class CombatResultsPanel extends ConsumerWidget {
                     ),
                   ),
 
-                  // Enhanced Combat Summary - NEW WIDGET INTEGRATION
+                  // Enhanced Combat Summary
                   EnhancedCombatSummary(state: combatState),
 
                   // Stand loss probabilities section
@@ -155,7 +156,7 @@ class CombatResultsPanel extends ConsumerWidget {
                         ),
                         const SizedBox(height: 8),
 
-                        // Generate stand loss probabilities dynamically based on defender stand count
+                        // Generate stand loss probabilities based on the combined expected wounds
                         ..._buildStandLossProbabilities(context, combatState),
 
                         // Show effective stand counts when characters are attached
@@ -232,11 +233,7 @@ class CombatResultsPanel extends ConsumerWidget {
     return thresholds;
   }
 
-  Color _getBreakingProbabilityColor(double probability) {
-    return AppTheme.getProbabilityColor(probability);
-  }
-
-  // Build a list of stand loss probability rows
+  // Build a list of stand loss probability rows with proper calculation of combined wounds
   List<Widget> _buildStandLossProbabilities(
       BuildContext context, CombatState state) {
     final List<Widget> rows = [];
@@ -248,52 +245,106 @@ class CombatResultsPanel extends ConsumerWidget {
     final int woundsPerStand = defender.wounds;
     final int standsToBreak = simulation.standsToBreak;
 
-    // Calculate probability of losing 0 stands (fewer wounds than needed to destroy 1 stand)
-    final totalDistribution = simulation.totalDamageDistribution!;
-    double noLossProbability = 0.0;
-    for (int i = 0;
-        i < woundsPerStand && i < totalDistribution.probabilities.length;
-        i++) {
-      noLossProbability += totalDistribution.probabilities[i];
+    // Calculate total expected wounds from both impact and regular attacks
+    final hasImpact = state.isImpact && (state.attacker?.hasImpact() ?? false);
+
+    double expectedImpactWounds = 0.0;
+    double expectedRegularWounds = 0.0;
+
+    if (hasImpact) {
+      expectedImpactWounds =
+          CombatCalculatorUtils.calculateExpectedImpactWounds(state);
     }
 
-    // Add "Lose 0 Stands" row with appropriate coloring (always green as it's good for defender)
-    rows.add(
-      SummaryRow(
-        label: 'Lose 0 Stands:',
-        value: '${(noLossProbability * 100).toStringAsFixed(1)}%',
-        color: AppTheme.noLossColor,
-      ),
-    );
+    expectedRegularWounds =
+        CombatCalculatorUtils.calculateExpectedWounds(state);
 
-    // For each stand up to the total stand count
-    for (int i = 1; i <= standCount; i++) {
-      // Create the label based on whether this is the breaking point
-      String label = 'Lose $i Stand${i > 1 ? 's' : ''}:';
-      if (i == standsToBreak) {
+    // Total expected wounds combining both sources
+    double totalExpectedWounds = expectedImpactWounds + expectedRegularWounds;
+
+    // For logging/debugging
+    print('Expected Impact Wounds: $expectedImpactWounds');
+    print('Expected Regular Wounds: $expectedRegularWounds');
+    print('Total Expected Wounds: $totalExpectedWounds');
+
+    // Calculate the number of stands we expect to lose based on total wounds
+    double expectedStandsLost = totalExpectedWounds / woundsPerStand;
+
+    // Get the probability distribution from the simulation
+    final totalDistribution = simulation.totalDamageDistribution!;
+
+    // Calculate probabilities for each stand loss outcome
+
+    // First we need the total probability mass to normalize with
+    double totalProbability = 0.0;
+
+    // Create a map to hold our stand loss probabilities
+    Map<int, double> standLossProbabilities = {};
+
+    // Calculate probability for each possible stand loss outcome
+    for (int i = 0; i <= standCount; i++) {
+      double probability;
+
+      if (i == 0) {
+        // Probability of no stands lost
+        probability = 0.0;
+        for (int j = 0;
+            j < woundsPerStand && j < totalDistribution.probabilities.length;
+            j++) {
+          probability += totalDistribution.probabilities[j];
+        }
+      } else if (i == standCount) {
+        // Probability of all stands lost (regiment destroyed)
+        probability = totalDistribution
+            .getProbabilityOfExceeding(standCount * woundsPerStand - 1);
+      } else {
+        // Probability of losing exactly i stands
+        int minWounds = i * woundsPerStand;
+        int maxWounds = (i + 1) * woundsPerStand - 1;
+
+        probability = 0.0;
+        for (int j = minWounds;
+            j <= maxWounds && j < totalDistribution.probabilities.length;
+            j++) {
+          probability += totalDistribution.probabilities[j];
+        }
+      }
+
+      standLossProbabilities[i] = probability;
+      totalProbability += probability;
+    }
+
+    // Normalize probabilities to ensure they sum to 1.0
+    // This is important if the distribution doesn't cover all possibilities
+    if (totalProbability > 0 &&
+        (totalProbability < 0.99 || totalProbability > 1.01)) {
+      for (int i = 0; i <= standCount; i++) {
+        standLossProbabilities[i] =
+            standLossProbabilities[i]! / totalProbability;
+      }
+    }
+
+    // Add rows for each stand loss probability
+    for (int i = 0; i <= standCount; i++) {
+      String label;
+      if (i == 0) {
+        label = 'Lose 0 Stands:';
+      } else if (i == standsToBreak) {
         label = 'Breaking ($i Stand${i > 1 ? 's' : ''}):';
       } else if (i == standCount) {
         label = 'Destruction ($i Stand${i > 1 ? 's' : ''}):';
-      }
-
-      // Calculate the probability for this stand loss
-      double probability;
-      if (i == standCount) {
-        // For total destruction - use probability of losing at least all stands
-        probability = simulation.getProbabilityOfLosingAtLeast(standCount);
       } else {
-        // For losing exactly i stands
-        probability = simulation.getProbabilityOfLosing(i);
+        label = 'Lose $i Stand${i > 1 ? 's' : ''}:';
       }
 
-      // Use the standardized getThresholdColor method for consistent threshold-based coloring
-      Color textColor =
-          AppTheme.getThresholdColor(i, standCount, standsToBreak);
+      Color textColor = i == 0
+          ? AppTheme.noLossColor
+          : AppTheme.getThresholdColor(i, standCount, standsToBreak);
 
       rows.add(
         SummaryRow(
           label: label,
-          value: '${(probability * 100).toStringAsFixed(1)}%',
+          value: '${(standLossProbabilities[i]! * 100).toStringAsFixed(1)}%',
           color: textColor,
         ),
       );

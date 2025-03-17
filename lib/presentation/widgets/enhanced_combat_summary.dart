@@ -172,24 +172,6 @@ class _EnhancedCombatSummaryState extends State<EnhancedCombatSummary> {
                       _buildDetailStat('Stands', '$expectedStandsLost'),
                     ],
                   ),
-
-                  // Show the full tabular view for complete data
-                  const SizedBox(height: 24),
-                  _buildComparisonTable(
-                    hasImpact: hasImpact,
-                    impactAttacks: totalImpacts,
-                    impactHits: expectedImpactHits,
-                    impactWounds: expectedImpactWounds,
-                    impactStands: expectedImpactStandsLost,
-                    regularAttacks: totalAttacks,
-                    regularHits: expectedHits,
-                    regularWounds: expectedWounds,
-                    regularStands: expectedStandsLost,
-                    totalAttacks: totalImpacts + totalAttacks,
-                    totalHits: expectedImpactHits + expectedHits,
-                    totalWounds: totalExpectedWounds,
-                    totalStands: totalExpectedStandsLost,
-                  ),
                 ],
               ),
             ),
@@ -276,93 +258,5 @@ class _EnhancedCombatSummaryState extends State<EnhancedCombatSummary> {
     if (probability < 50) return AppTheme.singleStandLossColor;
     if (probability < 75) return AppTheme.breakingColor;
     return AppTheme.destroyedColor;
-  }
-
-  // Helper widget for the complete comparison table
-  Widget _buildComparisonTable({
-    required bool hasImpact,
-    required int impactAttacks,
-    required double impactHits,
-    required double impactWounds,
-    required int impactStands,
-    required int regularAttacks,
-    required double regularHits,
-    required double regularWounds,
-    required int regularStands,
-    required int totalAttacks,
-    required double totalHits,
-    required double totalWounds,
-    required int totalStands,
-  }) {
-    return SingleChildScrollView(
-      scrollDirection: Axis.horizontal,
-      child: DataTable(
-        columnSpacing: 20,
-        headingTextStyle: const TextStyle(
-          fontSize: 12,
-          fontWeight: FontWeight.bold,
-          color: AppTheme.claudeSubtleText,
-        ),
-        dataTextStyle: const TextStyle(
-          fontSize: 13,
-          color: AppTheme.claudeText,
-        ),
-        dividerThickness: 1,
-        columns: const [
-          DataColumn(label: Text('TYPE')),
-          DataColumn(label: Text('ATTACKS'), numeric: true),
-          DataColumn(label: Text('HITS'), numeric: true),
-          DataColumn(label: Text('WOUNDS'), numeric: true),
-          DataColumn(label: Text('STANDS'), numeric: true),
-        ],
-        rows: [
-          if (hasImpact)
-            DataRow(
-              color: MaterialStateProperty.all(Colors.green.shade50),
-              cells: [
-                DataCell(Text('Impact',
-                    style: TextStyle(
-                        color: Colors.green.shade700,
-                        fontWeight: FontWeight.w500))),
-                DataCell(Text('$impactAttacks')),
-                DataCell(Text(impactHits.toStringAsFixed(1))),
-                DataCell(Text(impactWounds.toStringAsFixed(1))),
-                DataCell(Text('$impactStands')),
-              ],
-            ),
-          DataRow(
-            color: MaterialStateProperty.all(Colors.blue.shade50),
-            cells: [
-              DataCell(Text('Regular',
-                  style: TextStyle(
-                      color: Colors.blue.shade700,
-                      fontWeight: FontWeight.w500))),
-              DataCell(Text('$regularAttacks')),
-              DataCell(Text(regularHits.toStringAsFixed(1))),
-              DataCell(Text(regularWounds.toStringAsFixed(1))),
-              DataCell(Text('$regularStands')),
-            ],
-          ),
-          DataRow(
-            color: MaterialStateProperty.all(
-                AppTheme.claudePrimary.withOpacity(0.1)),
-            cells: [
-              DataCell(Text('TOTAL',
-                  style: TextStyle(
-                      color: AppTheme.claudePrimary,
-                      fontWeight: FontWeight.bold))),
-              DataCell(Text('$totalAttacks',
-                  style: const TextStyle(fontWeight: FontWeight.bold))),
-              DataCell(Text(totalHits.toStringAsFixed(1),
-                  style: const TextStyle(fontWeight: FontWeight.bold))),
-              DataCell(Text(totalWounds.toStringAsFixed(1),
-                  style: const TextStyle(fontWeight: FontWeight.bold))),
-              DataCell(Text('$totalStands',
-                  style: const TextStyle(fontWeight: FontWeight.bold))),
-            ],
-          ),
-        ],
-      ),
-    );
   }
 }
