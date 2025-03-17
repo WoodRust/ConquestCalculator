@@ -225,8 +225,8 @@ class CombatResultsPanel extends ConsumerWidget {
                         ),
                         SummaryRow(
                           label: 'Expected Wounds:',
-                          value: combatState
-                              .simulation!.totalDamageDistribution!.mean
+                          value: CombatCalculatorUtils.calculateExpectedWounds(
+                                  combatState)
                               .toStringAsFixed(1),
                         ),
                         SummaryRow(

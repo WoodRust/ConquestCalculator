@@ -171,4 +171,82 @@ class CombatCalculatorUtils {
     // Calculate expected hits
     return totalAttacks * adjustedHitProbability;
   }
+
+  /// Calculate expected wounds from regular attacks (including morale wounds)
+  static double calculateExpectedWounds(CombatState state) {
+    if (state.attacker == null || state.defender == null) return 0.0;
+
+    // Get expected hits
+    double expectedHits = calculateExpectedHits(state);
+
+    // Get base defense target
+    int defenseTarget =
+        math.max(state.defender!.defense, state.defender!.evasion);
+
+    // Apply Shield bonus for front attacks
+    bool hasShield = state.defender!.shield ||
+        state.defender!.hasSpecialRule('shield') ||
+        state.specialRulesInEffect['shield'] == true;
+
+    if (!state.isFlank && !state.isRear && hasShield) {
+      defenseTarget += 1;
+    }
+
+    // Apply armor piercing for volleys if attacker has it
+    if (state.isVolley && state.attacker!.hasArmorPiercing()) {
+      defenseTarget =
+          math.max(defenseTarget - state.attacker!.getArmorPiercingValue(), 0);
+    }
+    // Apply armor piercing as a separate rule for non-volley attacks
+    else if (!state.isVolley &&
+        state.specialRulesInEffect['armorPiercing'] == true) {
+      int armorPiercingValue = state.specialRuleValues['armorPiercingValue'] ??
+          state.attacker!.getArmorPiercingValue();
+      defenseTarget = math.max(defenseTarget - armorPiercingValue, 0);
+    }
+    // Apply cleave for melee attacks
+    else if (!state.isVolley &&
+        (state.attacker!.getCleave() > 0 ||
+            state.specialRulesInEffect['cleave'] == true)) {
+      int cleaveValue =
+          state.specialRuleValues['cleaveValue'] ?? state.attacker!.getCleave();
+      defenseTarget = math.max(defenseTarget - cleaveValue, 0);
+    }
+
+    // Calculate defense success rate (target/6)
+    double defenseSuccessRate = defenseTarget / 6.0;
+
+    // Calculate direct wounds
+    double expectedDirectWounds = expectedHits * (1 - defenseSuccessRate);
+
+    // Calculate morale wounds
+    int resolveTarget = state.defender!.getResolve();
+
+    // Check for Animate Vessel (auto-pass resolve tests)
+    bool hasAnimateVessel = state.defender!.hasSpecialRule('animate vessel');
+    if (hasAnimateVessel) {
+      return expectedDirectWounds; // No morale wounds for Animate Vessel
+    }
+
+    // Adjust resolve for flank/rear attacks (re-roll successful tests)
+    if (state.isFlank || state.isRear) {
+      // Units attacked from flank/rear must re-roll successful resolve tests
+      // Simulate re-rolls by reducing the target
+      resolveTarget = math.max(resolveTarget - 1, 0);
+    }
+
+    // Apply Indomitable effect
+    int indomitableValue = state.defender!.getIndomitable();
+    if (indomitableValue > 0) {
+      // Indomitable prevents a number of failed morale tests equal to its value
+      expectedDirectWounds =
+          math.max(0, expectedDirectWounds - indomitableValue);
+    }
+
+    double moraleFailRate = (6 - resolveTarget) / 6.0;
+    double expectedMoraleWounds = expectedDirectWounds * moraleFailRate;
+
+    // Return total expected wounds (direct + morale)
+    return expectedDirectWounds + expectedMoraleWounds;
+  }
 }
