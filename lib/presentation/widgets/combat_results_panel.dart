@@ -2,6 +2,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../providers/combat_provider.dart';
+import '../utils/combat_calculator_utils.dart'; // Import the new utility class
 import 'probability_distribution_chart.dart' as chart;
 import 'summary_row.dart';
 import '../themes/app_theme.dart';
@@ -116,7 +117,9 @@ class CombatResultsPanel extends ConsumerWidget {
                         height: 250,
                         showCumulative: combatState.showCumulativeDistribution,
                         // Calculate total attacks for realistic max wounds
-                        attackerAttacks: _calculateTotalAttacks(combatState),
+                        attackerAttacks:
+                            CombatCalculatorUtils.calculateTotalAttacks(
+                                combatState),
                         // Generate thresholds for each stand and breaking point
                         thresholds: _generateStandThresholds(
                           combatState.defender!.wounds,
@@ -147,16 +150,77 @@ class CombatResultsPanel extends ConsumerWidget {
                           style: Theme.of(context).textTheme.titleMedium,
                         ),
                         const SizedBox(height: 8),
-                        const Divider(color: AppTheme.claudeBorder),
-                        const SizedBox(height: 8),
+
+                        // Impact attacks summary section when impacts are active
+                        if (combatState.isImpact) ...[
+                          // Impact attacks header
+                          Text(
+                            'Impact Attacks',
+                            style: TextStyle(
+                              fontSize: 14,
+                              fontWeight: FontWeight.w600,
+                              color: AppTheme.claudeAttackerAccent,
+                            ),
+                          ),
+                          const SizedBox(height: 4),
+
+                          // Impact attacks statistics
+                          SummaryRow(
+                            label: 'Total Impacts:',
+                            value: CombatCalculatorUtils.calculateTotalImpacts(
+                                    combatState)
+                                .toString(),
+                          ),
+                          SummaryRow(
+                            label: 'Expected Hits:',
+                            value: CombatCalculatorUtils
+                                    .calculateExpectedImpactHits(combatState)
+                                .toStringAsFixed(1),
+                          ),
+                          SummaryRow(
+                            label: 'Expected Wounds:',
+                            value: CombatCalculatorUtils
+                                    .calculateExpectedImpactWounds(combatState)
+                                .toStringAsFixed(1),
+                          ),
+                          SummaryRow(
+                            label: 'Expected Stands Lost:',
+                            value: (CombatCalculatorUtils
+                                        .calculateExpectedImpactWounds(
+                                            combatState) /
+                                    combatState.defender!.wounds)
+                                .floor()
+                                .toString(),
+                          ),
+
+                          // Separator line
+                          const Divider(color: AppTheme.claudeBorder),
+                        ],
+
+                        // Regular combat summary section (existing code)
+                        if (combatState.isImpact) ...[
+                          Text(
+                            'Regular Attacks',
+                            style: TextStyle(
+                              fontSize: 14,
+                              fontWeight: FontWeight.w600,
+                              color: AppTheme.claudeAttackerAccent,
+                            ),
+                          ),
+                          const SizedBox(height: 4),
+                        ],
+
                         // Add Total Attacks and Expected Hits information
                         SummaryRow(
                           label: 'Total Attacks:',
-                          value: _calculateTotalAttacks(combatState).toString(),
+                          value: CombatCalculatorUtils.calculateTotalAttacks(
+                                  combatState)
+                              .toString(),
                         ),
                         SummaryRow(
                           label: 'Expected Hits:',
-                          value: _calculateExpectedHits(combatState)
+                          value: CombatCalculatorUtils.calculateExpectedHits(
+                                  combatState)
                               .toStringAsFixed(1),
                         ),
                         SummaryRow(
@@ -255,91 +319,6 @@ class CombatResultsPanel extends ConsumerWidget {
 
   Color _getBreakingProbabilityColor(double probability) {
     return AppTheme.getProbabilityColor(probability);
-  }
-
-  // Calculate total attacks to determine realistic maximum wounds
-  int _calculateTotalAttacks(CombatState state) {
-    if (state.attacker == null) return 0;
-
-    // For a character, just use its attacks value
-    if (state.attacker!.isCharacter()) {
-      return state.attacker!.attacks;
-    }
-
-    // For regular regiments, calculate total attacks based on stands and support
-    int baseAttacks = state.attacker!.attacks * state.numAttackerStands;
-
-    // Add character attacks if present
-    if (state.attackerCharacter != null) {
-      baseAttacks += state.attackerCharacter!.attacks;
-    }
-
-    // Add +1 for Leader special rule if present
-    if (state.attacker!.hasSpecialRule('leader')) {
-      baseAttacks += 1;
-    }
-
-    // For impact, use the impact value if available
-    if (state.isImpact && state.attacker!.hasImpact()) {
-      baseAttacks = state.attacker!.getImpact() * state.numAttackerStands;
-      if (state.attackerCharacter != null &&
-          state.attackerCharacter!.hasImpact()) {
-        baseAttacks += state.attackerCharacter!.getImpact();
-      }
-    }
-
-    return baseAttacks;
-  }
-
-  // Calculate the expected number of hits properly accounting for rerolls
-  double _calculateExpectedHits(CombatState state) {
-    if (state.attacker == null) return 0.0;
-
-    // Get the total attacks
-    int totalAttacks = _calculateTotalAttacks(state);
-
-    // Get the hit target (clash value or volley value)
-    int hitTarget =
-        state.isVolley ? state.attacker!.volley : state.attacker!.clash;
-
-    // Apply any modifiers to the hit target
-    // Inspired adds +1 to Clash
-    if (state.specialRulesInEffect['inspired'] == true && !state.isVolley) {
-      hitTarget += 1;
-      // If Inspired would raise Clash to 5+, use re-roll instead (no bonus)
-      if (hitTarget >= 5) {
-        hitTarget = state.attacker!.clash;
-      }
-    }
-
-    // Apply Shock bonus when charging
-    if (state.isCharge &&
-        state.attacker!.hasSpecialRule('shock') &&
-        !state.isVolley) {
-      hitTarget += 1;
-    }
-
-    // Calculate the base hit probability
-    double hitProbability = hitTarget / 6.0;
-
-    // Check if rerolls apply
-    bool hasRerolls = state.specialRulesInEffect['flurry'] == true ||
-        state.specialRulesInEffect['aimedReroll'] == true ||
-        state.specialRulesInEffect['inspiredReroll'] == true ||
-        (state.attacker!.hasSpecialRule('opportunists') &&
-            (state.isFlank || state.isRear) &&
-            !state.isImpact);
-
-    // Adjust hit probability for rerolls
-    double adjustedHitProbability = hitProbability;
-    if (hasRerolls) {
-      // Probability with rerolls = original + (missed * original)
-      adjustedHitProbability =
-          hitProbability + ((1 - hitProbability) * hitProbability);
-    }
-
-    // Calculate expected hits
-    return totalAttacks * adjustedHitProbability;
   }
 
   // Build a list of stand loss probability rows
