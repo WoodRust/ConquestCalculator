@@ -223,6 +223,76 @@
   - [ ] Perform manual testing on different devices
   - [ ] Fix any remaining issues
 
+## Phase 6: Advanced Combat Features
+
+### Step 10: Enhanced Combat Mechanics
+- [ ] Impact and Trample mechanics
+  - [ ] Add proper impact attack calculations to combat summary
+  - [ ] Implement trample mechanics in melee combat
+  - [ ] Add trample results to combat summary
+  - [ ] Test impact and trample combinations with other effects
+- [ ] Default unit-specific combat options
+  - [ ] Implement auto-enabling of combat options based on unit capabilities (impacts, barrage, etc.)
+  - [ ] Allow toggling off instead of requiring toggling on for native unit abilities
+  - [ ] Add visual indicator for native vs. non-native abilities
+- [ ] Additional ranged combat options
+  - [ ] Implement arcing fire option
+  - [ ] Add effective range toggle and calculation
+  - [ ] Test ranges with terrain effects
+- [ ] Additional situational modifiers
+  - [ ] Add "defender obscured/lose formation" option
+  - [ ] Add "defender broken" option and calculation modifiers
+  - [ ] Implement broken regiment effects (lowest resolve characteristic)
+- [ ] Enhanced resolve calculations
+  - [ ] Implement stand count modifiers for resolve
+  - [ ] Add terrifying modifiers to resolve tests
+  - [ ] Include character attachment modifiers to resolve
+  - [ ] Implement faction-specific resolve rules (e.g., Nords +1 after charge)
+  - [ ] Add indomitable special rule effects
+
+### Step 11: Character and Spell Systems
+- [ ] Character effects on units
+  - [ ] Implement character-based special rule system (flurry from Vargyr, opportunists from Jarl)
+  - [ ] Create UI for toggling character-specific rules
+  - [ ] Test with various character and unit combinations
+- [ ] Army list management
+  - [ ] Add list creation functionality with + button
+  - [ ] Implement toggle to switch between browsing factions and army lists
+  - [ ] Update faction selection UI to handle lists and factions
+- [ ] Enhanced duel mode
+  - [ ] Update duel mechanics for simultaneous character attacks
+  - [ ] Display dual probability charts for both characters
+  - [ ] Add dual column combat summary
+  - [ ] Calculate death probability for each character
+- [ ] Spell combat integration
+  - [ ] Add damage spell options to combat calculator
+  - [ ] Allow spells alongside melee/ranged calculations
+  - [ ] Implement entourage activation sequence calculation
+  - [ ] Account for interference and scaling in spell casting
+  - [ ] Add spell modifiers and effects indicators in combat summary
+- [ ] Item and spell effects
+  - [ ] Add item effects to units and characters
+  - [ ] Implement optional spells system
+  - [ ] Create UI for toggling item and spell effects
+
+### Step 12: Advanced Result Visualization and Sharing
+- [ ] Detailed combat summary enhancements
+  - [ ] Add explicit section showing all target values in use (clash, defense, resolve, etc.)
+  - [ ] Display all active modifiers and their effects
+  - [ ] Create visual hierarchy for base values and modified values
+- [ ] Improved result comparison
+  - [ ] Enhance multi-line graph visualization for saved results
+  - [ ] Implement side-by-side comparison view
+  - [ ] Add visual difference indicators
+- [ ] Advanced results naming and organization
+  - [ ] Implement auto-naming for saved combat interactions
+  - [ ] Add detailed situation description in saved results
+  - [ ] Create categorization system for saved results
+- [ ] Optional special rules system
+  - [ ] Implement touch-to-activate special rules
+  - [ ] Add default state handling for optional rules (e.g., flurry with Fenr, blessed with Valks)
+  - [ ] Create visual indicator for optional vs. always-active rules
+
 ## Documentation and Deployment
 
 - [ ] Add comprehensive README.md
