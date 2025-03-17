@@ -2,10 +2,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../providers/combat_provider.dart';
-import '../utils/combat_calculator_utils.dart'; // Import the new utility class
+import '../utils/combat_calculator_utils.dart';
 import 'probability_distribution_chart.dart' as chart;
 import 'summary_row.dart';
 import '../themes/app_theme.dart';
+import 'enhanced_combat_summary.dart';
 
 class CombatResultsPanel extends ConsumerWidget {
   const CombatResultsPanel({super.key});
@@ -134,7 +135,10 @@ class CombatResultsPanel extends ConsumerWidget {
                     ),
                   ),
 
-                  // Results summary
+                  // Enhanced Combat Summary - NEW WIDGET INTEGRATION
+                  EnhancedCombatSummary(state: combatState),
+
+                  // Stand loss probabilities section
                   Container(
                     decoration: BoxDecoration(
                       color: AppTheme.claudeSurface,
@@ -146,100 +150,11 @@ class CombatResultsPanel extends ConsumerWidget {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          'Combat Summary',
+                          'Stand Loss Probabilities',
                           style: Theme.of(context).textTheme.titleMedium,
                         ),
                         const SizedBox(height: 8),
 
-                        // Impact attacks summary section when impacts are active
-                        if (combatState.isImpact) ...[
-                          // Impact attacks header
-                          Text(
-                            'Impact Attacks',
-                            style: TextStyle(
-                              fontSize: 14,
-                              fontWeight: FontWeight.w600,
-                              color: AppTheme.claudeAttackerAccent,
-                            ),
-                          ),
-                          const SizedBox(height: 4),
-
-                          // Impact attacks statistics
-                          SummaryRow(
-                            label: 'Total Impacts:',
-                            value: CombatCalculatorUtils.calculateTotalImpacts(
-                                    combatState)
-                                .toString(),
-                          ),
-                          SummaryRow(
-                            label: 'Expected Hits:',
-                            value: CombatCalculatorUtils
-                                    .calculateExpectedImpactHits(combatState)
-                                .toStringAsFixed(1),
-                          ),
-                          SummaryRow(
-                            label: 'Expected Wounds:',
-                            value: CombatCalculatorUtils
-                                    .calculateExpectedImpactWounds(combatState)
-                                .toStringAsFixed(1),
-                          ),
-                          SummaryRow(
-                            label: 'Expected Stands Lost:',
-                            value: (CombatCalculatorUtils
-                                        .calculateExpectedImpactWounds(
-                                            combatState) /
-                                    combatState.defender!.wounds)
-                                .floor()
-                                .toString(),
-                          ),
-
-                          // Separator line
-                          const Divider(color: AppTheme.claudeBorder),
-                        ],
-
-                        // Regular combat summary section (existing code)
-                        if (combatState.isImpact) ...[
-                          Text(
-                            'Regular Attacks',
-                            style: TextStyle(
-                              fontSize: 14,
-                              fontWeight: FontWeight.w600,
-                              color: AppTheme.claudeAttackerAccent,
-                            ),
-                          ),
-                          const SizedBox(height: 4),
-                        ],
-
-                        // Add Total Attacks and Expected Hits information
-                        SummaryRow(
-                          label: 'Total Attacks:',
-                          value: CombatCalculatorUtils.calculateTotalAttacks(
-                                  combatState)
-                              .toString(),
-                        ),
-                        SummaryRow(
-                          label: 'Expected Hits:',
-                          value: CombatCalculatorUtils.calculateExpectedHits(
-                                  combatState)
-                              .toStringAsFixed(1),
-                        ),
-                        SummaryRow(
-                          label: 'Expected Wounds:',
-                          value: CombatCalculatorUtils.calculateExpectedWounds(
-                                  combatState)
-                              .toStringAsFixed(1),
-                        ),
-                        SummaryRow(
-                          label: 'Expected Stands Lost:',
-                          value: combatState.simulation!
-                              .getExpectedStandsLost()
-                              .toString(),
-                        ),
-
-                        // Add stand loss probabilities section
-                        const SizedBox(height: 8),
-                        const Divider(color: AppTheme.claudeBorder),
-                        const SizedBox(height: 8),
                         // Generate stand loss probabilities dynamically based on defender stand count
                         ..._buildStandLossProbabilities(context, combatState),
 
