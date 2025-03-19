@@ -89,7 +89,33 @@ class CombatCalculatorUtils {
 
     // Calculate morale wounds - which we DO want included as per correction
     int resolveTarget = state.defender!.getResolve();
-    double moraleFailRate = (6 - resolveTarget) / 6.0;
+
+    // Check for Animate Vessel (auto-pass resolve tests)
+    bool hasAnimateVessel = state.defender!.hasSpecialRule('animate vessel');
+    if (hasAnimateVessel) {
+      return expectedDirectWounds; // No morale wounds for Animate Vessel
+    }
+
+    // Check if defender has Fearless which negates Terrifying
+    bool defenderIsFearless = state.defender!.hasSpecialRule('fearless');
+
+    // Apply Terrifying effect if attacker has it and defender isn't Fearless
+    if (!defenderIsFearless) {
+      int terrifyingValue = state.attacker!.getTerrifying();
+      if (terrifyingValue > 0) {
+        // Reduce resolve by terrifying value
+        resolveTarget = math.max(resolveTarget - terrifyingValue, 0);
+      }
+    }
+
+    // Adjust for flank/rear attacks
+    if (state.isFlank || state.isRear) {
+      resolveTarget = math.max(resolveTarget - 1, 0);
+    }
+
+    // Calculate morale fails considering that a roll of 1 always succeeds
+    // So even with resolve 0, the failure rate is at most 5/6
+    double moraleFailRate = math.min((6 - resolveTarget) / 6.0, 5.0 / 6.0);
     double expectedMoraleWounds = expectedDirectWounds * moraleFailRate;
 
     // Return total expected wounds (direct + morale)
@@ -228,7 +254,19 @@ class CombatCalculatorUtils {
       return expectedDirectWounds; // No morale wounds for Animate Vessel
     }
 
-    // Adjust resolve for flank/rear attacks (re-roll successful tests)
+    // Check if defender has the Fearless rule
+    bool defenderIsFearless = state.defender!.hasSpecialRule('fearless');
+
+    // Apply Terrifying effect if attacker has it and defender isn't Fearless
+    if (!defenderIsFearless) {
+      int terrifyingValue = state.attacker!.getTerrifying();
+      if (terrifyingValue > 0) {
+        // Reduce resolve by terrifying value
+        resolveTarget = math.max(resolveTarget - terrifyingValue, 0);
+      }
+    }
+
+    // Adjust for flank/rear attacks (re-roll successful tests)
     if (state.isFlank || state.isRear) {
       // Units attacked from flank/rear must re-roll successful resolve tests
       // Simulate re-rolls by reducing the target
@@ -243,7 +281,9 @@ class CombatCalculatorUtils {
           math.max(0, expectedDirectWounds - indomitableValue);
     }
 
-    double moraleFailRate = (6 - resolveTarget) / 6.0;
+    // Calculate morale fails considering that a roll of 1 always succeeds
+    // So even with resolve 0, the failure rate is at most 5/6
+    double moraleFailRate = math.min((6 - resolveTarget) / 6.0, 5.0 / 6.0);
     double expectedMoraleWounds = expectedDirectWounds * moraleFailRate;
 
     // Return total expected wounds (direct + morale)

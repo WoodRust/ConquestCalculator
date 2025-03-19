@@ -73,6 +73,7 @@ class CalculateCombat {
         impactWoundDistribution,
         _calculateEffectiveResolve(
           defender: defender,
+          attacker: attacker, // Pass attacker to check for terrifying
           isFlank: isFlank,
           isRear: isRear,
           specialRulesInEffect: mutableSpecialRules,
@@ -138,6 +139,7 @@ class CalculateCombat {
       regularWoundDistribution,
       _calculateEffectiveResolve(
         defender: defender,
+        attacker: attacker, // Pass attacker to check for terrifying
         isFlank: isFlank,
         isRear: isRear,
         specialRulesInEffect: mutableSpecialRules,
@@ -542,9 +544,10 @@ class CalculateCombat {
     return defenseTarget;
   }
 
-  // Calculate effective resolve value with all modifiers
+  // Updated to include terrifying and fearless special rule interactions
   int _calculateEffectiveResolve({
     required Regiment defender,
+    required Regiment attacker, // Now required to check for terrifying
     bool isFlank = false,
     bool isRear = false,
     required Map<String, bool> specialRulesInEffect,
@@ -557,6 +560,18 @@ class CalculateCombat {
       return 6; // Will always pass resolve tests
     }
 
+    // Check if defender has Fearless which negates Terrifying
+    bool isFearless = defender.hasSpecialRule('fearless');
+
+    // Apply Terrifying effect if attacker has it and defender isn't Fearless
+    if (!isFearless) {
+      int terrifyingValue = attacker.getTerrifying();
+      if (terrifyingValue > 0) {
+        // Reduce resolve by terrifying value
+        resolveTarget = math.max(resolveTarget - terrifyingValue, 0);
+      }
+    }
+
     // Adjust for flank/rear attacks (re-roll successful tests)
     if (isFlank || isRear) {
       // Units attacked from flank/rear must re-roll successful resolve tests
@@ -566,8 +581,6 @@ class CalculateCombat {
 
     return resolveTarget;
   }
-
-  // CORE PROBABILITY FUNCTIONS
 
   // Calculate wound distribution based on hits and defense
   ProbabilityDistribution _calculateWoundDistribution(
@@ -593,12 +606,24 @@ class CalculateCombat {
   ) {
     // For resolve tests failures, we need to roll higher than the resolve target
     // E.g., if resolve is 3, rolls of 4, 5, 6 are failures
+    // IMPORTANT: In Conquest, a roll of 1 is always a success for morale tests
+    // So even if resolveTarget is 0, rolls of 1 will still be successes
     int failureTarget = 6 - resolveTarget;
 
-    // Create binomial distribution for resolve failures
-    ProbabilityDistribution resolveDistribution =
-        ProbabilityDistribution.binomial(
-      dice: woundDistribution.mean.round(),
+    // Adjust for the "1 always succeeds" rule by ensuring we don't have a 100% failure rate
+    // If resolveTarget is 0, we should have 1/6 success rate (only on rolls of 1)
+    double successProbability = math.max(resolveTarget / 6.0, 1.0 / 6.0);
+    double failureProbability = 1.0 - successProbability;
+
+    // Create binomial distribution for resolve failures with adjusted probability
+    ProbabilityDistribution resolveDistribution = ProbabilityDistribution(
+      probabilities: _createBinomialProbabilities(
+          woundDistribution.mean.round(), failureProbability),
+      mean: woundDistribution.mean.round() * failureProbability,
+      standardDeviation: math.sqrt(woundDistribution.mean.round() *
+          failureProbability *
+          (1 - failureProbability)),
+      diceCount: woundDistribution.mean.round(),
       targetValue: failureTarget,
     );
 
@@ -608,17 +633,19 @@ class CalculateCombat {
       double adjustedMean =
           math.max(0.0, resolveDistribution.mean - indomitableValue);
 
-      // Create a new binomial distribution with appropriate mean
+      // Create a new distribution with appropriate mean
       if (adjustedMean > 0) {
         // Calculate probability that would give this adjusted mean
         double p = adjustedMean / woundDistribution.mean.round();
         if (p > 0 && p < 1) {
-          int adjustedTarget = (6 * p).round();
-          adjustedTarget = math.min(math.max(adjustedTarget, 0), 6);
-
-          resolveDistribution = ProbabilityDistribution.binomial(
-            dice: woundDistribution.mean.round(),
-            targetValue: adjustedTarget,
+          resolveDistribution = ProbabilityDistribution(
+            probabilities:
+                _createBinomialProbabilities(woundDistribution.mean.round(), p),
+            mean: adjustedMean,
+            standardDeviation:
+                math.sqrt(woundDistribution.mean.round() * p * (1 - p)),
+            diceCount: woundDistribution.mean.round(),
+            targetValue: failureTarget,
           );
         }
       } else {
@@ -707,6 +734,15 @@ class CalculateCombat {
       diceCount: dice,
       targetValue: target,
     );
+  }
+
+  // Helper method to create binomial probability distribution
+  List<double> _createBinomialProbabilities(int n, double p) {
+    List<double> probabilities = List<double>.filled(n + 1, 0.0);
+    for (int k = 0; k <= n; k++) {
+      probabilities[k] = _binomialProbability(n, k, p);
+    }
+    return probabilities;
   }
 
   // Helper for binomial probability mass function
