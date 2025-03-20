@@ -4,10 +4,6 @@ import '../../../domain/models/regiment.dart';
 import 'models/combat_state.dart';
 import 'notifiers/combat_notifier.dart';
 import 'providers.dart';
-import 'actions/combatant_actions.dart';
-import 'actions/combat_mode_actions.dart';
-import 'actions/combat_modifier_actions.dart';
-import 'actions/saved_calculation_actions.dart';
 
 /// Provides a simplified interface to combat functionality
 class CombatFacade {
