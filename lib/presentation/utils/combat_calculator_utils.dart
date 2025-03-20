@@ -1,6 +1,6 @@
 // lib/presentation/utils/combat_calculator_utils.dart
 import 'dart:math' as math;
-import '../providers/combat_provider.dart';
+import '../providers/combat/models/combat_state.dart';
 
 /// Utility class for combat calculations that can be used by both
 /// the UI components and tests
