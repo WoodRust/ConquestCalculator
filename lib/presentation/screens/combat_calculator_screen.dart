@@ -3,7 +3,6 @@ import 'package:conquest_calculator/presentation/widgets/unit_selection_panel.da
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../providers/combat_provider.dart';
-import '../widgets/unit_selection_panel.dart';
 import '../widgets/combat_results_panel.dart';
 import '../widgets/saved_calculations_panel.dart';
 

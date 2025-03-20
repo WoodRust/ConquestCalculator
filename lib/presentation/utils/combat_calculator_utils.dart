@@ -1,6 +1,5 @@
 // lib/presentation/utils/combat_calculator_utils.dart
 import 'dart:math' as math;
-import '../../domain/models/regiment.dart';
 import '../providers/combat_provider.dart';
 
 /// Utility class for combat calculations that can be used by both

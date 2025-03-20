@@ -5,7 +5,6 @@ import '../../../domain/models/regiment.dart';
 import '../../providers/combat_provider.dart';
 import '../../screens/unit_selection_screen.dart';
 import '../unit_card.dart';
-import '../../themes/app_theme.dart';
 
 /// Displays information about an attached character with an option to remove it
 class CharacterAttachmentRow extends ConsumerWidget {

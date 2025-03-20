@@ -3,12 +3,9 @@ import 'package:conquest_calculator/presentation/widgets/unit_selection/characte
 import 'package:conquest_calculator/presentation/widgets/unit_selection/faction_selection.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../../domain/models/regiment.dart';
 import '../../providers/combat_provider.dart';
 import '../target_selector.dart';
 import '../unit_card.dart';
-import '../../themes/app_theme.dart';
-import '../faction_grid_dialog.dart';
 import '../../screens/unit_selection_screen.dart';
 
 /// A reusable component for selecting either an attacker or defender regiment

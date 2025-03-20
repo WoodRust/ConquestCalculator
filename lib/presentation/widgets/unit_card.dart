@@ -152,8 +152,6 @@ class UnitCard extends StatelessWidget {
                 padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 4),
                 child: LayoutBuilder(
                   builder: (context, constraints) {
-                    // Get available width and calculate item width
-                    final availableWidth = constraints.maxWidth;
                     // Build stats grid that uses the full width
                     return Row(
                       mainAxisAlignment: MainAxisAlignment.spaceEvenly,

@@ -4,11 +4,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../providers/combat_provider.dart';
 import '../utils/combat_calculator_utils.dart';
 import 'probability_distribution_chart.dart' as chart;
-import 'summary_row.dart';
 import '../themes/app_theme.dart';
 import 'enhanced_combat_summary.dart';
 import 'stand_loss_probability_table.dart'; // Import the new widget
-import 'dart:math' as math;
 
 class CombatResultsPanel extends ConsumerWidget {
   const CombatResultsPanel({super.key});

@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import '../themes/app_theme.dart';
 import '../utils/combat_calculator_utils.dart';
-import '../../domain/models/combat_simulation.dart';
 import '../../presentation/providers/combat_provider.dart';
 
 class EnhancedCombatSummary extends StatefulWidget {

@@ -2,7 +2,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../domain/models/regiment.dart';
 import '../../domain/models/combat_simulation.dart';
-import '../../domain/models/probability_distribution.dart';
 import '../../domain/usecases/calculate_combat.dart';
 
 // Enum to track which combat mode is active
