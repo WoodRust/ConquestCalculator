@@ -87,14 +87,14 @@ class RangedCombatProcessor extends CombatProcessor {
     if (hasRerolls) {
       // For rerolls, we use a special calculation that accounts for rerolling failures
       return probabilityCalculator.calculateDistributionWithRerolls(
-        dice: totalVolleys,
+        dice: totalVolleys.toDouble(),
         target: hitTarget,
         rerollFails: true,
       );
     } else {
       // Standard binomial distribution
       return probabilityCalculator.calculateBinomialDistribution(
-        dice: totalVolleys,
+        dice: totalVolleys.toDouble(),
         targetValue: hitTarget,
       );
     }

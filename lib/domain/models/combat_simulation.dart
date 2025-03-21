@@ -5,9 +5,9 @@ import 'package:conquest_calculator/domain/models/probability_distribution.dart'
 /// Represents the outcome of a simple dice roll with success and failure count
 /// Represents the outcome of a simple dice roll with success and failure count
 class DiceResult {
-  final int successes;
-  final int failures;
-  final int total;
+  final double successes;
+  final double failures;
+  final double total;
 
   DiceResult({
     required this.successes,
@@ -15,11 +15,11 @@ class DiceResult {
     required this.total,
   });
 
-  factory DiceResult.fromRoll({required int dice, required int target}) {
+  factory DiceResult.fromRoll({required double dice, required int target}) {
     // FIXED: In Conquest, success is rolling less than or equal to the target
     // So for a target of 3, the success rate is 3/6 = 0.5
     final double successRate = target / 6.0;
-    final int expectedSuccesses = (dice * successRate).round();
+    final double expectedSuccesses = (dice * successRate);
     return DiceResult(
       successes: expectedSuccesses,
       failures: dice - expectedSuccesses,
@@ -92,9 +92,9 @@ class CombatSimulation {
             standsToBreak); // Pass in standsToBreak
 
   // Helper methods to get meaningful results
-  int getExpectedWounds() {
+  double getExpectedWounds() {
     if (totalDamageDistribution != null) {
-      return totalDamageDistribution!.mean.round();
+      return totalDamageDistribution!.mean;
     }
     return defenseRoll.failures + resolveRoll.failures;
   }
@@ -141,7 +141,7 @@ class CombatSimulation {
   static double _calculateBreakingProbability(
       int numDefenderStands,
       int woundsPerStand,
-      int expectedTotalWounds,
+      double expectedTotalWounds,
       ProbabilityDistribution? distribution,
       int standsToBreak) {
     // Use standsToBreak value instead of calculating it

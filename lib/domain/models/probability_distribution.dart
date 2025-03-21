@@ -14,7 +14,7 @@ class ProbabilityDistribution {
   final double standardDeviation;
 
   /// Number of dice used in the calculation (for reference)
-  final int diceCount;
+  final double diceCount;
 
   /// The target value used for success (for reference)
   final int targetValue;
@@ -29,7 +29,7 @@ class ProbabilityDistribution {
 
   /// Creates a binomial probability distribution for n dice with target t or less on d6
   factory ProbabilityDistribution.binomial({
-    required int dice,
+    required double dice, // Changed from int to double
     required int targetValue,
   }) {
     if (dice < 0) {
@@ -44,22 +44,52 @@ class ProbabilityDistribution {
     // So for targetValue of 3, probability is 3/6 = 0.5
     final double p = targetValue / 6.0;
 
-    // Calculate binomial probabilities for 0 to n successes
-    List<double> probs = List<double>.filled(dice + 1, 0.0);
-    for (int k = 0; k <= dice; k++) {
-      probs[k] = _binomialProbability(dice, k, p);
-    }
-
-    // Calculate mean and standard deviation
+    // Calculate expected values for mean and variance using exact formula
     double mean = dice * p;
     double variance = dice * p * (1 - p);
     double standardDeviation = math.sqrt(variance);
+
+    // For the probabilities array, we need to decide how to handle fractional dice
+    // We'll use a truncated binomial distribution with appropriate weights
+    int intDice = dice.ceil(); // Round up to nearest integer
+    double fractionalPart = dice - dice.floor();
+
+    List<double> probs = List<double>.filled(intDice + 1, 0.0);
+
+    // Calculate probabilities for the integer part
+    if (fractionalPart < 0.0001) {
+      // Essentially an integer
+      for (int k = 0; k <= intDice; k++) {
+        probs[k] = _binomialProbability(intDice, k, p);
+      }
+    } else {
+      // Interpolate between floor and ceiling dice values
+      List<double> lowerProbs = List<double>.filled(intDice, 0.0);
+      List<double> upperProbs = List<double>.filled(intDice + 1, 0.0);
+
+      int floorDice = dice.floor();
+
+      for (int k = 0; k <= floorDice; k++) {
+        lowerProbs[k] = _binomialProbability(floorDice, k, p);
+      }
+
+      for (int k = 0; k <= intDice; k++) {
+        upperProbs[k] = _binomialProbability(intDice, k, p);
+      }
+
+      // Weighted average based on fractional part
+      for (int k = 0; k <= intDice; k++) {
+        double lowerProb = k <= floorDice ? lowerProbs[k] : 0.0;
+        probs[k] =
+            lowerProb * (1 - fractionalPart) + upperProbs[k] * fractionalPart;
+      }
+    }
 
     return ProbabilityDistribution(
       probabilities: probs,
       mean: mean,
       standardDeviation: standardDeviation,
-      diceCount: dice,
+      diceCount: dice, // Store the exact dice count
       targetValue: targetValue,
     );
   }

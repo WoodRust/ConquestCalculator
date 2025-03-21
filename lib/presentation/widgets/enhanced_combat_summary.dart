@@ -70,6 +70,11 @@ class _EnhancedCombatSummaryState extends ConsumerState<EnhancedCombatSummary> {
       destructionProbability =
           totalDistribution.getProbabilityOfExceeding(woundsToDestroy - 1) *
               100;
+
+      // Add this logging in the build method of EnhancedCombatSummary
+      print("UI Display - Expected Wounds: $totalExpectedWounds");
+      print("  Direct Wounds: $expectedWounds");
+      print("  Impact Wounds: $expectedImpactWounds");
     }
 
     return Card(

@@ -134,7 +134,7 @@ class MeleeCombatProcessor extends CombatProcessor {
 
     // Calculate binomial distribution for hits
     return probabilityCalculator.calculateBinomialDistribution(
-      dice: totalImpacts,
+      dice: totalImpacts.toDouble(),
       targetValue: hitTarget,
     );
   }
@@ -189,14 +189,14 @@ class MeleeCombatProcessor extends CombatProcessor {
     if (hasRerolls) {
       // For rerolls, we use a special calculation that accounts for rerolling failures
       return probabilityCalculator.calculateDistributionWithRerolls(
-        dice: totalAttacks,
+        dice: totalAttacks.toDouble(),
         target: hitTarget,
         rerollFails: true,
       );
     } else {
       // Standard binomial distribution
       return probabilityCalculator.calculateBinomialDistribution(
-        dice: totalAttacks,
+        dice: totalAttacks.toDouble(),
         targetValue: hitTarget,
       );
     }

@@ -5,7 +5,7 @@ import 'dart:math' as math;
 class ProbabilityCalculator {
   /// Calculate a binomial probability distribution
   ProbabilityDistribution calculateBinomialDistribution({
-    required int dice,
+    required double dice,
     required int targetValue,
   }) {
     return ProbabilityDistribution.binomial(
@@ -16,7 +16,7 @@ class ProbabilityCalculator {
 
   /// Calculate probability distribution with rerolls (failures or successes)
   ProbabilityDistribution calculateDistributionWithRerolls({
-    required int dice,
+    required double dice, // Changed from int to double
     required int target,
     bool rerollFails = false,
     bool rerollSuccesses = false, // New parameter for flank/rear attacks
@@ -49,17 +49,47 @@ class ProbabilityCalculator {
     double variance = dice * adjustedProbability * (1 - adjustedProbability);
     double stdDev = math.sqrt(variance);
 
-    // Generate approximate probability distribution
-    List<double> probabilities = List<double>.filled(dice + 1, 0.0);
-    for (int k = 0; k <= dice; k++) {
-      probabilities[k] = _binomialProbability(dice, k, adjustedProbability);
+    // Generate probability distribution
+    int maxDice = dice.ceil();
+    List<double> probabilities = List<double>.filled(maxDice + 1, 0.0);
+
+    // Similar logic to the binomial factory method for handling fractional dice
+    double fractionalPart = dice - dice.floor();
+
+    if (fractionalPart < 0.0001) {
+      // Essentially an integer
+      for (int k = 0; k <= maxDice; k++) {
+        probabilities[k] =
+            _binomialProbability(maxDice, k, adjustedProbability);
+      }
+    } else {
+      // Interpolate between floor and ceiling dice values
+      int floorDice = dice.floor();
+
+      List<double> lowerProbs = List<double>.filled(maxDice, 0.0);
+      List<double> upperProbs = List<double>.filled(maxDice + 1, 0.0);
+
+      for (int k = 0; k <= floorDice; k++) {
+        lowerProbs[k] = _binomialProbability(floorDice, k, adjustedProbability);
+      }
+
+      for (int k = 0; k <= maxDice; k++) {
+        upperProbs[k] = _binomialProbability(maxDice, k, adjustedProbability);
+      }
+
+      // Weighted average based on fractional part
+      for (int k = 0; k <= maxDice; k++) {
+        double lowerProb = k <= floorDice ? lowerProbs[k] : 0.0;
+        probabilities[k] =
+            lowerProb * (1 - fractionalPart) + upperProbs[k] * fractionalPart;
+      }
     }
 
     return ProbabilityDistribution(
       probabilities: probabilities,
       mean: mean,
       standardDeviation: stdDev,
-      diceCount: dice,
+      diceCount: dice, // Store the exact dice count
       targetValue: target,
     );
   }

@@ -109,7 +109,7 @@ abstract class CombatProcessor {
 
     // Create binomial distribution for direct wounds
     return probabilityCalculator.calculateBinomialDistribution(
-      dice: hitDistribution.mean.round(),
+      dice: hitDistribution.mean,
       targetValue: failureTarget,
     );
   }
@@ -133,7 +133,7 @@ abstract class CombatProcessor {
       // Use the distribution with rerolls method for flank/rear attacks
       resolveDistribution =
           probabilityCalculator.calculateDistributionWithRerolls(
-        dice: woundDistribution.mean.round(),
+        dice: woundDistribution.mean,
         target: resolveTarget,
         rerollSuccesses: true, // Reroll successes for flank/rear attacks
       );
@@ -143,7 +143,7 @@ abstract class CombatProcessor {
       int failureTarget = 6 - resolveTarget;
 
       resolveDistribution = probabilityCalculator.calculateBinomialDistribution(
-        dice: woundDistribution.mean.round(),
+        dice: woundDistribution.mean,
         targetValue: failureTarget,
       );
     }
@@ -164,7 +164,7 @@ abstract class CombatProcessor {
 
           resolveDistribution =
               probabilityCalculator.calculateBinomialDistribution(
-            dice: woundDistribution.mean.round(),
+            dice: woundDistribution.mean,
             targetValue: adjustedTarget,
           );
         }
@@ -174,12 +174,17 @@ abstract class CombatProcessor {
           probabilities: [1.0], // 100% chance of 0 wounds
           mean: 0.0,
           standardDeviation: 0.0,
-          diceCount: woundDistribution.mean.round(),
+          diceCount: woundDistribution.mean,
           targetValue: 6 - resolveTarget, // Keep original target for reference
         );
       }
     }
-
+    print("===== Resolve Calculation =====");
+    print("Resolve Target: $resolveTarget");
+    print("Indomitable Value: $indomitableValue");
+    print(
+        "Failure Target Calculation: 6 - $resolveTarget = ${6 - resolveTarget}");
+    print("Wounds for Morale Tests: ${woundDistribution.mean.round()}");
     return resolveDistribution;
   }
 

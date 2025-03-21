@@ -67,26 +67,24 @@ class CalculateCombat {
 
     // Create DiceResult instances for backward compatibility
     DiceResult hitRoll = DiceResult(
-      successes: distributions.regularHitDistribution.mean.round(),
+      successes: distributions.regularHitDistribution.mean,
       failures: distributions.regularHitDistribution.diceCount -
-          distributions.regularHitDistribution.mean.round(),
+          distributions.regularHitDistribution.mean,
       total: distributions.regularHitDistribution.diceCount,
     );
 
     DiceResult defenseRoll = DiceResult(
       successes: (distributions.regularHitDistribution.mean -
-              distributions.regularWoundDistribution.mean)
-          .round(),
-      failures: distributions.regularWoundDistribution.mean.round(),
-      total: distributions.regularHitDistribution.mean.round(),
+          distributions.regularWoundDistribution.mean),
+      failures: distributions.regularWoundDistribution.mean,
+      total: distributions.regularHitDistribution.mean,
     );
 
     DiceResult resolveRoll = DiceResult(
       successes: (distributions.regularWoundDistribution.mean -
-              distributions.regularResolveDistribution.mean)
-          .round(),
-      failures: distributions.regularResolveDistribution.mean.round(),
-      total: distributions.regularWoundDistribution.mean.round(),
+          distributions.regularResolveDistribution.mean),
+      failures: distributions.regularResolveDistribution.mean,
+      total: distributions.regularWoundDistribution.mean,
     );
 
     // Return the complete combat simulation
@@ -344,7 +342,14 @@ class CalculateCombat {
         resolveTarget,
         context.defender.getIndomitable(),
       );
-
+      print("===== Calculate Expected Wounds =====");
+      print("Expected Hits: ${hitDistribution.mean}");
+      print("Defense Target: $defenseTarget");
+      print("Expected Direct Wounds: ${woundDistribution.mean}");
+      print("Resolve Target: $resolveTarget");
+      print("Expected Morale Wounds: ${resolveDistribution.mean}");
+      print(
+          "Total Expected Wounds: ${woundDistribution.mean + resolveDistribution.mean}");
       // Return the sum of means from both distributions
       return woundDistribution.mean + resolveDistribution.mean;
     } catch (e) {
