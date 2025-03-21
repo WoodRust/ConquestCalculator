@@ -227,6 +227,16 @@ class CombatCalculatorUtils {
       return expectedDirectWounds; // No morale wounds for Animate Vessel
     }
 
+    // Apply Terrifying effect if in melee combat (not volley) and defender doesn't have Fearless or Bravery
+    if (!state.isVolley &&
+        state.attacker!.getTerrifying() > 0 &&
+        !state.defender!.hasSpecialRule('fearless') &&
+        !state.defender!.hasSpecialRule('bravery')) {
+      // Reduce resolve by terrifying value
+      resolveTarget =
+          math.max(resolveTarget - state.attacker!.getTerrifying(), 0);
+    }
+
     // Adjust resolve for flank/rear attacks (re-roll successful tests)
     if (state.isFlank || state.isRear) {
       // Units attacked from flank/rear must re-roll successful resolve tests
