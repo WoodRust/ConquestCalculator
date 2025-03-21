@@ -14,11 +14,12 @@ class ProbabilityCalculator {
     );
   }
 
-  /// Calculate probability distribution with rerolls
+  /// Calculate probability distribution with rerolls (failures or successes)
   ProbabilityDistribution calculateDistributionWithRerolls({
     required int dice,
     required int target,
     bool rerollFails = false,
+    bool rerollSuccesses = false, // New parameter for flank/rear attacks
     bool rerollOnes = false,
   }) {
     // Calculate base success probability
@@ -31,6 +32,10 @@ class ProbabilityCalculator {
       // Probability after rerolling failures:
       // P' = P + (1-P)*P = P(2-P)
       adjustedProbability = pSuccess + (1 - pSuccess) * pSuccess;
+    } else if (rerollSuccesses) {
+      // Probability after rerolling successes:
+      // P' = P*P (need to succeed twice in a row)
+      adjustedProbability = pSuccess * pSuccess;
     } else if (rerollOnes) {
       // Probability after rerolling only 1s:
       // P' = P + (1/6)*P

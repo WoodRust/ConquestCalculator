@@ -92,16 +92,9 @@ abstract class CombatProcessor {
         !defender.hasSpecialRule('bravery')) {
       // Reduce resolve by terrifying value
       resolveTarget =
-          math.max(resolveTarget - context.attacker.getTerrifying(), 0);
+          math.max(resolveTarget - context.attacker.getTerrifying(), 1);
     }
 
-    // Adjust for flank/rear attacks (re-roll successful tests)
-    if (isFlank || isRear) {
-      // Units attacked from flank/rear must re-roll successful resolve tests
-      // Simulate re-rolls by reducing the target
-      resolveTarget = math.max(resolveTarget - 1, 0);
-    }
-    //todo: should always retun at least 1. - write unit test for this.
     return resolveTarget;
   }
 
@@ -125,18 +118,35 @@ abstract class CombatProcessor {
   ProbabilityDistribution calculateResolveDistribution(
     ProbabilityDistribution woundDistribution,
     int resolveTarget,
-    int indomitableValue,
-  ) {
-    // For resolve tests failures, we need to roll higher than the resolve target
-    // E.g., if resolve is 3, rolls of 4, 5, 6 are failures
-    int failureTarget = 6 - resolveTarget;
+    int indomitableValue, {
+    bool isFlank = false,
+    bool isRear = false,
+  }) {
+    // For resolve tests, rolling less than or equal to the resolveTarget is a success
+    // Rerolls depend on flank/rear status
+    bool needsRerollSuccesses = isFlank || isRear;
 
-    // Create binomial distribution for resolve failures
-    ProbabilityDistribution resolveDistribution =
-        probabilityCalculator.calculateBinomialDistribution(
-      dice: woundDistribution.mean.round(),
-      targetValue: failureTarget,
-    );
+    // Calculate binomial distribution for resolve tests
+    ProbabilityDistribution resolveDistribution;
+
+    if (needsRerollSuccesses) {
+      // Use the distribution with rerolls method for flank/rear attacks
+      resolveDistribution =
+          probabilityCalculator.calculateDistributionWithRerolls(
+        dice: woundDistribution.mean.round(),
+        target: resolveTarget,
+        rerollSuccesses: true, // Reroll successes for flank/rear attacks
+      );
+    } else {
+      // Standard calculation for non-flank/rear attacks
+      // For resolve failures, we need dice higher than resolveTarget
+      int failureTarget = 6 - resolveTarget;
+
+      resolveDistribution = probabilityCalculator.calculateBinomialDistribution(
+        dice: woundDistribution.mean.round(),
+        targetValue: failureTarget,
+      );
+    }
 
     // Apply Indomitable effect if present
     if (indomitableValue > 0) {
@@ -165,7 +175,7 @@ abstract class CombatProcessor {
           mean: 0.0,
           standardDeviation: 0.0,
           diceCount: woundDistribution.mean.round(),
-          targetValue: failureTarget,
+          targetValue: 6 - resolveTarget, // Keep original target for reference
         );
       }
     }

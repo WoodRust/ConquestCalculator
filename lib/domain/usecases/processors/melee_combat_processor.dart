@@ -169,7 +169,7 @@ class MeleeCombatProcessor extends CombatProcessor {
       hitTarget += 1;
 
       // If Inspired would raise Clash to 5+, use re-roll instead
-      if (hitTarget >= 5) {
+      if (hitTarget > 5) {
         hitTarget = context.attacker.clash; // Reset to base value
         context.specialRulesInEffect['inspiredReroll'] = true;
       }
