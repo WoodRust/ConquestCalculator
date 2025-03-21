@@ -85,13 +85,23 @@ abstract class CombatProcessor {
       return 6; // Will always pass resolve tests
     }
 
+    // Apply Terrifying effect if in melee combat (not volley) and defender doesn't have Fearless or Bravery
+    if (!context.isVolley &&
+        context.attacker.getTerrifying() > 0 &&
+        !defender.hasSpecialRule('fearless') &&
+        !defender.hasSpecialRule('bravery')) {
+      // Reduce resolve by terrifying value
+      resolveTarget =
+          math.max(resolveTarget - context.attacker.getTerrifying(), 0);
+    }
+
     // Adjust for flank/rear attacks (re-roll successful tests)
     if (isFlank || isRear) {
       // Units attacked from flank/rear must re-roll successful resolve tests
       // Simulate re-rolls by reducing the target
       resolveTarget = math.max(resolveTarget - 1, 0);
     }
-
+    //todo: should always retun at least 1. - write unit test for this.
     return resolveTarget;
   }
 

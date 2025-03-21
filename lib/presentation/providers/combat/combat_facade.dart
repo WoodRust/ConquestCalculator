@@ -1,6 +1,7 @@
 // lib/presentation/providers/combat/combat_facade.dart
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../domain/models/regiment.dart';
+import '../../../domain/usecases/calculate_combat.dart';
 import 'models/combat_state.dart';
 import 'notifiers/combat_notifier.dart';
 import 'providers.dart';
@@ -16,6 +17,9 @@ class CombatFacade {
 
   // Get the notifier for direct access when needed
   CombatNotifier get notifier => _ref.read(combatProvider.notifier);
+
+  // Get the calculate combat use case
+  CalculateCombat get _calculateCombat => _ref.read(calculateCombatProvider);
 
   // Common operations
   void calculateCombat() => notifier.calculateCombat();
@@ -68,6 +72,25 @@ class CombatFacade {
       notifier.toggleSavedCalculationVisibility(index);
   void deleteSavedCalculation(int index) =>
       notifier.deleteSavedCalculation(index);
+
+  // Combat calculation utilities
+  int calculateTotalImpacts(CombatState state) =>
+      _calculateCombat.calculateTotalImpacts(state);
+
+  double calculateExpectedImpactHits(CombatState state) =>
+      _calculateCombat.calculateExpectedImpactHits(state);
+
+  double calculateExpectedImpactWounds(CombatState state) =>
+      _calculateCombat.calculateExpectedImpactWounds(state);
+
+  int calculateTotalAttacks(CombatState state) =>
+      _calculateCombat.calculateTotalAttacks(state);
+
+  double calculateExpectedHits(CombatState state) =>
+      _calculateCombat.calculateExpectedHits(state);
+
+  double calculateExpectedWounds(CombatState state) =>
+      _calculateCombat.calculateExpectedWounds(state);
 }
 
 /// Provider for the combat facade

@@ -14,7 +14,7 @@ class RangedCombatProcessor extends CombatProcessor {
   CombatDistributions processCombat() {
     // Calculate volley hit distribution
     ProbabilityDistribution regularHitDistribution =
-        _calculateVolleryHitDistribution();
+        calculateVolleyHitDistribution();
 
     // Calculate defense roll distribution for volley hits
     ProbabilityDistribution regularWoundDistribution =
@@ -48,7 +48,7 @@ class RangedCombatProcessor extends CombatProcessor {
         calculateTotalDamageDistribution(
       regularWoundDistribution,
       regularResolveDistribution,
-      _calculateTotalVolleys(),
+      calculateTotalVolleys(),
     );
 
     // For ranged combat, there's no impact phase, so total damage is just the regular damage
@@ -62,9 +62,9 @@ class RangedCombatProcessor extends CombatProcessor {
   }
 
   /// Calculate hit distribution for volley attacks
-  ProbabilityDistribution _calculateVolleryHitDistribution() {
+  ProbabilityDistribution calculateVolleyHitDistribution() {
     // Calculate total volleys
-    int totalVolleys = _calculateTotalVolleys();
+    int totalVolleys = calculateTotalVolleys();
 
     // Get base hit target (volley value)
     int hitTarget = context.attacker.volley;
@@ -101,7 +101,7 @@ class RangedCombatProcessor extends CombatProcessor {
   }
 
   /// Calculate total volleys for ranged attacks
-  int _calculateTotalVolleys() {
+  int calculateTotalVolleys() {
     if (!context.attacker.hasBarrage()) {
       return 0; // No barrage capability
     }

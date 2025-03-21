@@ -17,7 +17,7 @@ class MeleeCombatProcessor extends CombatProcessor {
     // Process impact phase if applicable
     if (context.isImpact && context.attacker.hasImpact()) {
       // Handle impact attack phase
-      impactHitDistribution = _calculateImpactHitDistribution();
+      impactHitDistribution = calculateImpactHitDistribution();
 
       // Calculate defense roll distribution for impact hits
       impactWoundDistribution = calculateWoundDistribution(
@@ -48,13 +48,13 @@ class MeleeCombatProcessor extends CombatProcessor {
       impactTotalDamageDistribution = calculateTotalDamageDistribution(
         impactWoundDistribution,
         impactResolveDistribution,
-        _calculateTotalImpacts(),
+        calculateTotalImpacts(),
       );
     }
 
     // Process regular melee phase
     ProbabilityDistribution regularHitDistribution =
-        _calculateRegularHitDistribution();
+        calculateRegularHitDistribution();
 
     // Calculate defense roll distribution for regular hits
     ProbabilityDistribution regularWoundDistribution =
@@ -88,7 +88,7 @@ class MeleeCombatProcessor extends CombatProcessor {
         calculateTotalDamageDistribution(
       regularWoundDistribution,
       regularResolveDistribution,
-      _calculateTotalAttacks(),
+      calculateTotalAttacks(),
     );
 
     // Combine both phases for the total damage distribution
@@ -119,9 +119,9 @@ class MeleeCombatProcessor extends CombatProcessor {
   }
 
   /// Calculate the hit distribution for impact attacks
-  ProbabilityDistribution _calculateImpactHitDistribution() {
+  ProbabilityDistribution calculateImpactHitDistribution() {
     // Get total impact attacks
-    int totalImpacts = _calculateTotalImpacts();
+    int totalImpacts = calculateTotalImpacts();
 
     // Get base hit target (clash value for impacts)
     int hitTarget = context.attacker.clash;
@@ -140,7 +140,7 @@ class MeleeCombatProcessor extends CombatProcessor {
   }
 
   /// Calculate total impact attacks
-  int _calculateTotalImpacts() {
+  int calculateTotalImpacts() {
     // Get the impact value
     int impactValue = context.attacker.getImpact();
 
@@ -157,9 +157,9 @@ class MeleeCombatProcessor extends CombatProcessor {
   }
 
   /// Calculate hit distribution for regular melee attacks
-  ProbabilityDistribution _calculateRegularHitDistribution() {
+  ProbabilityDistribution calculateRegularHitDistribution() {
     // Calculate total attacks
-    int totalAttacks = _calculateTotalAttacks();
+    int totalAttacks = calculateTotalAttacks();
 
     // Get base hit target (clash value)
     int hitTarget = context.attacker.clash;
@@ -203,7 +203,7 @@ class MeleeCombatProcessor extends CombatProcessor {
   }
 
   /// Calculate total regular attacks
-  int _calculateTotalAttacks() {
+  int calculateTotalAttacks() {
     // Add character attacks
     int characterAttacks = 0;
     if (context.attackerCharacter != null) {
@@ -212,7 +212,7 @@ class MeleeCombatProcessor extends CombatProcessor {
 
     // Calculate support attacks from unengaged stands
     // Simplified model: we'll assume half stands are engaged, half provide support
-    int engagedStands = (context.numAttackerStands / 2).ceil();
+    int engagedStands = context.numAttackerStands;
     int supportingStands = context.numAttackerStands - engagedStands;
 
     // Get support value from Regiment's support field

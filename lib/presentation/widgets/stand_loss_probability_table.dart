@@ -1,3 +1,4 @@
+// lib/presentation/widgets/stand_loss_probability_table.dart
 import 'package:flutter/material.dart';
 import '../themes/app_theme.dart';
 import '../providers/combat_provider.dart';

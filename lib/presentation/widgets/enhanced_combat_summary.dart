@@ -1,9 +1,11 @@
+// lib/presentation/widgets/enhanced_combat_summary.dart
 import 'package:flutter/material.dart';
 import '../themes/app_theme.dart';
-import '../utils/combat_calculator_utils.dart';
 import '../../presentation/providers/combat_provider.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'dart:math' as math;
 
-class EnhancedCombatSummary extends StatefulWidget {
+class EnhancedCombatSummary extends ConsumerStatefulWidget {
   final CombatState state;
 
   const EnhancedCombatSummary({
@@ -12,10 +14,11 @@ class EnhancedCombatSummary extends StatefulWidget {
   }) : super(key: key);
 
   @override
-  State<EnhancedCombatSummary> createState() => _EnhancedCombatSummaryState();
+  ConsumerState<EnhancedCombatSummary> createState() =>
+      _EnhancedCombatSummaryState();
 }
 
-class _EnhancedCombatSummaryState extends State<EnhancedCombatSummary> {
+class _EnhancedCombatSummaryState extends ConsumerState<EnhancedCombatSummary> {
   bool _showDetails = false;
 
   @override
@@ -23,32 +26,31 @@ class _EnhancedCombatSummaryState extends State<EnhancedCombatSummary> {
     // Don't show anything if the simulation is null
     if (widget.state.simulation == null) return const SizedBox.shrink();
 
+    // Get the combat facade for calculations
+    final combatFacade = ref.read(combatFacadeProvider);
+
     // Calculate values for impact attacks if applicable
     bool hasImpact =
         widget.state.isImpact && (widget.state.attacker?.hasImpact() ?? false);
 
-    int totalImpacts = hasImpact
-        ? CombatCalculatorUtils.calculateTotalImpacts(widget.state)
-        : 0;
+    int totalImpacts =
+        hasImpact ? combatFacade.calculateTotalImpacts(widget.state) : 0;
 
     double expectedImpactHits = hasImpact
-        ? CombatCalculatorUtils.calculateExpectedImpactHits(widget.state)
+        ? combatFacade.calculateExpectedImpactHits(widget.state)
         : 0.0;
 
     double expectedImpactWounds = hasImpact
-        ? CombatCalculatorUtils.calculateExpectedImpactWounds(widget.state)
+        ? combatFacade.calculateExpectedImpactWounds(widget.state)
         : 0.0;
 
     double expectedImpactStandsLost =
         (expectedImpactWounds / (widget.state.defender?.wounds ?? 1));
 
     // Calculate regular attack values
-    int totalAttacks =
-        CombatCalculatorUtils.calculateTotalAttacks(widget.state);
-    double expectedHits =
-        CombatCalculatorUtils.calculateExpectedHits(widget.state);
-    double expectedWounds =
-        CombatCalculatorUtils.calculateExpectedWounds(widget.state);
+    int totalAttacks = combatFacade.calculateTotalAttacks(widget.state);
+    double expectedHits = combatFacade.calculateExpectedHits(widget.state);
+    double expectedWounds = combatFacade.calculateExpectedWounds(widget.state);
     double expectedStandsLost =
         (expectedWounds / (widget.state.defender?.wounds ?? 1));
 

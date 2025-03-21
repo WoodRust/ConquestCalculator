@@ -2,11 +2,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../providers/combat_provider.dart';
-import '../utils/combat_calculator_utils.dart';
 import 'probability_distribution_chart.dart' as chart;
 import '../themes/app_theme.dart';
 import 'enhanced_combat_summary.dart';
-import 'stand_loss_probability_table.dart'; // Import the new widget
+import 'stand_loss_probability_table.dart';
 
 class CombatResultsPanel extends ConsumerWidget {
   const CombatResultsPanel({super.key});
@@ -15,6 +14,7 @@ class CombatResultsPanel extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final combatState = ref.watch(combatProvider);
     final combatNotifier = ref.read(combatProvider.notifier);
+    final combatFacade = ref.read(combatFacadeProvider);
     final hasSimulation = combatState.simulation != null &&
         combatState.simulation!.totalDamageDistribution != null;
 
@@ -119,8 +119,7 @@ class CombatResultsPanel extends ConsumerWidget {
                         showCumulative: combatState.showCumulativeDistribution,
                         // Calculate total attacks for realistic max wounds
                         attackerAttacks:
-                            CombatCalculatorUtils.calculateTotalAttacks(
-                                combatState),
+                            combatFacade.calculateTotalAttacks(combatState),
                         // Generate thresholds for each stand and breaking point
                         thresholds: _generateStandThresholds(
                           combatState.defender!.wounds,
