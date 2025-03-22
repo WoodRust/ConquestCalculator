@@ -2,6 +2,7 @@
 import 'package:flutter/material.dart';
 import '../../domain/models/regiment.dart';
 import 'unit_selection/special_rule_chip.dart';
+import 'unit_selection/special_rules_section.dart'; // Import this
 
 /// A reusable widget for displaying a regiment's stats and special rules in a card format
 class UnitCard extends StatelessWidget {
@@ -11,6 +12,7 @@ class UnitCard extends StatelessWidget {
   final bool showDrawEvents;
   final EdgeInsetsGeometry padding;
   final VoidCallback? onTap;
+  final bool isAttacker; // Add this parameter
 
   const UnitCard({
     super.key,
@@ -20,6 +22,7 @@ class UnitCard extends StatelessWidget {
     this.showDrawEvents = true,
     this.padding = const EdgeInsets.all(12.0),
     this.onTap,
+    this.isAttacker = true, // Default to attacker
   });
 
   @override
@@ -161,34 +164,12 @@ class UnitCard extends StatelessWidget {
                 ),
               ),
 
-              // Special rules section
-              if (showSpecialRules &&
-                  (regiment.specialRules.isNotEmpty ||
-                      regiment.hasBarrage() ||
-                      regiment.hasArmorPiercing() ||
-                      regiment.hasImpact() ||
-                      regiment.shield ||
-                      regiment.getCleave() > 0)) ...[
-                const SizedBox(height: 12),
-                Text(
-                  'Special Rules',
-                  style: TextStyle(
-                    fontSize: 12,
-                    fontWeight: FontWeight.bold,
-                    color: Theme.of(context).colorScheme.secondary,
-                  ),
+              // Special rules section - Now using the SpecialRulesSection component
+              if (showSpecialRules)
+                SpecialRulesSection(
+                  regiment: regiment,
+                  isAttacker: isAttacker,
                 ),
-                const SizedBox(height: 4),
-                SizedBox(
-                  width: double.infinity,
-                  child: Wrap(
-                    spacing: 6,
-                    runSpacing: 6,
-                    alignment: WrapAlignment.start,
-                    children: _buildSpecialRuleChips(regiment),
-                  ),
-                ),
-              ],
 
               // Draw events section
               if (showDrawEvents && regiment.drawEvents.isNotEmpty) ...[
@@ -268,66 +249,6 @@ class UnitCard extends StatelessWidget {
         ),
       );
     });
-  }
-
-  // Helper method to build special rule chips
-  List<Widget> _buildSpecialRuleChips(Regiment regiment) {
-    final List<Widget> chips = [];
-
-    // Add barrage as a separate special rule
-    if (regiment.hasBarrage()) {
-      final barrageText = regiment.barrageRange != null &&
-              regiment.barrageRange! > 0
-          ? "Barrage (${regiment.getBarrage()}) (${regiment.getBarrageRange()}\")"
-          : "Barrage (${regiment.getBarrage()})";
-
-      chips.add(SpecialRuleChip(
-        ruleName: barrageText,
-      ));
-    }
-
-    // Add armor piercing as a separate special rule
-    if (regiment.hasArmorPiercing()) {
-      chips.add(SpecialRuleChip(
-        ruleName: "Armor Piercing (${regiment.getArmorPiercingValue()})",
-      ));
-    }
-
-    // Add impact as a separate rule
-    if (regiment.hasImpact()) {
-      chips.add(SpecialRuleChip(
-        ruleName: "Impact (${regiment.getImpact()})",
-      ));
-    }
-
-    if (regiment.getCleave() > 0 || regiment.hasSpecialRule('cleave')) {
-      chips.add(SpecialRuleChip(
-        ruleName: "Cleave (${regiment.getCleave()})",
-      ));
-    }
-
-    if (regiment.shield || regiment.hasSpecialRule('shield')) {
-      chips.add(SpecialRuleChip(
-        ruleName: "Shield",
-      ));
-    }
-
-    // Add other special rules
-    for (final rule in regiment.specialRules) {
-      // Skip rules that we've already added separate chips for
-      if (rule.contains('Barrage') && regiment.hasBarrage() ||
-          rule.contains('Armor Piercing') && regiment.hasArmorPiercing() ||
-          rule.contains('Impact') && regiment.hasImpact() ||
-          rule.contains('Cleave') && regiment.getCleave() > 0 ||
-          rule == 'Shield' && regiment.shield) {
-        continue;
-      }
-
-      // Add the special rule
-      chips.add(SpecialRuleChip(ruleName: rule));
-    }
-
-    return chips;
   }
 
   IconData _getRegimentTypeIcon(RegimentType type) {

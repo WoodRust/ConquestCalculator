@@ -3,6 +3,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../domain/models/regiment.dart';
 import '../../providers/combat_provider.dart';
+import 'special_rule_chip.dart';
+import 'special_rule_selection_dialog.dart';
+import '../../themes/app_theme.dart';
 
 /// Displays and manages special rules for a regiment
 class SpecialRulesSection extends ConsumerWidget {
@@ -19,17 +22,36 @@ class SpecialRulesSection extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final combatState = ref.watch(combatProvider);
     final combatNotifier = ref.read(combatProvider.notifier);
+    final combatFacade = ref.read(combatFacadeProvider);
 
-    // Check if we have any special rules, barrage, or armor piercing to display
-    final bool hasAnyRules = regiment.specialRules.isNotEmpty ||
-        regiment.hasBarrage() ||
-        regiment.hasArmorPiercing() ||
-        regiment.hasImpact() ||
-        regiment.shield ||
-        regiment.getCleave() > 0;
+    // Filter combat modifiers that shouldn't be shown as special rules
+    final Set<String> combatModifiers = {
+      'inspired',
+      'aimed',
+      'inspiredReroll',
+      'aimedReroll'
+    };
 
-    // If no special rules, don't show anything
-    if (!hasAnyRules) {
+    // Get the list of built-in rules from the regiment
+    final builtInRules = regiment.specialRules;
+
+    // Get the keys of all optional rules that are active
+    final allActiveRuleKeys = combatState.specialRulesInEffect.entries
+        .where((entry) => entry.value && !combatModifiers.contains(entry.key))
+        .map((entry) => entry.key)
+        .toList();
+
+    // Filter out built-in rules to get just the optional ones
+    final optionalRules = allActiveRuleKeys.where((key) {
+      final ruleName = key.replaceAll('_', ' ');
+      // Check if this rule is NOT a built-in rule
+      return !builtInRules.any((builtIn) =>
+          builtIn.toLowerCase() == ruleName.toLowerCase() ||
+          builtIn.toLowerCase().startsWith(ruleName.toLowerCase() + ' ('));
+    }).toList();
+
+    // If no special rules and no optional rules, don't show anything
+    if (builtInRules.isEmpty && optionalRules.isEmpty) {
       return const SizedBox.shrink();
     }
 
@@ -37,136 +59,107 @@ class SpecialRulesSection extends ConsumerWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         const SizedBox(height: 12),
-        Text('Special Rules', style: Theme.of(context).textTheme.titleSmall),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Text('Special Rules',
+                style: Theme.of(context).textTheme.titleSmall),
+            // Add Special Rule button
+            TextButton.icon(
+              icon: const Icon(Icons.add, size: 16),
+              label: const Text('Add Rule'),
+              style: TextButton.styleFrom(
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 0),
+                minimumSize: const Size(0, 32),
+                tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+              ),
+              onPressed: () => _showSpecialRuleSelectionDialog(
+                context,
+                combatState,
+                combatFacade, // Use facade to ensure proper context
+                builtInRules,
+                optionalRules,
+                isAttacker,
+              ),
+            ),
+          ],
+        ),
         const SizedBox(height: 4),
         Wrap(
           spacing: 8,
           runSpacing: 6,
-          children: _buildSpecialRuleChips(combatState, combatNotifier),
+          children: [
+            // Built-in special rule chips (not selectable)
+            ...builtInRules.map((rule) {
+              return SpecialRuleChip(
+                ruleName: rule,
+                // No onSelected or isSelected for built-in rules
+              );
+            }),
+
+            // Optional special rule chips (with remove option)
+            ...optionalRules.map((ruleKey) {
+              final ruleName = ruleKey.replaceAll('_', ' ');
+              return SpecialRuleChip(
+                ruleName: _capitalizeWords(ruleName),
+                isSelected: true,
+                isRemovable: true,
+                backgroundColor: AppTheme.claudePrimary.withOpacity(0.2),
+                onRemove: () {
+                  // Use the facade to ensure proper context
+                  if (isAttacker) {
+                    combatFacade.toggleCombatModifier(ruleKey, false);
+                  } else {
+                    combatFacade.toggleCombatModifier(ruleKey, false);
+                  }
+                },
+              );
+            }).toList(),
+          ],
         ),
       ],
     );
   }
 
-  List<Widget> _buildSpecialRuleChips(
-      CombatState combatState, CombatNotifier combatNotifier) {
-    final List<Widget> chips = [];
+  // Helper method to capitalize words for display
+  String _capitalizeWords(String text) {
+    return text
+        .split(' ')
+        .map((word) =>
+            word.isNotEmpty ? word[0].toUpperCase() + word.substring(1) : '')
+        .join(' ');
+  }
 
-    // Add chips based on regiment's special rules
-    if (isAttacker) {
-      // Handle barrage separately
-      if (regiment.hasBarrage()) {
-        final barrageText = regiment.barrageRange != null &&
-                regiment.barrageRange! > 0
-            ? "Barrage (${regiment.getBarrage()}) (${regiment.getBarrageRange()}\")"
-            : "Barrage (${regiment.getBarrage()})";
+  // Show dialog to select a special rule
+  void _showSpecialRuleSelectionDialog(
+    BuildContext context,
+    CombatState combatState,
+    CombatFacade combatFacade,
+    List<String> builtInRules,
+    List<String> optionalRules,
+    bool isAttacker,
+  ) {
+    // Combine built-in and already-added optional rules for exclusion
+    final currentRules = [
+      ...builtInRules,
+      ...optionalRules.map((key) => _capitalizeWords(key.replaceAll('_', ' ')))
+    ];
 
-        chips.add(FilterChip(
-          label: Text(barrageText),
-          selected: combatState.specialRulesInEffect['barrage'] ?? true,
-          onSelected: (bool selected) =>
-              combatNotifier.toggleSpecialRule('barrage', selected),
-        ));
-      }
-
-      // Handle armor piercing separately
-      if (regiment.hasArmorPiercing()) {
-        chips.add(FilterChip(
-          label: Text('Armor Piercing (${regiment.getArmorPiercingValue()})'),
-          selected: combatState.specialRulesInEffect['armorPiercing'] ?? true,
-          onSelected: (bool selected) =>
-              combatNotifier.toggleSpecialRule('armorPiercing', selected),
-        ));
-      }
-
-      // Handle impact as a separate rule
-      if (regiment.hasImpact()) {
-        chips.add(FilterChip(
-          label: Text('Impact (${regiment.getImpact()})'),
-          selected: combatState.isImpact,
-          onSelected: (bool selected) => combatNotifier.toggleImpact(selected),
-        ));
-      }
-
-      if (regiment.getCleave() > 0 || regiment.hasSpecialRule('cleave')) {
-        chips.add(FilterChip(
-          label: Text('Cleave (${regiment.getCleave()})'),
-          selected: combatState.specialRulesInEffect['cleave'] ?? true,
-          onSelected: (bool selected) =>
-              combatNotifier.toggleSpecialRule('cleave', selected),
-        ));
-      }
-
-      if (regiment.hasSpecialRule('flurry')) {
-        chips.add(FilterChip(
-          label: const Text('Flurry'),
-          selected: combatState.specialRulesInEffect['flurry'] ?? true,
-          onSelected: (bool selected) =>
-              combatNotifier.toggleSpecialRule('flurry', selected),
-        ));
-      }
-
-      if (regiment.hasSpecialRule('phalanx')) {
-        chips.add(FilterChip(
-          label: const Text('Phalanx'),
-          selected: combatState.specialRulesInEffect['phalanx'] ?? true,
-          onSelected: (bool selected) =>
-              combatNotifier.toggleSpecialRule('phalanx', selected),
-        ));
-      }
-
-      // Add any other special rules not already handled
-      for (final rule in regiment.specialRules) {
-        // Skip rules that we've already added
-        if (rule.contains('Barrage') && regiment.hasBarrage() ||
-            rule.contains('Armor Piercing') && regiment.hasArmorPiercing() ||
-            rule.contains('Impact') && regiment.hasImpact() ||
-            rule.contains('Cleave') && regiment.getCleave() > 0 ||
-            rule.contains('Flurry') ||
-            rule.contains('Phalanx')) {
-          continue;
-        }
-
-        // Add other special rules that might be toggleable
-        // This could be expanded with more rules
-        final String ruleName = rule;
-        if (ruleName.isNotEmpty) {
-          final String ruleKey = ruleName.toLowerCase().replaceAll(' ', '_');
-          chips.add(FilterChip(
-            label: Text(ruleName),
-            selected: combatState.specialRulesInEffect[ruleKey] ?? true,
-            onSelected: (bool selected) =>
-                combatNotifier.toggleSpecialRule(ruleKey, selected),
-          ));
-        }
-      }
-    } else {
-      // Defender special rules
-      if (regiment.shield || regiment.hasSpecialRule('shield')) {
-        chips.add(FilterChip(
-          label: const Text('Shield'),
-          selected: combatState.specialRulesInEffect['shield'] ?? true,
-          onSelected: (bool selected) =>
-              combatNotifier.toggleSpecialRule('shield', selected),
-        ));
-      }
-
-      // Add any other defender-specific special rules here
-      // For example, you might want to handle Armor Piercing for defenders too
-      if (regiment.hasArmorPiercing()) {
-        chips.add(FilterChip(
-          label: Text('Armor Piercing (${regiment.getArmorPiercingValue()})'),
-          tooltip:
-              'Reduces attacker\'s Defense by ${regiment.getArmorPiercingValue()}',
-          selected:
-              false, // For defenders, this is informational, not toggleable
-          onSelected: null, // Not toggleable for defenders
-        ));
-      }
-
-      // Add other defender special rules here...
-    }
-
-    return chips;
+    showDialog(
+      context: context,
+      builder: (context) => SpecialRuleSelectionDialog(
+        currentRules: currentRules,
+        onRuleSelected: (rule) {
+          // Convert rule name to a key by replacing spaces with underscores and making lowercase
+          final ruleKey = rule.toLowerCase().replaceAll(' ', '_');
+          // Use the facade to ensure proper context
+          if (isAttacker) {
+            combatFacade.toggleCombatModifier(ruleKey, true);
+          } else {
+            combatFacade.toggleCombatModifier(ruleKey, true);
+          }
+        },
+      ),
+    );
   }
 }

@@ -1,3 +1,4 @@
+// lib/data/sources/local/special_rules_service.dart
 import 'dart:convert';
 import 'package:flutter/services.dart';
 
@@ -44,20 +45,28 @@ class SpecialRulesService {
   Future<void> initialize() async {
     if (_isInitialized) return;
 
-    final String jsonString =
-        await rootBundle.loadString('assets/data/special_rules.json');
-    final Map<String, dynamic> jsonData =
-        json.decode(jsonString) as Map<String, dynamic>;
+    try {
+      final String jsonString =
+          await rootBundle.loadString('assets/data/special_rules.json');
+      final Map<String, dynamic> jsonData =
+          json.decode(jsonString) as Map<String, dynamic>;
 
-    _specialRules = (jsonData['special_rules'] as List)
-        .map((rule) => SpecialRule.fromJson(rule as Map<String, dynamic>))
-        .toList();
+      _specialRules = (jsonData['special_rules'] as List)
+          .map((rule) => SpecialRule.fromJson(rule as Map<String, dynamic>))
+          .toList();
 
-    _drawEvents = (jsonData['draw_events'] as List)
-        .map((event) => DrawEvent.fromJson(event as Map<String, dynamic>))
-        .toList();
+      _drawEvents = (jsonData['draw_events'] as List? ?? [])
+          .map((event) => DrawEvent.fromJson(event as Map<String, dynamic>))
+          .toList();
 
-    _isInitialized = true;
+      _isInitialized = true;
+    } catch (e) {
+      print('Error initializing special rules service: $e');
+      // Initialize with empty lists to prevent errors
+      _specialRules = [];
+      _drawEvents = [];
+      _isInitialized = true;
+    }
   }
 
   // Get a special rule's description by its base name (without any (X) parameters)
@@ -112,6 +121,8 @@ class SpecialRulesService {
 
   // Helper method to check if a string matches a special rule base name
   bool hasSpecialRule(String ruleName) {
+    if (!_isInitialized) return false;
+
     final baseRuleName = _extractBaseRuleName(ruleName);
     return _specialRules
         .any((rule) => _extractBaseRuleName(rule.name) == baseRuleName);
@@ -119,6 +130,8 @@ class SpecialRulesService {
 
   // Helper method to check if a string matches a draw event base name
   bool hasDrawEvent(String eventName) {
+    if (!_isInitialized) return false;
+
     final baseEventName = _extractBaseRuleName(eventName);
     return _drawEvents
         .any((event) => _extractBaseRuleName(event.name) == baseEventName);
@@ -126,11 +139,19 @@ class SpecialRulesService {
 
   // Get all special rules
   List<SpecialRule> getAllSpecialRules() {
+    if (!_isInitialized) {
+      initialize(); // Try to initialize if not already
+      return [];
+    }
     return List.unmodifiable(_specialRules);
   }
 
   // Get all draw events
   List<DrawEvent> getAllDrawEvents() {
+    if (!_isInitialized) {
+      initialize(); // Try to initialize if not already
+      return [];
+    }
     return List.unmodifiable(_drawEvents);
   }
 }
