@@ -160,7 +160,6 @@ class CombatantSelectionCard extends ConsumerWidget {
           ],
         ),
 
-        // Display unit card
         if (regiment != null)
           Padding(
             padding: const EdgeInsets.only(top: 12.0),
@@ -173,11 +172,13 @@ class CombatantSelectionCard extends ConsumerWidget {
                 isCompact: true,
                 // Add sufficient padding to prevent content from being cut off
                 padding: const EdgeInsets.fromLTRB(8.0, 8.0, 8.0, 8.0),
+                isAttacker:
+                    isAttacker, // Explicitly pass the isAttacker parameter
               ),
             ),
           ),
 
-        // Display attached character card (without the header row)
+// Display attached character card (without the header row)
         if (character != null)
           Padding(
             padding: const EdgeInsets.only(top: 12.0),
@@ -190,6 +191,8 @@ class CombatantSelectionCard extends ConsumerWidget {
                 padding: const EdgeInsets.all(12.0),
                 showSpecialRules: true,
                 showDrawEvents: false, // Simplify by hiding draw events
+                isAttacker:
+                    isAttacker, // Explicitly pass the isAttacker parameter
               ),
             ),
           ),

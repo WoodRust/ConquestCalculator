@@ -1,4 +1,5 @@
 // lib/presentation/widgets/unit_selection/special_rules_section.dart
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../domain/models/regiment.dart';
@@ -21,7 +22,6 @@ class SpecialRulesSection extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final combatState = ref.watch(combatProvider);
-    final combatNotifier = ref.read(combatProvider.notifier);
     final combatFacade = ref.read(combatFacadeProvider);
 
     // Filter combat modifiers that shouldn't be shown as special rules
@@ -35,8 +35,13 @@ class SpecialRulesSection extends ConsumerWidget {
     // Get the list of built-in rules from the regiment
     final builtInRules = regiment.specialRules;
 
-    // Get the keys of all optional rules that are active
-    final allActiveRuleKeys = combatState.specialRulesInEffect.entries
+    // Get the appropriate special rules map based on whether this is attacker or defender
+    final Map<String, bool> specialRulesMap = isAttacker
+        ? combatState.attackerSpecialRulesInEffect
+        : combatState.defenderSpecialRulesInEffect;
+
+    // Get the keys of all optional rules that are active for this unit
+    final allActiveRuleKeys = specialRulesMap.entries
         .where((entry) => entry.value && !combatModifiers.contains(entry.key))
         .map((entry) => entry.key)
         .toList();
@@ -76,7 +81,7 @@ class SpecialRulesSection extends ConsumerWidget {
               onPressed: () => _showSpecialRuleSelectionDialog(
                 context,
                 combatState,
-                combatFacade, // Use facade to ensure proper context
+                combatFacade,
                 builtInRules,
                 optionalRules,
                 isAttacker,
@@ -106,11 +111,11 @@ class SpecialRulesSection extends ConsumerWidget {
                 isRemovable: true,
                 backgroundColor: AppTheme.claudePrimary.withOpacity(0.2),
                 onRemove: () {
-                  // Use the facade to ensure proper context
+                  // Use the correct method for the attacker or defender
                   if (isAttacker) {
-                    combatFacade.toggleCombatModifier(ruleKey, false);
+                    combatFacade.toggleAttackerCombatModifier(ruleKey, false);
                   } else {
-                    combatFacade.toggleCombatModifier(ruleKey, false);
+                    combatFacade.toggleDefenderCombatModifier(ruleKey, false);
                   }
                 },
               );
@@ -152,11 +157,12 @@ class SpecialRulesSection extends ConsumerWidget {
         onRuleSelected: (rule) {
           // Convert rule name to a key by replacing spaces with underscores and making lowercase
           final ruleKey = rule.toLowerCase().replaceAll(' ', '_');
-          // Use the facade to ensure proper context
+
+          // Use the correct method based on whether this is for attacker or defender
           if (isAttacker) {
-            combatFacade.toggleCombatModifier(ruleKey, true);
+            combatFacade.toggleAttackerCombatModifier(ruleKey, true);
           } else {
-            combatFacade.toggleCombatModifier(ruleKey, true);
+            combatFacade.toggleDefenderCombatModifier(ruleKey, true);
           }
         },
       ),

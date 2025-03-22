@@ -58,8 +58,18 @@ class CombatFacade {
   void toggleArmorPiercing(bool value) => notifier.toggleArmorPiercing(value);
   void updateArmorPiercingValue(int value) =>
       notifier.updateArmorPiercingValue(value);
+
+  // New specific methods for attacker and defender
+  void toggleAttackerCombatModifier(String rule, bool value) =>
+      notifier.toggleAttackerCombatModifier(rule, value);
+
+  void toggleDefenderCombatModifier(String rule, bool value) =>
+      notifier.toggleDefenderCombatModifier(rule, value);
+
+  // Legacy methods - will now call the specific methods
   void toggleCombatModifier(String rule, bool value) =>
       notifier.toggleCombatModifier(rule, value);
+
   void updateCombatModifierValue(String rule, int value) =>
       notifier.updateCombatModifierValue(rule, value);
 

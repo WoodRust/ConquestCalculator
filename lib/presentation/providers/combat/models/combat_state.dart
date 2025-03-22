@@ -11,12 +11,12 @@ class CombatState {
   final Regiment? attacker;
   final int numAttackerStands;
   final Regiment? attackerCharacter;
-  final String? attackerFaction; // Store the selected attacker faction
+  final String? attackerFaction;
 
   final Regiment? defender;
   final int numDefenderStands;
   final Regiment? defenderCharacter;
-  final String? defenderFaction; // Store the selected defender faction
+  final String? defenderFaction;
 
   final bool isCharge;
   final bool isImpact;
@@ -24,7 +24,14 @@ class CombatState {
   final bool isRear;
   final bool isVolley;
   final bool isWithinEffectiveRange;
+
+  // Split special rules for attacker and defender
+  final Map<String, bool> attackerSpecialRulesInEffect;
+  final Map<String, bool> defenderSpecialRulesInEffect;
+
+  // For backward compatibility - will be deprecated
   final Map<String, bool> specialRulesInEffect;
+
   final Map<String, int> specialRuleValues;
   final CombatSimulation? simulation;
   final List<SavedCalculation> savedCalculations;
@@ -49,6 +56,9 @@ class CombatState {
     this.isVolley = false,
     this.isWithinEffectiveRange = false,
     this.specialRulesInEffect = const {},
+    // Initialize with empty maps, not const {} which is immutable
+    Map<String, bool>? attackerSpecialRulesInEffect,
+    Map<String, bool>? defenderSpecialRulesInEffect,
     this.specialRuleValues = const {},
     this.simulation,
     this.savedCalculations = const [],
@@ -56,18 +66,21 @@ class CombatState {
     this.combatMode = CombatMode.melee,
     this.isDuelMode = false,
     this.selectionResetDueToModeChange = false,
-  });
+  })  :
+        // Initialize the maps if they're null
+        this.attackerSpecialRulesInEffect = attackerSpecialRulesInEffect ?? {},
+        this.defenderSpecialRulesInEffect = defenderSpecialRulesInEffect ?? {};
 
   CombatState copyWith({
     Regiment? attacker,
-    bool clearAttacker = false, // Added explicit flag to clear attacker
+    bool clearAttacker = false,
     int? numAttackerStands,
     Regiment? attackerCharacter,
     String? attackerFaction,
     bool clearAttackerFaction = false,
     bool clearAttackerCharacter = false,
     Regiment? defender,
-    bool clearDefender = false, // Added explicit flag to clear defender
+    bool clearDefender = false,
     int? numDefenderStands,
     Regiment? defenderCharacter,
     String? defenderFaction,
@@ -80,6 +93,8 @@ class CombatState {
     bool? isVolley,
     bool? isWithinEffectiveRange,
     Map<String, bool>? specialRulesInEffect,
+    Map<String, bool>? attackerSpecialRulesInEffect,
+    Map<String, bool>? defenderSpecialRulesInEffect,
     Map<String, int>? specialRuleValues,
     CombatSimulation? simulation,
     bool clearSimulation = false,
@@ -90,7 +105,6 @@ class CombatState {
     bool? selectionResetDueToModeChange,
   }) {
     return CombatState(
-      // Use clearAttacker flag to explicitly set attacker to null
       attacker: clearAttacker ? null : (attacker ?? this.attacker),
       numAttackerStands: numAttackerStands ?? this.numAttackerStands,
       attackerCharacter: clearAttackerCharacter
@@ -99,7 +113,6 @@ class CombatState {
       attackerFaction: clearAttackerFaction
           ? null
           : (attackerFaction ?? this.attackerFaction),
-      // Use clearDefender flag to explicitly set defender to null
       defender: clearDefender ? null : (defender ?? this.defender),
       numDefenderStands: numDefenderStands ?? this.numDefenderStands,
       defenderCharacter: clearDefenderCharacter
@@ -116,6 +129,10 @@ class CombatState {
       isWithinEffectiveRange:
           isWithinEffectiveRange ?? this.isWithinEffectiveRange,
       specialRulesInEffect: specialRulesInEffect ?? this.specialRulesInEffect,
+      attackerSpecialRulesInEffect:
+          attackerSpecialRulesInEffect ?? this.attackerSpecialRulesInEffect,
+      defenderSpecialRulesInEffect:
+          defenderSpecialRulesInEffect ?? this.defenderSpecialRulesInEffect,
       specialRuleValues: specialRuleValues ?? this.specialRuleValues,
       simulation: clearSimulation ? null : (simulation ?? this.simulation),
       savedCalculations: savedCalculations ?? this.savedCalculations,

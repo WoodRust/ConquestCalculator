@@ -24,7 +24,7 @@ class CombatNotifier extends StateNotifier<CombatState> {
         state = state.copyWith(isImpact: false);
       }
 
-      // Enable inspired by default
+      // Enable inspired by default (using global specialRulesInEffect for backwards compatibility)
       final updatedRules = Map<String, bool>.from(state.specialRulesInEffect);
       updatedRules['inspired'] = true;
       state = state.copyWith(specialRulesInEffect: updatedRules);
@@ -38,22 +38,32 @@ class CombatNotifier extends StateNotifier<CombatState> {
       bool isCharacterVsCharacter = state.isDuelMode ||
           (state.attacker!.isCharacter() && state.defender!.isCharacter());
 
+      // Create merged special rules map for calculation
+      final Map<String, bool> mergedRules = {};
+
+      // Add global rules first (lowest priority)
+      mergedRules.addAll(state.specialRulesInEffect);
+
+      // Then add attacker-specific rules (can override global)
+      mergedRules.addAll(state.attackerSpecialRulesInEffect);
+
+      // Finally add defender-specific rules (can override both)
+      mergedRules.addAll(state.defenderSpecialRulesInEffect);
+
       final simulation = _calculateCombat.calculateExpectedResult(
         attacker: state.attacker!,
         numAttackerStands: isCharacterVsCharacter ? 1 : state.numAttackerStands,
-        attackerCharacter:
-            state.attackerCharacter, // Add character to calculation
+        attackerCharacter: state.attackerCharacter,
         defender: state.defender!,
         numDefenderStands: isCharacterVsCharacter ? 1 : state.numDefenderStands,
-        defenderCharacter:
-            state.defenderCharacter, // Add character to calculation
+        defenderCharacter: state.defenderCharacter,
         isCharge: state.isCharge,
         isImpact: state.isImpact,
         isFlank: state.isFlank,
         isRear: state.isRear,
         isVolley: state.isVolley,
         isWithinEffectiveRange: state.isWithinEffectiveRange,
-        specialRulesInEffect: state.specialRulesInEffect,
+        specialRulesInEffect: mergedRules,
         impactValues: state.specialRuleValues,
       );
 
@@ -143,11 +153,15 @@ class CombatNotifier extends StateNotifier<CombatState> {
     final currentAttackerStands = state.numAttackerStands;
     final currentAttackerCharacter = state.attackerCharacter;
     final currentAttackerFaction = state.attackerFaction;
+    final currentAttackerSpecialRules =
+        Map<String, bool>.from(state.attackerSpecialRulesInEffect);
 
     final currentDefender = state.defender;
     final currentDefenderStands = state.numDefenderStands;
     final currentDefenderCharacter = state.defenderCharacter;
     final currentDefenderFaction = state.defenderFaction;
+    final currentDefenderSpecialRules =
+        Map<String, bool>.from(state.defenderSpecialRulesInEffect);
 
     // Swap the values
     state = state.copyWith(
@@ -155,10 +169,12 @@ class CombatNotifier extends StateNotifier<CombatState> {
       numAttackerStands: currentDefenderStands,
       attackerCharacter: currentDefenderCharacter,
       attackerFaction: currentDefenderFaction,
+      attackerSpecialRulesInEffect: currentDefenderSpecialRules,
       defender: currentAttacker,
       numDefenderStands: currentAttackerStands,
       defenderCharacter: currentAttackerCharacter,
       defenderFaction: currentAttackerFaction,
+      defenderSpecialRulesInEffect: currentAttackerSpecialRules,
       clearSimulation: true, // Clear the current simulation
     );
 
@@ -376,6 +392,8 @@ class CombatNotifier extends StateNotifier<CombatState> {
       isVolley: false,
       isWithinEffectiveRange: false,
       specialRulesInEffect: const {},
+      attackerSpecialRulesInEffect: const {},
+      defenderSpecialRulesInEffect: const {},
       specialRuleValues: const {},
       // Visual feedback
       selectionResetDueToModeChange: true,
@@ -483,6 +501,24 @@ class CombatNotifier extends StateNotifier<CombatState> {
         state.copyWith(specialRuleValues: updatedValues, clearSimulation: true);
   }
 
+  // New methods for separate attacker and defender special rules
+  void toggleAttackerCombatModifier(String rule, bool value) {
+    final updatedRules =
+        Map<String, bool>.from(state.attackerSpecialRulesInEffect);
+    updatedRules[rule] = value;
+    state = state.copyWith(
+        attackerSpecialRulesInEffect: updatedRules, clearSimulation: true);
+  }
+
+  void toggleDefenderCombatModifier(String rule, bool value) {
+    final updatedRules =
+        Map<String, bool>.from(state.defenderSpecialRulesInEffect);
+    updatedRules[rule] = value;
+    state = state.copyWith(
+        defenderSpecialRulesInEffect: updatedRules, clearSimulation: true);
+  }
+
+  // Legacy method for backward compatibility
   void toggleCombatModifier(String rule, bool value) {
     final updatedRules = Map<String, bool>.from(state.specialRulesInEffect);
     updatedRules[rule] = value;
