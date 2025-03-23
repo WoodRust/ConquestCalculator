@@ -189,6 +189,8 @@ class CombatNotifier extends StateNotifier<CombatState> {
         clearAttacker: true, // Use explicit clearing
         clearAttackerCharacter: true,
         clearSimulation: true,
+        // Clear attacker special rules when clearing the unit
+        attackerSpecialRulesInEffect: {},
       );
       return;
     }
@@ -214,12 +216,17 @@ class CombatNotifier extends StateNotifier<CombatState> {
           clearDefender: true, // Use explicit clearing
           clearDefenderCharacter: true, // Clear any attached character
           clearSimulation: true, // Clear the simulation
+          // Clear special rules for both attacker and defender
+          attackerSpecialRulesInEffect: {},
+          defenderSpecialRulesInEffect: {},
         );
       } else {
         state = state.copyWith(
           attacker: regiment,
           attackerFaction: regimentFaction,
           clearSimulation: true, // Clear the simulation when changing attacker
+          // Clear attacker special rules when changing the unit
+          attackerSpecialRulesInEffect: {},
         );
       }
 
@@ -231,6 +238,8 @@ class CombatNotifier extends StateNotifier<CombatState> {
         attacker: regiment,
         attackerFaction: regimentFaction,
         clearSimulation: true, // Clear the simulation
+        // Clear attacker special rules when changing the unit
+        attackerSpecialRulesInEffect: {},
       );
     }
   }
@@ -280,6 +289,8 @@ class CombatNotifier extends StateNotifier<CombatState> {
         clearDefender: true, // Use explicit clearing
         clearDefenderCharacter: true,
         clearSimulation: true,
+        // Clear defender special rules when clearing the unit
+        defenderSpecialRulesInEffect: {},
       );
       return;
     }
@@ -305,12 +316,17 @@ class CombatNotifier extends StateNotifier<CombatState> {
           clearAttacker: true, // Use explicit clearing
           clearAttackerCharacter: true, // Clear any attached character
           clearSimulation: true, // Clear the simulation
+          // Clear special rules for both attacker and defender
+          attackerSpecialRulesInEffect: {},
+          defenderSpecialRulesInEffect: {},
         );
       } else {
         state = state.copyWith(
           defender: defender,
           defenderFaction: regimentFaction,
           clearSimulation: true, // Clear the simulation when changing defender
+          // Clear defender special rules when changing the unit
+          defenderSpecialRulesInEffect: {},
         );
       }
     } else {
@@ -319,6 +335,8 @@ class CombatNotifier extends StateNotifier<CombatState> {
         defender: defender,
         defenderFaction: regimentFaction,
         clearSimulation: true, // Clear the simulation
+        // Clear defender special rules when changing the unit
+        defenderSpecialRulesInEffect: {},
       );
     }
   }
