@@ -165,13 +165,13 @@ class MeleeCombatProcessor extends CombatProcessor {
     int hitTarget = context.attacker.clash;
 
     // Apply Inspired bonus to Clash
-    if (context.specialRulesInEffect['inspired'] == true) {
+    if (context.attackerHasRule('inspired')) {
       hitTarget += 1;
 
       // If Inspired would raise Clash to 5+, use re-roll instead
       if (hitTarget > 5) {
         hitTarget = context.attacker.clash; // Reset to base value
-        context.specialRulesInEffect['inspiredReroll'] = true;
+        context.attackerSpecialRulesInEffect['inspiredReroll'] = true;
       }
     }
 
@@ -181,8 +181,8 @@ class MeleeCombatProcessor extends CombatProcessor {
     }
 
     // Check for reroll abilities
-    bool hasRerolls = context.specialRulesInEffect['flurry'] == true ||
-        context.specialRulesInEffect['inspiredReroll'] == true ||
+    bool hasRerolls = context.attackerHasRule('flurry') ||
+        context.attackerHasRule('inspiredReroll') ||
         (context.attacker.hasSpecialRule('opportunists') &&
             (context.isFlank || context.isRear));
 

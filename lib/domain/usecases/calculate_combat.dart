@@ -30,6 +30,8 @@ class CalculateCombat {
     bool isVolley = false,
     bool isWithinEffectiveRange = false,
     Map<String, bool> specialRulesInEffect = const {},
+    Map<String, bool>? attackerSpecialRulesInEffect,
+    Map<String, bool>? defenderSpecialRulesInEffect,
     Map<String, int> impactValues = const {},
   }) {
     // Create combat context with all parameters
@@ -46,8 +48,10 @@ class CalculateCombat {
       isRear: isRear,
       isVolley: isVolley,
       isWithinEffectiveRange: isWithinEffectiveRange,
-      specialRulesInEffect: Map<String, bool>.from(specialRulesInEffect),
-      impactValues: Map<String, int>.from(impactValues),
+      specialRulesInEffect: specialRulesInEffect,
+      attackerSpecialRulesInEffect: attackerSpecialRulesInEffect,
+      defenderSpecialRulesInEffect: defenderSpecialRulesInEffect,
+      impactValues: impactValues,
     );
 
     // Calculate effective stand counts with characters
@@ -137,6 +141,7 @@ class CalculateCombat {
     // Calculate breaking threshold
     final standsToBreak = (effectiveDefenderStands / 2).ceil();
 
+    // Create context with separated special rules maps
     CombatContext context = CombatContext(
       attacker: state.attacker!,
       numAttackerStands: state.numAttackerStands,
@@ -151,6 +156,10 @@ class CalculateCombat {
       isVolley: state.isVolley,
       isWithinEffectiveRange: state.isWithinEffectiveRange,
       specialRulesInEffect: Map<String, bool>.from(state.specialRulesInEffect),
+      attackerSpecialRulesInEffect:
+          Map<String, bool>.from(state.attackerSpecialRulesInEffect),
+      defenderSpecialRulesInEffect:
+          Map<String, bool>.from(state.defenderSpecialRulesInEffect),
       impactValues: Map<String, int>.from(state.specialRuleValues),
     );
 

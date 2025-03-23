@@ -31,7 +31,7 @@ abstract class CombatProcessor {
     // Apply Shield bonus for front attacks
     bool hasShield = defender.shield ||
         defender.hasSpecialRule('shield') ||
-        specialRulesInEffect['shield'] == true;
+        context.defenderHasRule('shield');
 
     if (!isFlank && !isRear && hasShield) {
       defenseTarget += 1;
@@ -43,27 +43,25 @@ abstract class CombatProcessor {
           math.max(defenseTarget - attacker.getArmorPiercingValue(), 0);
     }
     // Apply armor piercing as a separate rule for non-volley attacks
-    else if (!isVolley && specialRulesInEffect['armorPiercing'] == true) {
-      int armorPiercingValue =
-          specialRulesInEffect['armorPiercingValue'] as int? ??
-              attacker.getArmorPiercingValue();
+    else if (!isVolley && context.attackerHasRule('armorPiercing')) {
+      int armorPiercingValue = context.impactValues['armorPiercingValue'] ??
+          attacker.getArmorPiercingValue();
       defenseTarget = math.max(defenseTarget - armorPiercingValue, 0);
     }
     // Apply cleave for melee attacks
     else if (!isVolley &&
         !isImpact &&
-        (attacker.getCleave() > 0 || specialRulesInEffect['cleave'] == true)) {
+        (attacker.getCleave() > 0 || context.attackerHasRule('cleave'))) {
       int cleaveValue =
-          specialRulesInEffect['cleaveValue'] as int? ?? attacker.getCleave();
+          context.impactValues['cleaveValue'] ?? attacker.getCleave();
       defenseTarget = math.max(defenseTarget - cleaveValue, 0);
     }
     // Apply brutal impact for impact attacks
     else if (isImpact &&
         (attacker.getBrutalImpact() > 0 ||
-            specialRulesInEffect['brutalImpact'] == true)) {
-      int brutalImpactValue =
-          specialRulesInEffect['brutalImpactValue'] as int? ??
-              attacker.getBrutalImpact();
+            context.attackerHasRule('brutalImpact'))) {
+      int brutalImpactValue = context.impactValues['brutalImpactValue'] ??
+          attacker.getBrutalImpact();
       defenseTarget = math.max(defenseTarget - brutalImpactValue, 0);
     }
 
