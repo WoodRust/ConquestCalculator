@@ -311,9 +311,9 @@ class _UnitSelectionScreenState extends ConsumerState<UnitSelectionScreen> {
     return UnitCard(
       regiment: regiment,
       padding: const EdgeInsets.all(12.0),
+      inSelectionScreen:
+          true, // This is crucial to make special rules read-only
       onTap: () => widget.onUnitSelected(regiment),
     );
   }
-
-  // These methods have been moved to the UnitCard widget
 }

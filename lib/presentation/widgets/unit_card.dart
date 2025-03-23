@@ -2,7 +2,7 @@
 import 'package:flutter/material.dart';
 import '../../domain/models/regiment.dart';
 import 'unit_selection/special_rule_chip.dart';
-import 'unit_selection/special_rules_section.dart'; // Import this
+import 'unit_selection/special_rules_section.dart';
 
 /// A reusable widget for displaying a regiment's stats and special rules in a card format
 class UnitCard extends StatelessWidget {
@@ -12,7 +12,9 @@ class UnitCard extends StatelessWidget {
   final bool showDrawEvents;
   final EdgeInsetsGeometry padding;
   final VoidCallback? onTap;
-  final bool isAttacker; // Add this parameter
+  final bool isAttacker; // Which side this unit is on
+  final bool
+      inSelectionScreen; // Whether this card is shown in the unit selection screen
 
   const UnitCard({
     super.key,
@@ -22,7 +24,9 @@ class UnitCard extends StatelessWidget {
     this.showDrawEvents = true,
     this.padding = const EdgeInsets.all(12.0),
     this.onTap,
-    this.isAttacker = true, // Default to attacker
+    this.isAttacker = true,
+    this.inSelectionScreen =
+        false, // Default is false (used in combat calculator)
   });
 
   @override
@@ -164,12 +168,14 @@ class UnitCard extends StatelessWidget {
                 ),
               ),
 
-              // Special rules section - Now using the SpecialRulesSection component
+              // Special rules section
               if (showSpecialRules)
-                SpecialRulesSection(
-                  regiment: regiment,
-                  isAttacker: isAttacker,
-                ),
+                inSelectionScreen
+                    ? _buildReadOnlySpecialRules(context)
+                    : SpecialRulesSection(
+                        regiment: regiment,
+                        isAttacker: isAttacker,
+                      ),
 
               // Draw events section
               if (showDrawEvents && regiment.drawEvents.isNotEmpty) ...[
@@ -190,7 +196,10 @@ class UnitCard extends StatelessWidget {
                     runSpacing: 6,
                     alignment: WrapAlignment.start,
                     children: regiment.drawEvents.map((event) {
-                      return SpecialRuleChip(ruleName: event);
+                      return SpecialRuleChip(
+                        ruleName: event,
+                        readOnly: true, // Always read-only for draw events
+                      );
                     }).toList(),
                   ),
                 ),
@@ -199,6 +208,40 @@ class UnitCard extends StatelessWidget {
           ),
         ),
       ),
+    );
+  }
+
+  // Build read-only special rules section for unit selection screen
+  Widget _buildReadOnlySpecialRules(BuildContext context) {
+    if (regiment.specialRules.isEmpty) {
+      return const SizedBox.shrink();
+    }
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const SizedBox(height: 12),
+        Text(
+          'Special Rules',
+          style: TextStyle(
+            fontSize: 12,
+            fontWeight: FontWeight.bold,
+            color: Theme.of(context).colorScheme.secondary,
+          ),
+        ),
+        const SizedBox(height: 4),
+        Wrap(
+          spacing: 8,
+          runSpacing: 6,
+          children: regiment.specialRules.map((rule) {
+            return SpecialRuleChip(
+              ruleName: rule,
+              isAttacker: isAttacker,
+              readOnly: true, // Force read-only mode in selection screen
+            );
+          }).toList(),
+        ),
+      ],
     );
   }
 

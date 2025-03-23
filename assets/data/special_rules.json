@@ -2,291 +2,363 @@
     "special_rules": [
         {
             "name": "Aimed Shot",
-            "description": "Stands in this Regiment, including Character Stands, add +1 to their Volley Characteristic for the next Volley Action it takes this Activation. If this modifies the Volley Characteristic to a 5 or greater, they do not receive the +1 Volley but instead may Re-Roll unmodified Hit Rolls of \"6\"."
+            "description": "Stands in this Regiment, including Character Stands, add +1 to their Volley Characteristic for the next Volley Action it takes this Activation. If this modifies the Volley Characteristic to a 5 or greater, they do not receive the +1 Volley but instead may Re-Roll unmodified Hit Rolls of \"6\".",
+            "isOptional": false
         },
         {
             "name": "Arcing Fire",
-            "description": "Until the end of this Regiment's Activation, if the Regiment has the Aimed Shot Special Rule and is not currently occupying a piece of Garrison terrain, instead of performing a Volley Action as normal it may perform the following: The Regiment suffers -1 to its Volley Characteristic until the end of the Regiment's Activation. Then the Regiment may select an Enemy Regiment in its front arc, within Barrage Range of at least one of its Stands and within Line of Sight of a Friendly Regiment and perform the Volley Action against it as if its Volley was a Clear Shot."
+            "description": "Until the end of this Regiment's Activation, if the Regiment has the Aimed Shot Special Rule and is not currently occupying a piece of Garrison terrain, instead of performing a Volley Action as normal it may perform the following: The Regiment suffers -1 to its Volley Characteristic until the end of the Regiment's Activation. Then the Regiment may select an Enemy Regiment in its front arc, within Barrage Range of at least one of its Stands and within Line of Sight of a Friendly Regiment and perform the Volley Action against it as if its Volley was a Clear Shot.",
+            "isOptional": false
         },
         {
             "name": "Armor Piercing",
-            "description": "When a Stand with this Special Rule performs a Volley or Spellcasting Action, any Hits caused by those attacks reduce the Target Regiment's Defense by X. E.g. A Stand with Armor Piercing (2) would reduce the Target's Defense by 2 during Defense Rolls from its Volley Action."
+            "description": "When a Stand with this Special Rule performs a Volley or Spellcasting Action, any Hits caused by those attacks reduce the Target Regiment's Defense by X. E.g. A Stand with Armor Piercing (2) would reduce the Target's Defense by 2 during Defense Rolls from its Volley Action.",
+            "isOptional": false
         },
         {
             "name": "Aura of Death",
-            "description": "At the start of an Enemy Regiment's \"Draw Command Card\" step, if it is in contact with one or more Enemy Regiment with this Special Rule, it suffers X Hits where X is the sum of the Regiment(s)' Aura of Death (X) Special Rule. Wounds resulting from these Hits do not trigger Morale Tests."
+            "description": "At the start of an Enemy Regiment's \"Draw Command Card\" step, if it is in contact with one or more Enemy Regiment with this Special Rule, it suffers X Hits where X is the sum of the Regiment(s)' Aura of Death (X) Special Rule. Wounds resulting from these Hits do not trigger Morale Tests.",
+            "isOptional": false
         },
         {
             "name": "Barrage",
-            "description": "A Stand with this Special Rule contributes X Shots when its Regiment performs a Volley Action. The Range, as well as any Special Rules, are given in a second set of parentheses after the Barrage (X) Special Rule."
+            "description": "A Stand with this Special Rule contributes X Shots when its Regiment performs a Volley Action. The Range, as well as any Special Rules, are given in a second set of parentheses after the Barrage (X) Special Rule.",
+            "isOptional": false
         },
         {
             "name": "Blessed",
-            "description": "Once per Round, Stands with this Special Rule may choose to Re-Roll all their failed Hit Rolls or all of their failed Defense Rolls during a Clash or Charge Action. All Stands in the Regiment must Re-Roll the same Roll at the same time and must declare the use of Blessed before making the Roll they wish to Re-Roll."
+            "description": "Once per Round, Stands with this Special Rule may choose to Re-Roll all their failed Hit Rolls or all of their failed Defense Rolls during a Clash or Charge Action. All Stands in the Regiment must Re-Roll the same Roll at the same time and must declare the use of Blessed before making the Roll they wish to Re-Roll.",
+            "isOptional": true
         },
         {
             "name": "Bodyguards",
-            "description": "When a Character Stand is currently attached to a Regiment with this Special Rule, the Character does not suffer the usual negative effects of refusing a Duel."
+            "description": "When a Character Stand is currently attached to a Regiment with this Special Rule, the Character does not suffer the usual negative effects of refusing a Duel.",
+            "isOptional": false
         },
         {
             "name": "Bravery",
-            "description": "Stands in this Regiment, including Character Stands, ignore the Fearsome and Terrifying (X) Special Rules. In addition, at the start of the Regiment's Activation, after resolving any Draw Events but before performing its first Action, remove the Broken status from this Regiment."
+            "description": "Stands in this Regiment, including Character Stands, ignore the Fearsome and Terrifying (X) Special Rules. In addition, at the start of the Regiment's Activation, after resolving any Draw Events but before performing its first Action, remove the Broken status from this Regiment.",
+            "isOptional": false
         },
         {
             "name": "Brutal Impact",
-            "description": "When a Stand with this Special Rule inflicts Impact Attacks, those Impact Attacks reduce the Target Enemy Regiment's Defense by X for the purposes of making Defense Rolls against those Impact Attacks. E.g. A Stand with Brutal Impact (2) would reduce the Target's Defense by 2 when making Defense Rolls from its Impact Attacks."
+            "description": "When a Stand with this Special Rule inflicts Impact Attacks, those Impact Attacks reduce the Target Enemy Regiment's Defense by X for the purposes of making Defense Rolls against those Impact Attacks. E.g. A Stand with Brutal Impact (2) would reduce the Target's Defense by 2 when making Defense Rolls from its Impact Attacks.",
+            "isOptional": false
         },
         {
             "name": "Cleave",
-            "description": "When a Stand with this Special Rule performs a Clash or Duel Action, any Hits caused by those Attacks reduce the Target's Defense by X for the purposes of making Defense Rolls against those Attacks. E.g. A Stand with Cleave (2) would reduce the Target's Defense by 2 during Defense Rolls from those Attacks."
+            "description": "When a Stand with this Special Rule performs a Clash or Duel Action, any Hits caused by those Attacks reduce the Target's Defense by X for the purposes of making Defense Rolls against those Attacks. E.g. A Stand with Cleave (2) would reduce the Target's Defense by 2 during Defense Rolls from those Attacks.",
+            "isOptional": false
         },
         {
             "name": "Counter-Attack",
-            "description": "During an Enemy Regiment's Clash Action performed against this Regiment, each unmodified Defense Roll of \"1\" causes 1 Hit to the Active Enemy Regiment. These Hits do not benefit from any other Special Rules that affect Clash Actions. Character Stands with this Special Rule involved in a Duel, inflict 1 Hit to the Enemy Character for each unmodified Defense Roll of \"1\". These Hits do not benefit from any other Special Rules that affect Duel Actions."
+            "description": "During an Enemy Regiment's Clash Action performed against this Regiment, each unmodified Defense Roll of \"1\" causes 1 Hit to the Active Enemy Regiment. These Hits do not benefit from any other Special Rules that affect Clash Actions. Character Stands with this Special Rule involved in a Duel, inflict 1 Hit to the Enemy Character for each unmodified Defense Roll of \"1\". These Hits do not benefit from any other Special Rules that affect Duel Actions.",
+            "isOptional": false
         },
         {
             "name": "Dauntless",
-            "description": "This Regiment may never be Broken and always counts as having the Inspired Special Rule. Character Stands benefit from this Special Rule only if they have \"Dauntless\" themselves as part of their Characteristic profile or have gained this Special Rule from an ability, Character Upgrade, etc. In instances where this Regiment or Stand can never benefit from the \"Inspired\" Special Rule, this rule supersedes it."
+            "description": "This Regiment may never be Broken and always counts as having the Inspired Special Rule. Character Stands benefit from this Special Rule only if they have \"Dauntless\" themselves as part of their Characteristic profile or have gained this Special Rule from an ability, Character Upgrade, etc. In instances where this Regiment or Stand can never benefit from the \"Inspired\" Special Rule, this rule supersedes it.",
+            "isOptional": false
         },
         {
             "name": "Decay",
-            "description": "At the end of the Regiment's \"Deactivate Regiment\" step, every Stand in the Regiment rolls X number of dice, where X is equal to the Decay (X) value. For each roll of \"5\" or \"6\", the Regiment suffers 1 Wound. Wounds caused from this Special Rule do not cause Morale Tests. If a Regiment has several instances of Decay (X), add all of the X values together."
+            "description": "At the end of the Regiment's \"Deactivate Regiment\" step, every Stand in the Regiment rolls X number of dice, where X is equal to the Decay (X) value. For each roll of \"5\" or \"6\", the Regiment suffers 1 Wound. Wounds caused from this Special Rule do not cause Morale Tests. If a Regiment has several instances of Decay (X), add all of the X values together.",
+            "isOptional": false
         },
         {
             "name": "Deadly Blades",
-            "description": "When a Stand with this Special Rule performs a Clash or Duel Action, any failed Defense Roll of \"6\" rolled by the Target Regiment causes it to suffer 2 Wounds instead of 1."
+            "description": "When a Stand with this Special Rule performs a Clash or Duel Action, any failed Defense Roll of \"6\" rolled by the Target Regiment causes it to suffer 2 Wounds instead of 1.",
+            "isOptional": false
         },
         {
             "name": "Deadly Shot",
-            "description": "When a Stand with this Special Rule performs a Volley Action, any failed Defense Roll of \"6\" rolled by the Target Regiment causes it to suffer 2 Wounds instead of 1."
+            "description": "When a Stand with this Special Rule performs a Volley Action, any failed Defense Roll of \"6\" rolled by the Target Regiment causes it to suffer 2 Wounds instead of 1.",
+            "isOptional": false
         },
         {
             "name": "Deadshots",
-            "description": "A Stand with this Special Rule always counts as under the effects of the Aimed Shot Special Rule."
+            "description": "A Stand with this Special Rule always counts as under the effects of the Aimed Shot Special Rule.",
+            "isOptional": false
         },
         {
             "name": "Devout",
-            "description": "When a Regiment with this Special Rule is the Target of a Priest (X)'s Spellcasting Action, one failed Spellcasting die is converted to a success. If the Regiment has a Character Stand attached to it with this Special Rule, then the Regiment also counts as having \"Devout\" for as long as the Character Stand remains attached to it."
+            "description": "When a Regiment with this Special Rule is the Target of a Priest (X)'s Spellcasting Action, one failed Spellcasting die is converted to a success. If the Regiment has a Character Stand attached to it with this Special Rule, then the Regiment also counts as having \"Devout\" for as long as the Character Stand remains attached to it.",
+            "isOptional": false
         },
         {
             "name": "Dread",
-            "description": "Enemy Regiments in contact with Stands with this Special Rule cannot benefit from the effects of the \"Inspired\" Special Rule. In instances where a Regiment or Stand always benefits from the \"Inspired\" Special Rule, this rule is superseded."
+            "description": "Enemy Regiments in contact with Stands with this Special Rule cannot benefit from the effects of the \"Inspired\" Special Rule. In instances where a Regiment or Stand always benefits from the \"Inspired\" Special Rule, this rule is superseded.",
+            "isOptional": false
         },
         {
             "name": "Fanatical Devotion",
-            "description": "When a Regiment or Character Stand with the Priest (X) Special Rule successfully casts a Spell, with a Range other than \"Self\", with this Regiment as its Target, this Regiment Heals for 3 Wounds."
+            "description": "When a Regiment or Character Stand with the Priest (X) Special Rule successfully casts a Spell, with a Range other than \"Self\", with this Regiment as its Target, this Regiment Heals for 3 Wounds.",
+            "isOptional": false
         },
         {
             "name": "Fearless",
-            "description": "A Regiment with this Special Rule ignores the effects of the Fearsome and Terrifying (X) Special Rules. If a Character Stand has this Special Rule, then it does not apply it to the rest of the Regiment and only benefits from this Special Rule as part of a Duel Action."
+            "description": "A Regiment with this Special Rule ignores the effects of the Fearsome and Terrifying (X) Special Rules. If a Character Stand has this Special Rule, then it does not apply it to the rest of the Regiment and only benefits from this Special Rule as part of a Duel Action.",
+            "isOptional": false
         },
         {
             "name": "Fearsome",
-            "description": "Enemy Regiments in contact with this Regiment must roll a D6 before being able to perform a Combat Rally or Combat Reform Action. If the result is less than or equal to the highest Resolve Characteristic in the Regiment, you may perform an Action as normal. If the result is higher, then the Action fails and is lost."
+            "description": "Enemy Regiments in contact with this Regiment must roll a D6 before being able to perform a Combat Rally or Combat Reform Action. If the result is less than or equal to the highest Resolve Characteristic in the Regiment, you may perform an Action as normal. If the result is higher, then the Action fails and is lost.",
+            "isOptional": false
         },
         {
             "name": "Fiend Hunter",
-            "description": "Stands with this Special Rule may Re-Roll all failed Hit Rolls against Monster and Brute Regiments."
+            "description": "Stands with this Special Rule may Re-Roll all failed Hit Rolls against Monster and Brute Regiments.",
+            "isOptional": false
         },
         {
             "name": "Forward Force",
-            "description": "The non-Monster Regiment this Character Stand is currently attached to gains the Flank Special Rule."
+            "description": "The non-Monster Regiment this Character Stand is currently attached to gains the Flank Special Rule.",
+            "isOptional": false
         },
         {
             "name": "Flank",
-            "description": "This Regiment does not contribute a die to the Reinforcement Roll. Before rolling each Reinforcement Pool for each Class, each player declares whether a Regiment with this Special Rule automatically enters the Battlefield or remains in Reinforcements."
+            "description": "This Regiment does not contribute a die to the Reinforcement Roll. Before rolling each Reinforcement Pool for each Class, each player declares whether a Regiment with this Special Rule automatically enters the Battlefield or remains in Reinforcements.",
+            "isOptional": false
         },
         {
             "name": "Flawless Drill",
-            "description": "Once per game, this Regiment may perform a free additional Combat Reform Action during its Activation."
+            "description": "Once per game, this Regiment may perform a free additional Combat Reform Action during its Activation.",
+            "isOptional": false
         },
         {
             "name": "Flawless Strikes",
-            "description": "When a Stand with this Special Rule performs a Clash or Duel Action, all Hit Rolls of \"1\" count the Target's Defense as 0 for that Attack. Additional Hits generated by other Special Rules do not benefit from this Special Rule."
+            "description": "When a Stand with this Special Rule performs a Clash or Duel Action, all Hit Rolls of \"1\" count the Target's Defense as 0 for that Attack. Additional Hits generated by other Special Rules do not benefit from this Special Rule.",
+            "isOptional": false
         },
         {
             "name": "Fluid Formation",
-            "description": "This Regiment may perform a free additional Reform Action during its Activation. This free Reform Action must be performed before the Regiment takes its first Action, or at the end of its Activation after all other Actions have been resolved."
+            "description": "This Regiment may perform a free additional Reform Action during its Activation. This free Reform Action must be performed before the Regiment takes its first Action, or at the end of its Activation after all other Actions have been resolved.",
+            "isOptional": false
         },
         {
             "name": "Flurry",
-            "description": "A Stand with this Special Rule Re-Rolls all failed Hit Rolls when performing a Clash or Duel Action."
+            "description": "A Stand with this Special Rule Re-Rolls all failed Hit Rolls when performing a Clash or Duel Action.",
+            "isOptional": true
         },
         {
             "name": "Fly",
-            "description": "A Regiment containing only Stands with this Special Rule can March and Charge over other Regiments, regardless of whether they are Engaged, as well as Impassable and Garrison Terrain, provided the Regiment does not end its Activation overlapping any Regiments or Impassable Terrain."
+            "description": "A Regiment containing only Stands with this Special Rule can March and Charge over other Regiments, regardless of whether they are Engaged, as well as Impassable and Garrison Terrain, provided the Regiment does not end its Activation overlapping any Regiments or Impassable Terrain.",
+            "isOptional": false
         },
         {
             "name": "Glorious Charge",
-            "description": "When a Stand with this Special Rule performs a successful Charge, its Impact Attacks are resolved with +1 Clash Characteristic and Terrifying (1) until the end of the Round."
+            "description": "When a Stand with this Special Rule performs a successful Charge, its Impact Attacks are resolved with +1 Clash Characteristic and Terrifying (1) until the end of the Round.",
+            "isOptional": false
         },
         {
             "name": "Hardened",
-            "description": "When this Regiment makes a Defense Roll, reduce any Cleave (X), Brutal Impact (X) or Armor Piercing (X) Special Rule by the value of Hardened (X) when resolving that Defense Roll. Character Stands do not benefit from this Special Rule during Duels unless they have this Special Rule."
+            "description": "When this Regiment makes a Defense Roll, reduce any Cleave (X), Brutal Impact (X) or Armor Piercing (X) Special Rule by the value of Hardened (X) when resolving that Defense Roll. Character Stands do not benefit from this Special Rule during Duels unless they have this Special Rule.",
+            "isOptional": false
         },
         {
             "name": "Impact",
-            "description": "Stands with this Special Rule perform Impact Attacks equal to X where X is the value of the Impact (X) Special Rule."
+            "description": "Stands with this Special Rule perform Impact Attacks equal to X where X is the value of the Impact (X) Special Rule.",
+            "isOptional": false
         },
         {
             "name": "Indomitable",
-            "description": "When this Regiment Rolls a Morale Test, treat X failed results as successes where X is the value of this Special Rule. Character Stands do not benefit from this Special Rule during Duels unless they have this Special Rule."
+            "description": "When this Regiment Rolls a Morale Test, treat X failed results as successes where X is the value of this Special Rule. Character Stands do not benefit from this Special Rule during Duels unless they have this Special Rule.",
+            "isOptional": false
         },
         {
             "name": "Inspired",
-            "description": "This Regiment adds +1 to its Clash Characteristic until the end of the Regiment's Activation. If this modifies the Clash Characteristic to a 5 or greater, it does not receive the +1 Clash but instead may Re-Roll unmodified Hit Rolls of \"6\". The +1 to the Clash Characteristic from the Inspired Special Rule is always added in after all other Clash modifying rules have been applied."
+            "description": "This Regiment adds +1 to its Clash Characteristic until the end of the Regiment's Activation. If this modifies the Clash Characteristic to a 5 or greater, it does not receive the +1 Clash but instead may Re-Roll unmodified Hit Rolls of \"6\". The +1 to the Clash Characteristic from the Inspired Special Rule is always added in after all other Clash modifying rules have been applied.",
+            "isOptional": false
         },
         {
             "name": "Irregular",
-            "description": "This Regiment does not affect Friendly and Enemy Reinforcement Lines. A Stand without this Special Rule may not join this Regiment."
+            "description": "This Regiment does not affect Friendly and Enemy Reinforcement Lines. A Stand without this Special Rule may not join this Regiment.",
+            "isOptional": false
         },
         {
             "name": "Iron Discipline",
-            "description": "When this Regiment is Engaged or suffers Wounds from the Sides or Rear, it does not lose the Support (X) Special Rule and does not Re-Roll successful Morale Tests."
+            "description": "When this Regiment is Engaged or suffers Wounds from the Sides or Rear, it does not lose the Support (X) Special Rule and does not Re-Roll successful Morale Tests.",
+            "isOptional": false
         },
         {
             "name": "Lethal Demise",
-            "description": "For every Wound allocated to a Stand with this Special Rule as a result of a failed Defense Roll, the Enemy Regiment in contact with the Stand's Regiment that caused the Hits suffers a Hit. These Hits do not benefit from any other Special Rules and are resolved against the Enemy Regiment's front arc. Wounds resulting from these Hits do not trigger Morale Tests and do not trigger Lethal Demise."
+            "description": "For every Wound allocated to a Stand with this Special Rule as a result of a failed Defense Roll, the Enemy Regiment in contact with the Stand's Regiment that caused the Hits suffers a Hit. These Hits do not benefit from any other Special Rules and are resolved against the Enemy Regiment's front arc. Wounds resulting from these Hits do not trigger Morale Tests and do not trigger Lethal Demise.",
+            "isOptional": false
         },
         {
             "name": "Linebreaker",
-            "description": "A Stand with this Special Rule ignores the Shield Special Rule and Bastion (X) Draw Event, when performing a Clash or Duel Action, or when resolving Impact Attacks."
+            "description": "A Stand with this Special Rule ignores the Shield Special Rule and Bastion (X) Draw Event, when performing a Clash or Duel Action, or when resolving Impact Attacks.",
+            "isOptional": false
         },
         {
             "name": "Loose Formation",
-            "description": "When a Stand performs a Volley Action against a Regiment with this Special Rule it halves the X value in its Barrage (X) Special Rule (rounding up) to a minimum of 1. In addition, Spells will only inflict half their number of Hits (rounding up) against a Stand with this Special Rule. This Special Rule does not stack with Obscuring Terrain. Furthermore, a Regiment with this Special Rule cannot inflict Impact Attacks."
+            "description": "When a Stand performs a Volley Action against a Regiment with this Special Rule it halves the X value in its Barrage (X) Special Rule (rounding up) to a minimum of 1. In addition, Spells will only inflict half their number of Hits (rounding up) against a Stand with this Special Rule. This Special Rule does not stack with Obscuring Terrain. Furthermore, a Regiment with this Special Rule cannot inflict Impact Attacks.",
+            "isOptional": false
         },
         {
             "name": "Oblivious",
-            "description": "Regiments with this Special Rule receive only 1 Wound for every 2 failed Morale Tests, rounding up. Character Stands do not benefit from this Special Rule during Duels unless they have this Special Rule."
+            "description": "Regiments with this Special Rule receive only 1 Wound for every 2 failed Morale Tests, rounding up. Character Stands do not benefit from this Special Rule during Duels unless they have this Special Rule.",
+            "isOptional": false
         },
         {
             "name": "Opportunists",
-            "description": "A Stand with this Special Rule may re-roll failed Hit Rolls when performing a Clash or Volley Action against an Enemy Regiment's Flank or Rear Arc."
+            "description": "A Stand with this Special Rule may re-roll failed Hit Rolls when performing a Clash or Volley Action against an Enemy Regiment's Flank or Rear Arc.",
+            "isOptional": false
         },
         {
             "name": "Overrun",
-            "description": "At the end of this Regiment's Charge Action, if the Enemy Regiment in contact is Broken, this Regiment may perform its Impact Attacks again. A Regiment with this Special Rule may perform up to two Charge Actions during a single Activation. The Regiment's Activation still comes to an end if it fails a Charge Roll."
+            "description": "At the end of this Regiment's Charge Action, if the Enemy Regiment in contact is Broken, this Regiment may perform its Impact Attacks again. A Regiment with this Special Rule may perform up to two Charge Actions during a single Activation. The Regiment's Activation still comes to an end if it fails a Charge Roll.",
+            "isOptional": false
         },
         {
             "name": "Parry",
-            "description": "Enemy Stands engaged with a Stand with this Special Rule cannot Re-Roll failed Hit Rolls. Character Stands cannot Re-Roll failed Hit Rolls against another Character Stand with this Special Rule."
+            "description": "Enemy Stands engaged with a Stand with this Special Rule cannot Re-Roll failed Hit Rolls. Character Stands cannot Re-Roll failed Hit Rolls against another Character Stand with this Special Rule.",
+            "isOptional": false
         },
         {
             "name": "Phalanx",
-            "description": "This Regiment counts its Defense and Resolve Characteristics as 1 point higher against all Hits originating from its front Arc. Furthermore, this Regiment cannot perform the Inspire Action. The Regiment's Charge Distance is always its March value +3˝ and it cannot Occupy Garrison Terrain. Character Stands in this Regiment do not benefit from this Special Rule when participating in Duels."
+            "description": "This Regiment counts its Defense and Resolve Characteristics as 1 point higher against all Hits originating from its front Arc. Furthermore, this Regiment cannot perform the Inspire Action. The Regiment's Charge Distance is always its March value +3˝ and it cannot Occupy Garrison Terrain. Character Stands in this Regiment do not benefit from this Special Rule when participating in Duels.",
+            "isOptional": false
         },
         {
             "name": "Precise Shot",
-            "description": "When a Stand with this Special Rule performs a Volley Action, all Hit Rolls of \"1\" count the Target's Defense as \"0\" for that Attack. Additional Hits generated by other Special Rules do not benefit from this Special Rule."
+            "description": "When a Stand with this Special Rule performs a Volley Action, all Hit Rolls of \"1\" count the Target's Defense as \"0\" for that Attack. Additional Hits generated by other Special Rules do not benefit from this Special Rule.",
+            "isOptional": false
         },
         {
             "name": "Priest",
-            "description": "This Regiment or Character Stand can perform the Spellcasting Action during its Activation. The X value is this Stand's Magic Level. If the Regiment or Character Stand does not have any Spells available, then it only counts toward Enemy Interference."
+            "description": "This Regiment or Character Stand can perform the Spellcasting Action during its Activation. The X value is this Stand's Magic Level. If the Regiment or Character Stand does not have any Spells available, then it only counts toward Enemy Interference.",
+            "isOptional": false
         },
         {
             "name": "Quicksilver Strike",
-            "description": "A Character Stand with this Special Rule resolves all of its Attacks first during a Duel Action. If both Character Stands in the Duel Action have this Special Rule, the Attacks are resolved simultaneously."
+            "description": "A Character Stand with this Special Rule resolves all of its Attacks first during a Duel Action. If both Character Stands in the Duel Action have this Special Rule, the Attacks are resolved simultaneously.",
+            "isOptional": false
         },
         {
             "name": "Rapid Volley",
-            "description": "When a Stand with this Special Rule performs a Volley Action, each Hit Roll of \"1\" causes an additional automatic Hit on the Target. This additional Hit does not benefit from any Special Rules that trigger during the Roll To Hit Step. Attacks from Character Stands do not benefit from this Special Rule."
+            "description": "When a Stand with this Special Rule performs a Volley Action, each Hit Roll of \"1\" causes an additional automatic Hit on the Target. This additional Hit does not benefit from any Special Rules that trigger during the Roll To Hit Step. Attacks from Character Stands do not benefit from this Special Rule.",
+            "isOptional": false
         },
         {
             "name": "Relentless Blows",
-            "description": "When a Stand with this Special Rule performs a Clash or Duel Action, each Hit Roll of \"1\" causes an additional automatic Hit on the Target. This additional Hit does not benefit from any Special Rules that trigger during the \"Roll to Hit\" step."
+            "description": "When a Stand with this Special Rule performs a Clash or Duel Action, each Hit Roll of \"1\" causes an additional automatic Hit on the Target. This additional Hit does not benefit from any Special Rules that trigger during the \"Roll to Hit\" step.",
+            "isOptional": false
         },
         {
             "name": "Rider",
-            "description": "This Character Stand is not physically represented by a separate Stand, and must be attached to a Monster Regiment in its Warband. The Regiment counts as being composed of two Stands, a Monster and a Character Stand. The Character Stand uses the Monster Stand for the purposes of measuring distances and drawing Line of Sight using the Monster Regiment's Size."
+            "description": "This Character Stand is not physically represented by a separate Stand, and must be attached to a Monster Regiment in its Warband. The Regiment counts as being composed of two Stands, a Monster and a Character Stand. The Character Stand uses the Monster Stand for the purposes of measuring distances and drawing Line of Sight using the Monster Regiment's Size.",
+            "isOptional": false
         },
         {
             "name": "Shield",
-            "description": "Stands in this Regiment, including Character Stands, count their Defense Characteristic as 1 point higher against all Hits originating from the Regiment's front Arc. Character Stands do not benefit from this Special Rule during Duels unless they have this Special Rule. A Regiment cannot make use of this Special Rule when Occupying Garrison Terrain."
+            "description": "Stands in this Regiment, including Character Stands, count their Defense Characteristic as 1 point higher against all Hits originating from the Regiment's front Arc. Character Stands do not benefit from this Special Rule during Duels unless they have this Special Rule. A Regiment cannot make use of this Special Rule when Occupying Garrison Terrain.",
+            "isOptional": false
         },
         {
             "name": "Shock",
-            "description": "When this Regiment performs a successful Charge, Stands in the Regiment with this Special Rule add +1 to their Clash Characteristic until the end of the Round."
+            "description": "When this Regiment performs a successful Charge, Stands in the Regiment with this Special Rule add +1 to their Clash Characteristic until the end of the Round.",
+            "isOptional": false
         },
         {
             "name": "Smite",
-            "description": "Enemy Regiments count their total Defense Characteristic as 0 against Hits caused by a Stand with this Special Rule during a Clash Action. This Special Rule also affects the Hits from Character Stands during a Duel Action."
+            "description": "Enemy Regiments count their total Defense Characteristic as 0 against Hits caused by a Stand with this Special Rule during a Clash Action. This Special Rule also affects the Hits from Character Stands during a Duel Action.",
+            "isOptional": false
         },
         {
             "name": "Support",
-            "description": "This Regiment's Stands contribute X Supporting Attacks during a Clash Action instead of 1. While a Regiment is engaged by enemy Regiments in its Flank or Rear, they lose the Support X Special Rule."
+            "description": "This Regiment's Stands contribute X Supporting Attacks during a Clash Action instead of 1. While a Regiment is engaged by enemy Regiments in its Flank or Rear, they lose the Support X Special Rule.",
+            "isOptional": false
         },
         {
             "name": "Sureshot",
-            "description": "This Regiment does not suffer the negative effects of targeting an Enemy Regiment within Obscuring Terrain and/or drawing Line of Sight through Obscuring Terrain."
+            "description": "This Regiment does not suffer the negative effects of targeting an Enemy Regiment within Obscuring Terrain and/or drawing Line of Sight through Obscuring Terrain.",
+            "isOptional": false
         },
         {
             "name": "Tenacious",
-            "description": "Whenever this Regiment makes a Defense Roll, treat X failed results as successes where X is the value of this Special Rule. Character Stands do not benefit from this Special Rule during Duels unless they have this Special Rule."
+            "description": "Whenever this Regiment makes a Defense Roll, treat X failed results as successes where X is the value of this Special Rule. Character Stands do not benefit from this Special Rule during Duels unless they have this Special Rule.",
+            "isOptional": false
         },
         {
             "name": "Terrifying",
-            "description": "Regiments in contact with Stands with this Special Rule reduce their Resolve Characteristic by X, where X is the value in the Terrifying (X) Special Rule, for the purposes of making Morale Tests against Wounds taken from that Regiment."
+            "description": "Regiments in contact with Stands with this Special Rule reduce their Resolve Characteristic by X, where X is the value in the Terrifying (X) Special Rule, for the purposes of making Morale Tests against Wounds taken from that Regiment.",
+            "isOptional": false
         },
         {
             "name": "Torrential Fire",
-            "description": "When a Stand with this Special Rule performs a Volley Action against an Enemy Regiment within Effective Range, every two successful Hit Rolls (rounding up) cause an additional automatic Hit on the Target. These additional shots do not benefit from this Special Rule."
+            "description": "When a Stand with this Special Rule performs a Volley Action against an Enemy Regiment within Effective Range, every two successful Hit Rolls (rounding up) cause an additional automatic Hit on the Target. These additional shots do not benefit from this Special Rule.",
+            "isOptional": false
         },
         {
             "name": "Trample",
-            "description": "At the end of this Regiment's Activation, if this Regiment is in Contact with an Enemy Regiment in its front arc, Stands in the Regiment with this Special Rule cause X additional Hits where X is equal to the Stand's Trample (X) value. These additional Hits do not benefit from any of the Regiment's Special Rules and Hit automatically."
+            "description": "At the end of this Regiment's Activation, if this Regiment is in Contact with an Enemy Regiment in its front arc, Stands in the Regiment with this Special Rule cause X additional Hits where X is equal to the Stand's Trample (X) value. These additional Hits do not benefit from any of the Regiment's Special Rules and Hit automatically.",
+            "isOptional": false
         },
         {
             "name": "Unstoppable",
-            "description": "This Regiment may Re-Roll failed Charge Rolls."
+            "description": "This Regiment may Re-Roll failed Charge Rolls.",
+            "isOptional": false
         },
         {
             "name": "Untouchable",
-            "description": "This Regiment Re-Rolls failed Defense Rolls of \"6\". Character Stands do not benefit from this Special Rule during Duels unless they have this Special Rule."
+            "description": "This Regiment Re-Rolls failed Defense Rolls of \"6\". Character Stands do not benefit from this Special Rule during Duels unless they have this Special Rule.",
+            "isOptional": false
         },
         {
             "name": "Unyielding",
-            "description": "Enemy Regiments cannot Seize an Objective Zone that Stands in this Regiment are in range of. This Special Rule is not active if this Regiment is currently Broken."
+            "description": "Enemy Regiments cannot Seize an Objective Zone that Stands in this Regiment are in range of. This Special Rule is not active if this Regiment is currently Broken.",
+            "isOptional": false
         },
         {
             "name": "Vanguard",
-            "description": "When a Regiment with this Special Rule enters the Battlefield from Reinforcements, add +X to its March Characteristic for the first March Action this Activation."
+            "description": "When a Regiment with this Special Rule enters the Battlefield from Reinforcements, add +X to its March Characteristic for the first March Action this Activation.",
+            "isOptional": false
         },
         {
             "name": "Weapon Platform",
-            "description": "Stands in this Regiment count their Flank Arcs as their Front Arc for the purposes of determining Line of Sight and Checking for Obstruction when performing a Volley Action."
+            "description": "Stands in this Regiment count their Flank Arcs as their Front Arc for the purposes of determining Line of Sight and Checking for Obstruction when performing a Volley Action.",
+            "isOptional": false
         },
         {
             "name": "Wizard",
-            "description": "This Regiment or Character Stand can perform the Spellcasting Action during its Activation. The X value is this Stand's Magic Level. If the Regiment or Character Stand does not have any Spells available, then it only counts toward Enemy Interference."
+            "description": "This Regiment or Character Stand can perform the Spellcasting Action during its Activation. The X value is this Stand's Magic Level. If the Regiment or Character Stand does not have any Spells available, then it only counts toward Enemy Interference.",
+            "isOptional": false
         },
         {
             "name": "Leader",
-            "description": "A command stand containing a leader adds +1 attack to the command stands characteristic profile. If the command stand has the Barrage(x) special rule, then it also increases the command stand's Barrage(x) value by +1."
+            "description": "A command stand containing a leader adds +1 attack to the command stands characteristic profile. If the command stand has the Barrage(x) special rule, then it also increases the command stand's Barrage(x) value by +1.",
+            "isOptional": false
         },
         {
             "name": "Standard Bearer",
-            "description": "A regiment with a Standard Bearer gains the unstoppable specila rule. In addition the standard Bearer asdds +1 to the regiment's and currently attached Character stand's March characteristic on the second march action the regiment performs durng its activation until the end of that march action."
+            "description": "A regiment with a Standard Bearer gains the unstoppable specila rule. In addition the standard Bearer asdds +1 to the regiment's and currently attached Character stand's March characteristic on the second march action the regiment performs durng its activation until the end of that march action.",
+            "isOptional": false
         },
         {
             "name": "Captain",
-            "description": "The Regiment's Command Stand counts as 1 Additional Stand for the purposes of Seizing Objective Zones."
+            "description": "The Regiment's Command Stand counts as 1 Additional Stand for the purposes of Seizing Objective Zones.",
+            "isOptional": false
         },
         {
             "name": "Savage",
-            "description": "This Regiment may perform a free additional Charge Action during its Activation."
+            "description": "This Regiment may perform a free additional Charge Action during its Activation.",
+            "isOptional": false
         },
         {
             "name": "Shield Biter",
-            "description": "The Regiment's Command Stand may Die Fighting! as if it was a [Character] Stand regardless of whether the Regiment has Acted this Round. In addition currently attached [Character] Stands may Die Fighting! regardless of whether the Regiment has Acted this Round."
+            "description": "The Regiment's Command Stand may Die Fighting! as if it was a [Character] Stand regardless of whether the Regiment has Acted this Round. In addition currently attached [Character] Stands may Die Fighting! regardless of whether the Regiment has Acted this Round.",
+            "isOptional": false
         },
         {
             "name": "Skald",
-            "description": "This Regiment adds +1 to their Resolve Characteristic and gains the Bravery Special Rule."
+            "description": "This Regiment adds +1 to their Resolve Characteristic and gains the Bravery Special Rule.",
+            "isOptional": false
         },
         {
             "name": "Thegn",
-            "description": "This Regiment gains the Bastion (1) Draw Event. Currently attached Character Stands do not gain the Draw Event."
+            "description": "This Regiment gains the Bastion (1) Draw Event. Currently attached Character Stands do not gain the Draw Event.",
+            "isOptional": false
         }
     ],
     "draw_events": [

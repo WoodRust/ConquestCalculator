@@ -101,6 +101,21 @@ class CombatFacade {
 
   double calculateExpectedWounds(CombatState state) =>
       _calculateCombat.calculateExpectedWounds(state);
+
+  // Helper method to remove special rules completely
+  void removeAttackerSpecialRule(String ruleKey) {
+    final updatedRules =
+        Map<String, bool>.from(state.attackerSpecialRulesInEffect);
+    updatedRules.remove(ruleKey);
+    notifier.updateAttackerSpecialRules(updatedRules);
+  }
+
+  void removeDefenderSpecialRule(String ruleKey) {
+    final updatedRules =
+        Map<String, bool>.from(state.defenderSpecialRulesInEffect);
+    updatedRules.remove(ruleKey);
+    notifier.updateDefenderSpecialRules(updatedRules);
+  }
 }
 
 /// Provider for the combat facade

@@ -42,7 +42,7 @@ class SpecialRulesSection extends ConsumerWidget {
 
     // Get the keys of all optional rules that are active for this unit
     final allActiveRuleKeys = specialRulesMap.entries
-        .where((entry) => entry.value && !combatModifiers.contains(entry.key))
+        .where((entry) => !combatModifiers.contains(entry.key))
         .map((entry) => entry.key)
         .toList();
 
@@ -94,11 +94,12 @@ class SpecialRulesSection extends ConsumerWidget {
           spacing: 8,
           runSpacing: 6,
           children: [
-            // Built-in special rule chips (not selectable)
+            // Built-in special rule chips (now toggleable)
             ...builtInRules.map((rule) {
               return SpecialRuleChip(
                 ruleName: rule,
-                // No onSelected or isSelected for built-in rules
+                isAttacker: isAttacker,
+                isOptional: false,
               );
             }),
 
@@ -107,15 +108,15 @@ class SpecialRulesSection extends ConsumerWidget {
               final ruleName = ruleKey.replaceAll('_', ' ');
               return SpecialRuleChip(
                 ruleName: _capitalizeWords(ruleName),
-                isSelected: true,
+                isAttacker: isAttacker,
+                isOptional: true,
                 isRemovable: true,
-                backgroundColor: AppTheme.claudePrimary.withOpacity(0.2),
                 onRemove: () {
-                  // Use the correct method for the attacker or defender
+                  // Use the new facade methods to remove the rule completely
                   if (isAttacker) {
-                    combatFacade.toggleAttackerCombatModifier(ruleKey, false);
+                    combatFacade.removeAttackerSpecialRule(ruleKey);
                   } else {
-                    combatFacade.toggleDefenderCombatModifier(ruleKey, false);
+                    combatFacade.removeDefenderSpecialRule(ruleKey);
                   }
                 },
               );

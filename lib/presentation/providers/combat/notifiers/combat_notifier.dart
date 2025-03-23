@@ -261,6 +261,18 @@ class CombatNotifier extends StateNotifier<CombatState> {
     }
   }
 
+  // Add a method to update attacker special rules map directly
+  void updateAttackerSpecialRules(Map<String, bool> updatedRules) {
+    state = state.copyWith(
+        attackerSpecialRulesInEffect: updatedRules, clearSimulation: true);
+  }
+
+  // Add a method to update defender special rules map directly
+  void updateDefenderSpecialRules(Map<String, bool> updatedRules) {
+    state = state.copyWith(
+        defenderSpecialRulesInEffect: updatedRules, clearSimulation: true);
+  }
+
   void updateDefender(Regiment? defender) {
     // If defender is null, clear it
     if (defender == null) {
