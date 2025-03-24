@@ -50,6 +50,29 @@ class CombatNotifier extends StateNotifier<CombatState> {
       // Finally add defender-specific rules (can override both)
       mergedRules.addAll(state.defenderSpecialRulesInEffect);
 
+      // ADDED: Debug output for special rules maps
+      print("===== SPECIAL RULES DEBUG =====");
+      print("Attacker Special Rules:");
+      state.attackerSpecialRulesInEffect.forEach((key, value) {
+        print("  $key: $value");
+      });
+
+      print("\nDefender Special Rules:");
+      state.defenderSpecialRulesInEffect.forEach((key, value) {
+        print("  $key: $value");
+      });
+
+      print("\nGlobal Special Rules (deprecated):");
+      state.specialRulesInEffect.forEach((key, value) {
+        print("  $key: $value");
+      });
+
+      print("\nMerged Rules for Calculation:");
+      mergedRules.forEach((key, value) {
+        print("  $key: $value");
+      });
+      print("=============================");
+
       final simulation = _calculateCombat.calculateExpectedResult(
         attacker: state.attacker!,
         numAttackerStands: isCharacterVsCharacter ? 1 : state.numAttackerStands,
@@ -64,6 +87,8 @@ class CombatNotifier extends StateNotifier<CombatState> {
         isVolley: state.isVolley,
         isWithinEffectiveRange: state.isWithinEffectiveRange,
         specialRulesInEffect: mergedRules,
+        attackerSpecialRulesInEffect: state.attackerSpecialRulesInEffect,
+        defenderSpecialRulesInEffect: state.defenderSpecialRulesInEffect,
         impactValues: state.specialRuleValues,
       );
 

@@ -1,3 +1,4 @@
+// lib/domain/usecases/processors/combat_processor.dart - Consistent Special Rules
 import 'package:conquest_calculator/domain/models/combat_context.dart';
 import 'package:conquest_calculator/domain/models/combat_distributions.dart';
 import 'package:conquest_calculator/domain/models/probability_distribution.dart';
@@ -28,17 +29,16 @@ abstract class CombatProcessor {
   }) {
     int defenseTarget = math.max(defender.defense, defender.evasion);
 
-    // Apply Shield bonus for front attacks
-    bool hasShield = defender.shield ||
-        defender.hasSpecialRule('shield') ||
-        context.defenderHasRule('shield');
-
+    // UPDATED: Apply Shield bonus for front attacks - only use context check
+    bool hasShield = context.defenderHasRule('shield');
+    print("\ndefender has shield: $hasShield");
     if (!isFlank && !isRear && hasShield) {
+      print("\nApply shield to effective defence");
       defenseTarget += 1;
     }
 
-    // Apply armor piercing for volleys
-    if (isVolley && attacker.hasArmorPiercing()) {
+    // UPDATED: Apply armor piercing for volleys - use context check
+    if (isVolley && context.attackerHasRule('armorPiercing')) {
       defenseTarget =
           math.max(defenseTarget - attacker.getArmorPiercingValue(), 0);
     }
@@ -48,18 +48,14 @@ abstract class CombatProcessor {
           attacker.getArmorPiercingValue();
       defenseTarget = math.max(defenseTarget - armorPiercingValue, 0);
     }
-    // Apply cleave for melee attacks
-    else if (!isVolley &&
-        !isImpact &&
-        (attacker.getCleave() > 0 || context.attackerHasRule('cleave'))) {
+    // UPDATED: Apply cleave for melee attacks - only use context check
+    else if (!isVolley && !isImpact && context.attackerHasRule('cleave')) {
       int cleaveValue =
           context.impactValues['cleaveValue'] ?? attacker.getCleave();
       defenseTarget = math.max(defenseTarget - cleaveValue, 0);
     }
-    // Apply brutal impact for impact attacks
-    else if (isImpact &&
-        (attacker.getBrutalImpact() > 0 ||
-            context.attackerHasRule('brutalImpact'))) {
+    // UPDATED: Apply brutal impact for impact attacks - only use context check
+    else if (isImpact && context.attackerHasRule('brutalImpact')) {
       int brutalImpactValue = context.impactValues['brutalImpactValue'] ??
           attacker.getBrutalImpact();
       defenseTarget = math.max(defenseTarget - brutalImpactValue, 0);
@@ -77,17 +73,17 @@ abstract class CombatProcessor {
   }) {
     int resolveTarget = defender.getResolve();
 
-    // Check for Animate Vessel (auto-pass resolve tests)
-    bool hasAnimateVessel = defender.hasSpecialRule('animate vessel');
+    // UPDATED: Check for Animate Vessel (auto-pass resolve tests) - use context check
+    bool hasAnimateVessel = context.defenderHasRule('animate vessel');
     if (hasAnimateVessel) {
       return 6; // Will always pass resolve tests
     }
 
-    // Apply Terrifying effect if in melee combat (not volley) and defender doesn't have Fearless or Bravery
+    // Apply Terrifying effect if in melee combat (not volley) and rule is active
     if (!context.isVolley &&
-        context.attacker.getTerrifying() > 0 &&
-        !defender.hasSpecialRule('fearless') &&
-        !defender.hasSpecialRule('bravery')) {
+        context.attackerHasRule('terrifying') &&
+        !context.defenderHasRule('fearless') &&
+        !context.defenderHasRule('bravery')) {
       // Reduce resolve by terrifying value
       resolveTarget =
           math.max(resolveTarget - context.attacker.getTerrifying(), 1);
@@ -146,8 +142,8 @@ abstract class CombatProcessor {
       );
     }
 
-    // Apply Indomitable effect if present
-    if (indomitableValue > 0) {
+    // UPDATED: Apply Indomitable effect if present and active
+    if (indomitableValue > 0 && context.defenderHasRule('indomitable')) {
       // This is a simple approximation - we subtract indomitable from the mean
       double adjustedMean =
           math.max(0.0, resolveDistribution.mean - indomitableValue);
@@ -177,6 +173,7 @@ abstract class CombatProcessor {
         );
       }
     }
+
     print("===== Resolve Calculation =====");
     print("Resolve Target: $resolveTarget");
     print("Indomitable Value: $indomitableValue");
