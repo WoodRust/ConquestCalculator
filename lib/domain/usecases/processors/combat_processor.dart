@@ -25,7 +25,6 @@ abstract class CombatProcessor {
     bool isVolley = false,
     bool isFlank = false,
     bool isRear = false,
-    required Map<String, bool> specialRulesInEffect,
   }) {
     int defenseTarget = math.max(defender.defense, defender.evasion);
 
@@ -69,7 +68,6 @@ abstract class CombatProcessor {
     required Regiment defender,
     bool isFlank = false,
     bool isRear = false,
-    required Map<String, bool> specialRulesInEffect,
   }) {
     int resolveTarget = defender.getResolve();
 

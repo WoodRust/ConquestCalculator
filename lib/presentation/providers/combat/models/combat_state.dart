@@ -30,7 +30,7 @@ class CombatState {
   final Map<String, bool> defenderSpecialRulesInEffect;
 
   // For backward compatibility - will be deprecated
-  final Map<String, bool> specialRulesInEffect;
+  //final Map<String, bool> specialRulesInEffect;
 
   final Map<String, int> specialRuleValues;
   final CombatSimulation? simulation;
@@ -55,7 +55,7 @@ class CombatState {
     this.isRear = false,
     this.isVolley = false,
     this.isWithinEffectiveRange = false,
-    this.specialRulesInEffect = const {},
+    //this.specialRulesInEffect = const {},
     // Initialize with empty maps, not const {} which is immutable
     Map<String, bool>? attackerSpecialRulesInEffect,
     Map<String, bool>? defenderSpecialRulesInEffect,
@@ -92,7 +92,7 @@ class CombatState {
     bool? isRear,
     bool? isVolley,
     bool? isWithinEffectiveRange,
-    Map<String, bool>? specialRulesInEffect,
+    //Map<String, bool>? specialRulesInEffect,
     Map<String, bool>? attackerSpecialRulesInEffect,
     Map<String, bool>? defenderSpecialRulesInEffect,
     Map<String, int>? specialRuleValues,
@@ -128,7 +128,7 @@ class CombatState {
       isVolley: isVolley ?? this.isVolley,
       isWithinEffectiveRange:
           isWithinEffectiveRange ?? this.isWithinEffectiveRange,
-      specialRulesInEffect: specialRulesInEffect ?? this.specialRulesInEffect,
+      //specialRulesInEffect: specialRulesInEffect ?? this.specialRulesInEffect,
       attackerSpecialRulesInEffect:
           attackerSpecialRulesInEffect ?? this.attackerSpecialRulesInEffect,
       defenderSpecialRulesInEffect:

@@ -29,7 +29,7 @@ class CalculateCombat {
     bool isRear = false,
     bool isVolley = false,
     bool isWithinEffectiveRange = false,
-    Map<String, bool> specialRulesInEffect = const {},
+    //Map<String, bool> specialRulesInEffect = const {},
     Map<String, bool>? attackerSpecialRulesInEffect,
     Map<String, bool>? defenderSpecialRulesInEffect,
     Map<String, int> impactValues = const {},
@@ -48,7 +48,7 @@ class CalculateCombat {
       isRear: isRear,
       isVolley: isVolley,
       isWithinEffectiveRange: isWithinEffectiveRange,
-      specialRulesInEffect: specialRulesInEffect,
+      //specialRulesInEffect: specialRulesInEffect,
       attackerSpecialRulesInEffect: attackerSpecialRulesInEffect,
       defenderSpecialRulesInEffect: defenderSpecialRulesInEffect,
       impactValues: impactValues,
@@ -103,7 +103,7 @@ class CalculateCombat {
       isRear: context.isRear,
       isVolley: context.isVolley,
       isWithinEffectiveRange: context.isWithinEffectiveRange,
-      specialRulesInEffect: context.specialRulesInEffect,
+      //specialRulesInEffect: context.specialRulesInEffect,
       // For backward compatibility
       hitRoll: hitRoll,
       defenseRoll: defenseRoll,
@@ -155,7 +155,7 @@ class CalculateCombat {
       isRear: state.isRear,
       isVolley: state.isVolley,
       isWithinEffectiveRange: state.isWithinEffectiveRange,
-      specialRulesInEffect: Map<String, bool>.from(state.specialRulesInEffect),
+      //specialRulesInEffect: Map<String, bool>.from(state.specialRulesInEffect),
       attackerSpecialRulesInEffect:
           Map<String, bool>.from(state.attackerSpecialRulesInEffect),
       defenderSpecialRulesInEffect:
@@ -224,7 +224,6 @@ class CalculateCombat {
         isImpact: true,
         isFlank: context.isFlank,
         isRear: context.isRear,
-        specialRulesInEffect: context.specialRulesInEffect,
       );
 
       final impactWoundDistribution = processor.calculateWoundDistribution(
@@ -237,7 +236,6 @@ class CalculateCombat {
         defender: context.defender,
         isFlank: context.isFlank,
         isRear: context.isRear,
-        specialRulesInEffect: context.specialRulesInEffect,
       );
 
       final impactResolveDistribution = processor.calculateResolveDistribution(
@@ -330,7 +328,6 @@ class CalculateCombat {
         isVolley: state.isVolley,
         isFlank: context.isFlank,
         isRear: context.isRear,
-        specialRulesInEffect: context.specialRulesInEffect,
       );
 
       final woundDistribution = processor.calculateWoundDistribution(
@@ -343,7 +340,6 @@ class CalculateCombat {
         defender: context.defender,
         isFlank: context.isFlank,
         isRear: context.isRear,
-        specialRulesInEffect: context.specialRulesInEffect,
       );
 
       final resolveDistribution = processor.calculateResolveDistribution(

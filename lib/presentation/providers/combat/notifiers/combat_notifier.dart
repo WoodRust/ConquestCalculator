@@ -65,18 +65,6 @@ class CombatNotifier extends StateNotifier<CombatState> {
       bool isCharacterVsCharacter = state.isDuelMode ||
           (state.attacker!.isCharacter() && state.defender!.isCharacter());
 
-      // Create merged special rules map for calculation
-      final Map<String, bool> mergedRules = {};
-
-      // Add global rules first (lowest priority)
-      mergedRules.addAll(state.specialRulesInEffect);
-
-      // Then add attacker-specific rules (can override global)
-      mergedRules.addAll(state.attackerSpecialRulesInEffect);
-
-      // Finally add defender-specific rules (can override both)
-      mergedRules.addAll(state.defenderSpecialRulesInEffect);
-
       // ADDED: Debug output for special rules maps
       print("===== SPECIAL RULES DEBUG =====");
       print("Attacker Special Rules:");
@@ -89,15 +77,6 @@ class CombatNotifier extends StateNotifier<CombatState> {
         print("  $key: $value");
       });
 
-      print("\nGlobal Special Rules (deprecated):");
-      state.specialRulesInEffect.forEach((key, value) {
-        print("  $key: $value");
-      });
-
-      print("\nMerged Rules for Calculation:");
-      mergedRules.forEach((key, value) {
-        print("  $key: $value");
-      });
       print("=============================");
 
       final simulation = _calculateCombat.calculateExpectedResult(
@@ -113,7 +92,7 @@ class CombatNotifier extends StateNotifier<CombatState> {
         isRear: state.isRear,
         isVolley: state.isVolley,
         isWithinEffectiveRange: state.isWithinEffectiveRange,
-        specialRulesInEffect: mergedRules,
+        //specialRulesInEffect: mergedRules,
         attackerSpecialRulesInEffect: state.attackerSpecialRulesInEffect,
         defenderSpecialRulesInEffect: state.defenderSpecialRulesInEffect,
         impactValues: state.specialRuleValues,
@@ -437,15 +416,15 @@ class CombatNotifier extends StateNotifier<CombatState> {
     // Update combat state based on the selected mode
     if (mode == CombatMode.melee) {
       // Switching to melee mode
-      final updatedRules = Map<String, bool>.from(state.specialRulesInEffect)
-        ..remove('aimed'); // Clear ranged-specific rules
+      // final updatedRules = Map<String, bool>.from(state.attackerSpecialRulesInEffect)
+      //    ..remove('aimed'); // Clear ranged-specific rules
 
       state = state.copyWith(
         combatMode: mode,
         isVolley: false, // Turn off volley
         isWithinEffectiveRange:
             false, // Clear effective range when switching to melee
-        specialRulesInEffect: updatedRules,
+        //specialRulesInEffect: updatedRules,
         clearSimulation: true, // Clear the simulation
       );
 
@@ -453,15 +432,15 @@ class CombatNotifier extends StateNotifier<CombatState> {
       setDefaultMeleeOptions();
     } else {
       // Switching to ranged mode
-      final updatedRules = Map<String, bool>.from(state.specialRulesInEffect)
-        ..remove('inspired'); // Clear melee-specific rules
+      // final updatedRules = Map<String, bool>.from(state.attackerSpecialRulesInEffect)
+      //   ..remove('inspired'); // Clear melee-specific rules
 
       state = state.copyWith(
         combatMode: mode,
         isVolley: true, // Turn on volley
         isClash: false, // Turn off melee-specific options
         isImpact: false,
-        specialRulesInEffect: updatedRules,
+        //specialRulesInEffect: updatedRules,
         clearSimulation: true, // Clear the simulation
       );
     }
@@ -483,7 +462,7 @@ class CombatNotifier extends StateNotifier<CombatState> {
       isRear: false,
       isVolley: false,
       isWithinEffectiveRange: false,
-      specialRulesInEffect: const {},
+      //specialRulesInEffect: const {},
       attackerSpecialRulesInEffect: const {},
       defenderSpecialRulesInEffect: const {},
       specialRuleValues: const {},
@@ -550,9 +529,10 @@ class CombatNotifier extends StateNotifier<CombatState> {
 
       // If turning off volley, also clear ranged-specific rules
       if (!value) {
-        final updatedRules = Map<String, bool>.from(state.specialRulesInEffect)
-          ..remove('aimed');
-        state = state.copyWith(specialRulesInEffect: updatedRules);
+        final updatedRules =
+            Map<String, bool>.from(state.attackerSpecialRulesInEffect)
+              ..remove('aimed');
+        state = state.copyWith(attackerSpecialRulesInEffect: updatedRules);
       }
     }
   }
@@ -565,33 +545,33 @@ class CombatNotifier extends StateNotifier<CombatState> {
     }
   }
 
-  void toggleArmorPiercing(bool value) {
-    // Create a mutable copy of the special rules
-    final updatedRules = Map<String, bool>.from(state.specialRulesInEffect);
-    updatedRules['armorPiercing'] = value;
+  // void toggleArmorPiercing(bool value) {
+  //   // Create a mutable copy of the special rules
+  //   final updatedRules = Map<String, bool>.from(state.attackerSpecialRulesInEffect);
+  //   updatedRules['armorPiercing'] = value;
 
-    // Create a mutable copy of the special rule values
-    final updatedValues = Map<String, int>.from(state.specialRuleValues);
+  //   // Create a mutable copy of the special rule values
+  //   final updatedValues = Map<String, int>.from(state.specialRuleValues);
 
-    // If enabling armor piercing, make sure we have the value from the regiment
-    if (value && state.attacker != null && state.attacker!.hasArmorPiercing()) {
-      updatedValues['armorPiercingValue'] =
-          state.attacker!.getArmorPiercingValue();
-    }
+  //   // If enabling armor piercing, make sure we have the value from the regiment
+  //   if (value && state.attacker != null && state.attacker!.hasArmorPiercing()) {
+  //     updatedValues['armorPiercingValue'] =
+  //         state.attacker!.getArmorPiercingValue();
+  //   }
 
-    state = state.copyWith(
-        specialRulesInEffect: updatedRules,
-        specialRuleValues: updatedValues,
-        clearSimulation: true);
-  }
+  //   state = state.copyWith(
+  //       specialRulesInEffect: updatedRules,
+  //       specialRuleValues: updatedValues,
+  //       clearSimulation: true);
+  // }
 
-  void updateArmorPiercingValue(int value) {
-    final updatedValues = Map<String, int>.from(state.specialRuleValues);
-    updatedValues['armorPiercingValue'] = value;
+  // void updateArmorPiercingValue(int value) {
+  //   final updatedValues = Map<String, int>.from(state.specialRuleValues);
+  //   updatedValues['armorPiercingValue'] = value;
 
-    state =
-        state.copyWith(specialRuleValues: updatedValues, clearSimulation: true);
-  }
+  //   state =
+  //       state.copyWith(specialRuleValues: updatedValues, clearSimulation: true);
+  // }
 
   // New methods for separate attacker and defender special rules
   void toggleAttackerCombatModifier(String rule, bool value) {
@@ -610,18 +590,18 @@ class CombatNotifier extends StateNotifier<CombatState> {
         defenderSpecialRulesInEffect: updatedRules, clearSimulation: true);
   }
 
-  // Legacy method for backward compatibility
-  void toggleCombatModifier(String rule, bool value) {
-    final updatedRules = Map<String, bool>.from(state.specialRulesInEffect);
-    updatedRules[rule] = value;
-    state = state.copyWith(
-        specialRulesInEffect: updatedRules, clearSimulation: true);
-  }
+  // // Legacy method for backward compatibility
+  // void toggleCombatModifier(String rule, bool value) {
+  //   final updatedRules = Map<String, bool>.from(state.attackerSpecialRulesInEffect);
+  //   updatedRules[rule] = value;
+  //   state = state.copyWith(
+  //       attackerSpecialRulesInEffect: updatedRules, clearSimulation: true);
+  // }
 
-  // Alias for toggleCombatModifier for backward compatibility
-  void toggleSpecialRule(String rule, bool value) {
-    toggleCombatModifier(rule, value);
-  }
+  // // Alias for toggleCombatModifier for backward compatibility
+  // void toggleSpecialRule(String rule, bool value) {
+  //   toggleCombatModifier(rule, value);
+  // }
 
   void updateCombatModifierValue(String rule, int value) {
     final updatedValues = Map<String, int>.from(state.specialRuleValues);

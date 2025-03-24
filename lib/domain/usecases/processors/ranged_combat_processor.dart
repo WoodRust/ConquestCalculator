@@ -26,7 +26,6 @@ class RangedCombatProcessor extends CombatProcessor {
         isVolley: true,
         isFlank: context.isFlank,
         isRear: context.isRear,
-        specialRulesInEffect: context.specialRulesInEffect,
       ),
     );
 
@@ -38,7 +37,6 @@ class RangedCombatProcessor extends CombatProcessor {
         defender: context.defender,
         isFlank: context.isFlank,
         isRear: context.isRear,
-        specialRulesInEffect: context.specialRulesInEffect,
       ),
       context.defender.getIndomitable(),
     );
@@ -70,19 +68,20 @@ class RangedCombatProcessor extends CombatProcessor {
     int hitTarget = context.attacker.volley;
 
     // Apply Aimed modifier
-    if (context.specialRulesInEffect['aimed'] == true ||
+    if (context.attackerSpecialRulesInEffect['aimed'] == true ||
         context.attacker.hasSpecialRule('deadshots')) {
       hitTarget += 1;
 
       // If Aimed would raise Volley to 5+, use re-roll instead
       if (hitTarget >= 5) {
         hitTarget = context.attacker.volley; // Reset to base value
-        context.specialRulesInEffect['aimedReroll'] = true;
+        context.attackerSpecialRulesInEffect['aimedReroll'] = true;
       }
     }
 
     // Check for reroll abilities
-    bool hasRerolls = context.specialRulesInEffect['aimedReroll'] == true;
+    bool hasRerolls =
+        context.attackerSpecialRulesInEffect['aimedReroll'] == true;
 
     if (hasRerolls) {
       // For rerolls, we use a special calculation that accounts for rerolling failures
@@ -116,8 +115,7 @@ class RangedCombatProcessor extends CombatProcessor {
     }
 
     // Apply special rules for volleys
-    if (context.attacker.hasSpecialRule('rapid volley') ||
-        context.specialRulesInEffect['rapidVolley'] == true) {
+    if (context.attacker.hasSpecialRule('rapid volley')) {
       // Rapid volley grants an additional hit on rolls of 1
       // Simulate by increasing expected hits by 1/6 of the total shots
       double rapidVolleyBonus = totalVolleys * (1.0 / 6.0);

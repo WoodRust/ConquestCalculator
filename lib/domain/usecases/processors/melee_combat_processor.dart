@@ -28,7 +28,6 @@ class MeleeCombatProcessor extends CombatProcessor {
           isImpact: true,
           isFlank: context.isFlank,
           isRear: context.isRear,
-          specialRulesInEffect: context.specialRulesInEffect,
         ),
       );
 
@@ -39,7 +38,6 @@ class MeleeCombatProcessor extends CombatProcessor {
           defender: context.defender,
           isFlank: context.isFlank,
           isRear: context.isRear,
-          specialRulesInEffect: context.specialRulesInEffect,
         ),
         context.defender.getIndomitable(),
       );
@@ -66,7 +64,6 @@ class MeleeCombatProcessor extends CombatProcessor {
         isImpact: false,
         isFlank: context.isFlank,
         isRear: context.isRear,
-        specialRulesInEffect: context.specialRulesInEffect,
       ),
     );
 
@@ -78,7 +75,6 @@ class MeleeCombatProcessor extends CombatProcessor {
         defender: context.defender,
         isFlank: context.isFlank,
         isRear: context.isRear,
-        specialRulesInEffect: context.specialRulesInEffect,
       ),
       context.defender.getIndomitable(),
     );

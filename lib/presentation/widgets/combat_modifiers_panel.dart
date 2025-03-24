@@ -125,14 +125,15 @@ class CombatModifiersPanel extends ConsumerWidget {
                           ),
                           CheckboxListTile(
                             title: const Text('Inspired'),
-                            value:
-                                combatState.specialRulesInEffect['inspired'] ??
-                                    false,
+                            value: combatState
+                                    .attackerSpecialRulesInEffect['inspired'] ??
+                                false,
                             activeColor: AppTheme.claudePrimary,
                             onChanged: combatState.combatMode ==
                                     CombatMode.melee
-                                ? (value) => combatNotifier.toggleSpecialRule(
-                                    'inspired', value ?? false)
+                                ? (value) =>
+                                    combatNotifier.toggleAttackerCombatModifier(
+                                        'inspired', value ?? false)
                                 : null,
                             dense: true,
                             controlAffinity: ListTileControlAffinity.leading,
@@ -152,21 +153,21 @@ class CombatModifiersPanel extends ConsumerWidget {
                             controlAffinity: ListTileControlAffinity.leading,
                           ),
                           // Add Armor Piercing in melee section too for units that have it
-                          if (combatState.attacker?.hasArmorPiercing() ?? false)
-                            CheckboxListTile(
-                              title: const Text('Armor Piercing'),
-                              value: combatState
-                                      .specialRulesInEffect['armorPiercing'] ??
-                                  false,
-                              activeColor: AppTheme.claudePrimary,
-                              onChanged: combatState.combatMode ==
-                                      CombatMode.melee
-                                  ? (value) => combatNotifier.toggleSpecialRule(
-                                      'armorPiercing', value ?? false)
-                                  : null,
-                              dense: true,
-                              controlAffinity: ListTileControlAffinity.leading,
-                            ),
+                          // if (combatState.attacker?.hasArmorPiercing() ?? false)
+                          //   CheckboxListTile(
+                          //     title: const Text('Armor Piercing'),
+                          //     value: combatState
+                          //             .specialRulesInEffect['armorPiercing'] ??
+                          //         false,
+                          //     activeColor: AppTheme.claudePrimary,
+                          //     onChanged: combatState.combatMode ==
+                          //             CombatMode.melee
+                          //         ? (value) => combatNotifier.toggleCombatModifier(
+                          //             'armorPiercing', value ?? false)
+                          //         : null,
+                          //     dense: true,
+                          //     controlAffinity: ListTileControlAffinity.leading,
+                          //   ),
                         ],
                       ),
                     ),
@@ -215,7 +216,8 @@ class CombatModifiersPanel extends ConsumerWidget {
                           ),
                           CheckboxListTile(
                             title: const Text('Aimed'),
-                            value: combatState.specialRulesInEffect['aimed'] ??
+                            value: combatState
+                                    .attackerSpecialRulesInEffect['aimed'] ??
                                 false,
                             activeColor: AppTheme.claudePrimary,
                             onChanged: combatState.combatMode ==
@@ -223,29 +225,30 @@ class CombatModifiersPanel extends ConsumerWidget {
                                     combatState.isVolley &&
                                     (combatState.attacker?.hasBarrage() ??
                                         false)
-                                ? (value) => combatNotifier.toggleSpecialRule(
-                                    'aimed', value ?? false)
+                                ? (value) =>
+                                    combatNotifier.toggleAttackerCombatModifier(
+                                        'aimed', value ?? false)
                                 : null,
                             dense: true,
                             controlAffinity: ListTileControlAffinity.leading,
                           ),
                           // Separate armor piercing option
-                          if (combatState.attacker?.hasArmorPiercing() ?? false)
-                            CheckboxListTile(
-                              title: const Text('Armor Piercing'),
-                              value: combatState
-                                      .specialRulesInEffect['armorPiercing'] ??
-                                  false,
-                              activeColor: AppTheme.claudePrimary,
-                              onChanged: combatState.combatMode ==
-                                          CombatMode.ranged &&
-                                      combatState.isVolley
-                                  ? (value) => combatNotifier.toggleSpecialRule(
-                                      'armorPiercing', value ?? false)
-                                  : null,
-                              dense: true,
-                              controlAffinity: ListTileControlAffinity.leading,
-                            ),
+                          // if (combatState.attacker?.hasArmorPiercing() ?? false)
+                          //   CheckboxListTile(
+                          //     title: const Text('Armor Piercing'),
+                          //     value: combatState
+                          //             .specialRulesInEffect['armorPiercing'] ??
+                          //         false,
+                          //     activeColor: AppTheme.claudePrimary,
+                          //     onChanged: combatState.combatMode ==
+                          //                 CombatMode.ranged &&
+                          //             combatState.isVolley
+                          //         ? (value) => combatNotifier.toggleSpecialRule(
+                          //             'armorPiercing', value ?? false)
+                          //         : null,
+                          //     dense: true,
+                          //     controlAffinity: ListTileControlAffinity.leading,
+                          //   ),
                           CheckboxListTile(
                             title: const Text('Effective Range'),
                             value: combatState.isWithinEffectiveRange,
