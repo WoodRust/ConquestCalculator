@@ -60,13 +60,13 @@ class StandLossProbabilityTable extends ConsumerWidget {
 
       String label;
       if (i == 0) {
-        label = "Lose 0 Stands:";
+        label = "0 Stands:";
       } else if (i == standsToBreak) {
-        label = "Breaking ($i Stand${i > 1 ? 's' : ''}):";
+        label = "$i Stand${i > 1 ? 's' : ''} (Breaking):";
       } else if (i == standCount) {
-        label = "Destruction ($i Stand${i > 1 ? 's' : ''}):";
+        label = "$i Stand${i > 1 ? 's' : ''} (Destruction):";
       } else {
-        label = "Lose $i Stand${i > 1 ? 's' : ''}:";
+        label = "$i Stand${i > 1 ? 's' : ''}:";
       }
 
       probabilities.add(StandLossProbability(
