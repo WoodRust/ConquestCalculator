@@ -15,7 +15,7 @@ class CombatNotifier extends StateNotifier<CombatState> {
   void setDefaultMeleeOptions() {
     if (state.attacker != null && state.combatMode == CombatMode.melee) {
       // Enable charge by default
-      state = state.copyWith(isCharge: true);
+      state = state.copyWith(isClash: true);
 
       // Enable impact by default if attacker has impact, otherwise disable it
       if (state.attacker!.hasImpact()) {
@@ -25,10 +25,37 @@ class CombatNotifier extends StateNotifier<CombatState> {
       }
 
       // Enable inspired by default (using global specialRulesInEffect for backwards compatibility)
-      final updatedRules = Map<String, bool>.from(state.specialRulesInEffect);
+      final updatedRules =
+          Map<String, bool>.from(state.attackerSpecialRulesInEffect);
       updatedRules['inspired'] = true;
-      state = state.copyWith(specialRulesInEffect: updatedRules);
+      state = state.copyWith(attackerSpecialRulesInEffect: updatedRules);
     }
+  }
+
+  // Helper method to build special rules map from a Regiment's built-in rules
+  Map<String, bool> _buildSpecialRulesMapFromRegiment(Regiment regiment) {
+    final Map<String, bool> rulesMap = {};
+
+    // Convert each special rule to the format expected in the special rules maps
+    // (lowercase with underscores) and set it to true
+    for (final rule in regiment.specialRules) {
+      // Extract the base rule name by removing any parameters (e.g., "Impact (2)" -> "impact")
+      String baseName = rule.toLowerCase();
+
+      // Remove parameters if present
+      int parenIndex = baseName.indexOf('(');
+      if (parenIndex > 0) {
+        baseName = baseName.substring(0, parenIndex).trim();
+      }
+
+      // Replace spaces with underscores for the map key format
+      final ruleKey = baseName.replaceAll(' ', '_');
+
+      // Set the rule to active (true)
+      rulesMap[ruleKey] = true;
+    }
+
+    return rulesMap;
   }
 
   // Manual calculation method that only gets called by the Calculate button
@@ -228,6 +255,10 @@ class CombatNotifier extends StateNotifier<CombatState> {
     // Automatically update the faction based on the regiment's faction
     final String regimentFaction = regiment.faction;
 
+    // Build special rules map from regiment's built-in rules
+    final Map<String, bool> builtInRules =
+        _buildSpecialRulesMapFromRegiment(regiment);
+
     // If not in duel mode, ensure consistency with regular mode rules
     if (!state.isDuelMode) {
       // If new attacker is a character and defender is a regular regiment
@@ -241,8 +272,9 @@ class CombatNotifier extends StateNotifier<CombatState> {
           clearDefender: true, // Use explicit clearing
           clearDefenderCharacter: true, // Clear any attached character
           clearSimulation: true, // Clear the simulation
-          // Clear special rules for both attacker and defender
-          attackerSpecialRulesInEffect: {},
+          // Initialize attacker special rules with built-in rules
+          attackerSpecialRulesInEffect: builtInRules,
+          // Clear defender special rules
           defenderSpecialRulesInEffect: {},
         );
       } else {
@@ -250,8 +282,8 @@ class CombatNotifier extends StateNotifier<CombatState> {
           attacker: regiment,
           attackerFaction: regimentFaction,
           clearSimulation: true, // Clear the simulation when changing attacker
-          // Clear attacker special rules when changing the unit
-          attackerSpecialRulesInEffect: {},
+          // Initialize attacker special rules with built-in rules
+          attackerSpecialRulesInEffect: builtInRules,
         );
       }
 
@@ -263,8 +295,8 @@ class CombatNotifier extends StateNotifier<CombatState> {
         attacker: regiment,
         attackerFaction: regimentFaction,
         clearSimulation: true, // Clear the simulation
-        // Clear attacker special rules when changing the unit
-        attackerSpecialRulesInEffect: {},
+        // Initialize attacker special rules with built-in rules
+        attackerSpecialRulesInEffect: builtInRules,
       );
     }
   }
@@ -328,6 +360,10 @@ class CombatNotifier extends StateNotifier<CombatState> {
     // Automatically update the faction based on the regiment's faction
     final String regimentFaction = defender.faction;
 
+    // Build special rules map from regiment's built-in rules
+    final Map<String, bool> builtInRules =
+        _buildSpecialRulesMapFromRegiment(defender);
+
     // If not in duel mode, ensure consistency with regular mode rules
     if (!state.isDuelMode) {
       // If new defender is a regiment and attacker is a character-only unit
@@ -341,17 +377,18 @@ class CombatNotifier extends StateNotifier<CombatState> {
           clearAttacker: true, // Use explicit clearing
           clearAttackerCharacter: true, // Clear any attached character
           clearSimulation: true, // Clear the simulation
-          // Clear special rules for both attacker and defender
+          // Initialize defender special rules with built-in rules
+          defenderSpecialRulesInEffect: builtInRules,
+          // Clear attacker special rules
           attackerSpecialRulesInEffect: {},
-          defenderSpecialRulesInEffect: {},
         );
       } else {
         state = state.copyWith(
           defender: defender,
           defenderFaction: regimentFaction,
           clearSimulation: true, // Clear the simulation when changing defender
-          // Clear defender special rules when changing the unit
-          defenderSpecialRulesInEffect: {},
+          // Initialize defender special rules with built-in rules
+          defenderSpecialRulesInEffect: builtInRules,
         );
       }
     } else {
@@ -360,8 +397,8 @@ class CombatNotifier extends StateNotifier<CombatState> {
         defender: defender,
         defenderFaction: regimentFaction,
         clearSimulation: true, // Clear the simulation
-        // Clear defender special rules when changing the unit
-        defenderSpecialRulesInEffect: {},
+        // Initialize defender special rules with built-in rules
+        defenderSpecialRulesInEffect: builtInRules,
       );
     }
   }
@@ -422,7 +459,7 @@ class CombatNotifier extends StateNotifier<CombatState> {
       state = state.copyWith(
         combatMode: mode,
         isVolley: true, // Turn on volley
-        isCharge: false, // Turn off melee-specific options
+        isClash: false, // Turn off melee-specific options
         isImpact: false,
         specialRulesInEffect: updatedRules,
         clearSimulation: true, // Clear the simulation
@@ -477,7 +514,7 @@ class CombatNotifier extends StateNotifier<CombatState> {
   void toggleCharge(bool value) {
     // Only allow toggling charge in melee mode
     if (state.combatMode == CombatMode.melee) {
-      state = state.copyWith(isCharge: value, clearSimulation: true);
+      state = state.copyWith(isClash: value, clearSimulation: true);
       // No longer auto-toggles impact - these are now independent
     }
   }

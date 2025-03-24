@@ -86,7 +86,7 @@ class CombatState {
     String? defenderFaction,
     bool clearDefenderFaction = false,
     bool clearDefenderCharacter = false,
-    bool? isCharge,
+    bool? isClash,
     bool? isImpact,
     bool? isFlank,
     bool? isRear,
@@ -121,7 +121,7 @@ class CombatState {
       defenderFaction: clearDefenderFaction
           ? null
           : (defenderFaction ?? this.defenderFaction),
-      isCharge: isCharge ?? this.isCharge,
+      isCharge: isClash ?? this.isCharge,
       isImpact: isImpact ?? this.isImpact,
       isFlank: isFlank ?? this.isFlank,
       isRear: isRear ?? this.isRear,

@@ -64,13 +64,6 @@ class CombatContext {
 
   // Helper method to check if defender has a specific rule
   bool defenderHasRule(String ruleName) {
-    print("defenderHasRule: defenderSpecialRulesInEffect map:");
-    defenderSpecialRulesInEffect.forEach((key, value) {
-      print("  $key: $value");
-    });
-
-    bool printresult = defenderSpecialRulesInEffect[ruleName] == true;
-    print("rulename: $ruleName | result: $printresult");
     return defenderSpecialRulesInEffect[ruleName] == true ||
         specialRulesInEffect[ruleName] == true;
   }
