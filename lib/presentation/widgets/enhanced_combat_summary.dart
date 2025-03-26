@@ -58,23 +58,35 @@ class _EnhancedCombatSummaryState extends ConsumerState<EnhancedCombatSummary> {
     double totalExpectedWounds = expectedImpactWounds + expectedWounds;
     double totalExpectedStandsLost =
         expectedImpactStandsLost + expectedStandsLost;
+
+    // Calculate key probability values
+    double oneStandLossProbability = 0.0;
     double breakingProbability =
         widget.state.simulation!.breakingProbability * 100;
-
-    // Calculate destruction probability
     double destructionProbability = 0.0;
+
     final totalDistribution = widget.state.simulation!.totalDamageDistribution;
     if (totalDistribution != null && widget.state.defender != null) {
+      // Calculate probability of losing at least 1 stand
+      int woundsForOneStand = widget.state.defender!.wounds;
+      oneStandLossProbability =
+          totalDistribution.getProbabilityOfExceeding(woundsForOneStand - 1) *
+              100;
+
+      // Calculate probability of destruction (losing all stands)
       int woundsToDestroy =
           widget.state.defender!.wounds * widget.state.numDefenderStands;
       destructionProbability =
           totalDistribution.getProbabilityOfExceeding(woundsToDestroy - 1) *
               100;
 
-      // Add this logging in the build method of EnhancedCombatSummary
+      // Add this logging for debugging
       print("UI Display - Expected Wounds: $totalExpectedWounds");
       print("  Direct Wounds: $expectedWounds");
       print("  Impact Wounds: $expectedImpactWounds");
+      print("  1+ Stand Loss Probability: $oneStandLossProbability%");
+      print("  Breaking Probability: $breakingProbability%");
+      print("  Destruction Probability: $destructionProbability%");
     }
 
     return Card(
@@ -152,8 +164,8 @@ class _EnhancedCombatSummaryState extends ConsumerState<EnhancedCombatSummary> {
                     _buildTotalStat('Stands Lost',
                         totalExpectedStandsLost.toStringAsFixed(1)),
                     _buildTotalStat(
-                      '1 Stand Loss',
-                      '${_calculateOneStandLossProbability().toStringAsFixed(1)}%',
+                      '1+ Stands',
+                      '${oneStandLossProbability.toStringAsFixed(1)}%',
                       color: AppTheme.singleStandLossColor,
                     ),
                     _buildTotalStat(
@@ -348,30 +360,5 @@ class _EnhancedCombatSummaryState extends ConsumerState<EnhancedCombatSummary> {
     if (probability < 60) return AppTheme.singleStandLossColor;
     if (probability < 80) return AppTheme.breakingColor;
     return AppTheme.destroyedColor;
-  }
-
-  // Calculate the probability of losing exactly 1 stand
-  double _calculateOneStandLossProbability() {
-    if (widget.state.simulation?.totalDamageDistribution == null ||
-        widget.state.defender == null) {
-      return 0.0;
-    }
-
-    final totalDistribution = widget.state.simulation!.totalDamageDistribution!;
-    final woundsPerStand = widget.state.defender!.wounds;
-
-    // Calculate the range of wounds that corresponds to losing exactly 1 stand
-    final minWounds = woundsPerStand;
-    final maxWounds = (2 * woundsPerStand) - 1;
-
-    // Sum the probabilities for wounds in this range
-    double probability = 0.0;
-    for (int wounds = minWounds; wounds <= maxWounds; wounds++) {
-      if (wounds < totalDistribution.probabilities.length) {
-        probability += totalDistribution.probabilities[wounds];
-      }
-    }
-
-    return probability * 100; // Convert to percentage
   }
 }

@@ -416,15 +416,16 @@ class CombatNotifier extends StateNotifier<CombatState> {
     // Update combat state based on the selected mode
     if (mode == CombatMode.melee) {
       // Switching to melee mode
-      // final updatedRules = Map<String, bool>.from(state.attackerSpecialRulesInEffect)
-      //    ..remove('aimed'); // Clear ranged-specific rules
+      final updatedRules =
+          Map<String, bool>.from(state.attackerSpecialRulesInEffect)
+            ..remove('aimed'); // Clear ranged-specific rules
 
       state = state.copyWith(
         combatMode: mode,
         isVolley: false, // Turn off volley
         isWithinEffectiveRange:
             false, // Clear effective range when switching to melee
-        //specialRulesInEffect: updatedRules,
+        attackerSpecialRulesInEffect: updatedRules,
         clearSimulation: true, // Clear the simulation
       );
 
@@ -432,15 +433,16 @@ class CombatNotifier extends StateNotifier<CombatState> {
       setDefaultMeleeOptions();
     } else {
       // Switching to ranged mode
-      // final updatedRules = Map<String, bool>.from(state.attackerSpecialRulesInEffect)
-      //   ..remove('inspired'); // Clear melee-specific rules
+      final updatedRules =
+          Map<String, bool>.from(state.attackerSpecialRulesInEffect)
+            ..remove('inspired'); // Clear melee-specific rules
 
       state = state.copyWith(
         combatMode: mode,
         isVolley: true, // Turn on volley
         isClash: false, // Turn off melee-specific options
         isImpact: false,
-        //specialRulesInEffect: updatedRules,
+        attackerSpecialRulesInEffect: updatedRules,
         clearSimulation: true, // Clear the simulation
       );
     }
