@@ -111,63 +111,151 @@ class CombatModifiersPanel extends ConsumerWidget {
                                         ? AppTheme.claudeText
                                         : AppTheme.claudeSubtleText,
                               )),
-                          CheckboxListTile(
-                            title: const Text('Clash'),
-                            value: combatState.isCharge,
-                            activeColor: AppTheme.claudePrimary,
-                            onChanged: combatState.combatMode ==
-                                    CombatMode.melee
-                                ? (value) =>
-                                    combatNotifier.toggleCharge(value ?? false)
-                                : null,
-                            dense: true,
-                            controlAffinity: ListTileControlAffinity.leading,
+                          // Clash checkbox with info icon
+                          Row(
+                            children: [
+                              Expanded(
+                                child: CheckboxListTile(
+                                  title: const Text('Clash'),
+                                  value: combatState.isCharge,
+                                  activeColor: AppTheme.claudePrimary,
+                                  onChanged:
+                                      combatState.combatMode == CombatMode.melee
+                                          ? (value) => combatNotifier
+                                              .toggleCharge(value ?? false)
+                                          : null,
+                                  dense: true,
+                                  controlAffinity:
+                                      ListTileControlAffinity.leading,
+                                ),
+                              ),
+                              if (combatState.combatMode == CombatMode.melee)
+                                IconButton(
+                                  icon:
+                                      const Icon(Icons.info_outline, size: 18),
+                                  padding: EdgeInsets.zero,
+                                  constraints: const BoxConstraints(),
+                                  tooltip: 'Clash Attack Info',
+                                  onPressed: () {
+                                    showDialog(
+                                      context: context,
+                                      builder: (context) => AlertDialog(
+                                        title: const Text('Clash'),
+                                        content: const Text(
+                                            'Standard melee attack.'),
+                                        actions: [
+                                          TextButton(
+                                            onPressed: () =>
+                                                Navigator.of(context).pop(),
+                                            child: const Text('Close'),
+                                          ),
+                                        ],
+                                      ),
+                                    );
+                                  },
+                                ),
+                              const SizedBox(width: 12),
+                            ],
                           ),
-                          CheckboxListTile(
-                            title: const Text('Inspired'),
-                            value: combatState
-                                    .attackerSpecialRulesInEffect['inspired'] ??
-                                false,
-                            activeColor: AppTheme.claudePrimary,
-                            onChanged: combatState.combatMode ==
-                                    CombatMode.melee
-                                ? (value) =>
-                                    combatNotifier.toggleAttackerCombatModifier(
-                                        'inspired', value ?? false)
-                                : null,
-                            dense: true,
-                            controlAffinity: ListTileControlAffinity.leading,
+                          // Inspired checkbox with info icon
+                          Row(
+                            children: [
+                              Expanded(
+                                child: CheckboxListTile(
+                                  title: const Text('Inspired'),
+                                  value:
+                                      combatState.attackerSpecialRulesInEffect[
+                                              'inspired'] ??
+                                          false,
+                                  activeColor: AppTheme.claudePrimary,
+                                  onChanged:
+                                      combatState.combatMode == CombatMode.melee
+                                          ? (value) => combatNotifier
+                                              .toggleAttackerCombatModifier(
+                                                  'inspired', value ?? false)
+                                          : null,
+                                  dense: true,
+                                  controlAffinity:
+                                      ListTileControlAffinity.leading,
+                                ),
+                              ),
+                              if (combatState.combatMode == CombatMode.melee)
+                                IconButton(
+                                  icon:
+                                      const Icon(Icons.info_outline, size: 18),
+                                  padding: EdgeInsets.zero,
+                                  constraints: const BoxConstraints(),
+                                  tooltip: 'Inspired Info',
+                                  onPressed: () {
+                                    showDialog(
+                                      context: context,
+                                      builder: (context) => AlertDialog(
+                                        title: const Text('Inspired'),
+                                        content: const Text(
+                                            '+1 to Clash characteristic'),
+                                        actions: [
+                                          TextButton(
+                                            onPressed: () =>
+                                                Navigator.of(context).pop(),
+                                            child: const Text('Close'),
+                                          ),
+                                        ],
+                                      ),
+                                    );
+                                  },
+                                ),
+                              const SizedBox(width: 12),
+                            ],
                           ),
-                          CheckboxListTile(
-                            title: const Text('Impact'),
-                            value: combatState.isImpact,
-                            activeColor: AppTheme.claudePrimary,
-                            // Only enable this checkbox if attacker has impacts
-                            onChanged: combatState.combatMode ==
-                                        CombatMode.melee &&
-                                    (combatState.attacker?.hasImpact() ?? false)
-                                ? (value) =>
-                                    combatNotifier.toggleImpact(value ?? false)
-                                : null,
-                            dense: true,
-                            controlAffinity: ListTileControlAffinity.leading,
+                          // Impact checkbox
+                          Row(
+                            children: [
+                              Expanded(
+                                child: CheckboxListTile(
+                                  title: const Text('Impact'),
+                                  value: combatState.isImpact,
+                                  activeColor: AppTheme.claudePrimary,
+                                  onChanged: combatState.combatMode ==
+                                              CombatMode.melee &&
+                                          (combatState.attacker?.hasImpact() ??
+                                              false)
+                                      ? (value) => combatNotifier
+                                          .toggleImpact(value ?? false)
+                                      : null,
+                                  dense: true,
+                                  controlAffinity:
+                                      ListTileControlAffinity.leading,
+                                ),
+                              ),
+                              if (combatState.combatMode == CombatMode.melee &&
+                                  (combatState.attacker?.hasImpact() ?? false))
+                                IconButton(
+                                  icon:
+                                      const Icon(Icons.info_outline, size: 18),
+                                  padding: EdgeInsets.zero,
+                                  constraints: const BoxConstraints(),
+                                  tooltip: 'Impact Attack Info',
+                                  onPressed: () {
+                                    showDialog(
+                                      context: context,
+                                      builder: (context) => AlertDialog(
+                                        title: const Text('Impact'),
+                                        content: const Text(
+                                            'Extra attacks made before standard clash attacks.'),
+                                        actions: [
+                                          TextButton(
+                                            onPressed: () =>
+                                                Navigator.of(context).pop(),
+                                            child: const Text('Close'),
+                                          ),
+                                        ],
+                                      ),
+                                    );
+                                  },
+                                ),
+                              const SizedBox(width: 12),
+                            ],
                           ),
-                          // Add Armor Piercing in melee section too for units that have it
-                          // if (combatState.attacker?.hasArmorPiercing() ?? false)
-                          //   CheckboxListTile(
-                          //     title: const Text('Armor Piercing'),
-                          //     value: combatState
-                          //             .specialRulesInEffect['armorPiercing'] ??
-                          //         false,
-                          //     activeColor: AppTheme.claudePrimary,
-                          //     onChanged: combatState.combatMode ==
-                          //             CombatMode.melee
-                          //         ? (value) => combatNotifier.toggleCombatModifier(
-                          //             'armorPiercing', value ?? false)
-                          //         : null,
-                          //     dense: true,
-                          //     controlAffinity: ListTileControlAffinity.leading,
-                          //   ),
                         ],
                       ),
                     ),
@@ -200,69 +288,164 @@ class CombatModifiersPanel extends ConsumerWidget {
                                         ? AppTheme.claudeText
                                         : AppTheme.claudeSubtleText,
                               )),
-                          CheckboxListTile(
-                            title: const Text('Volley'),
-                            value: combatState.isVolley,
-                            activeColor: AppTheme.claudePrimary,
-                            onChanged: (combatState.attacker?.hasBarrage() ??
-                                        false) &&
-                                    combatState.combatMode == CombatMode.ranged
-                                ? (value) {
-                                    combatNotifier.toggleVolley(value ?? false);
-                                  }
-                                : null,
-                            dense: true,
-                            controlAffinity: ListTileControlAffinity.leading,
+                          // Volley checkbox with info icon
+                          Row(
+                            children: [
+                              Expanded(
+                                child: CheckboxListTile(
+                                  title: const Text('Volley'),
+                                  value: combatState.isVolley,
+                                  activeColor: AppTheme.claudePrimary,
+                                  onChanged:
+                                      (combatState.attacker?.hasBarrage() ??
+                                                  false) &&
+                                              combatState.combatMode ==
+                                                  CombatMode.ranged
+                                          ? (value) {
+                                              combatNotifier
+                                                  .toggleVolley(value ?? false);
+                                            }
+                                          : null,
+                                  dense: true,
+                                  controlAffinity:
+                                      ListTileControlAffinity.leading,
+                                ),
+                              ),
+                              if (combatState.combatMode == CombatMode.ranged &&
+                                  (combatState.attacker?.hasBarrage() ?? false))
+                                IconButton(
+                                  icon:
+                                      const Icon(Icons.info_outline, size: 18),
+                                  padding: EdgeInsets.zero,
+                                  constraints: const BoxConstraints(),
+                                  tooltip: 'Volley Info',
+                                  onPressed: () {
+                                    showDialog(
+                                      context: context,
+                                      builder: (context) => AlertDialog(
+                                        title: const Text('Volley'),
+                                        content: const Text(
+                                            'Ranged attack using Volley characteristic.'),
+                                        actions: [
+                                          TextButton(
+                                            onPressed: () =>
+                                                Navigator.of(context).pop(),
+                                            child: const Text('Close'),
+                                          ),
+                                        ],
+                                      ),
+                                    );
+                                  },
+                                ),
+                              const SizedBox(width: 12),
+                            ],
                           ),
-                          CheckboxListTile(
-                            title: const Text('Aimed'),
-                            value: combatState
-                                    .attackerSpecialRulesInEffect['aimed'] ??
-                                false,
-                            activeColor: AppTheme.claudePrimary,
-                            onChanged: combatState.combatMode ==
-                                        CombatMode.ranged &&
-                                    combatState.isVolley &&
-                                    (combatState.attacker?.hasBarrage() ??
-                                        false)
-                                ? (value) =>
-                                    combatNotifier.toggleAttackerCombatModifier(
-                                        'aimed', value ?? false)
-                                : null,
-                            dense: true,
-                            controlAffinity: ListTileControlAffinity.leading,
+                          // Aimed checkbox with info icon
+                          Row(
+                            children: [
+                              Expanded(
+                                child: CheckboxListTile(
+                                  title: const Text('Aimed'),
+                                  value:
+                                      combatState.attackerSpecialRulesInEffect[
+                                              'aimed'] ??
+                                          false,
+                                  activeColor: AppTheme.claudePrimary,
+                                  onChanged: combatState.combatMode ==
+                                              CombatMode.ranged &&
+                                          combatState.isVolley &&
+                                          (combatState.attacker?.hasBarrage() ??
+                                              false)
+                                      ? (value) => combatNotifier
+                                          .toggleAttackerCombatModifier(
+                                              'aimed', value ?? false)
+                                      : null,
+                                  dense: true,
+                                  controlAffinity:
+                                      ListTileControlAffinity.leading,
+                                ),
+                              ),
+                              if (combatState.combatMode == CombatMode.ranged &&
+                                  combatState.isVolley &&
+                                  (combatState.attacker?.hasBarrage() ?? false))
+                                IconButton(
+                                  icon:
+                                      const Icon(Icons.info_outline, size: 18),
+                                  padding: EdgeInsets.zero,
+                                  constraints: const BoxConstraints(),
+                                  tooltip: 'Aimed Info',
+                                  onPressed: () {
+                                    showDialog(
+                                      context: context,
+                                      builder: (context) => AlertDialog(
+                                        title: const Text('Aimed'),
+                                        content: const Text(
+                                            '+1 to Volley characteristic'),
+                                        actions: [
+                                          TextButton(
+                                            onPressed: () =>
+                                                Navigator.of(context).pop(),
+                                            child: const Text('Close'),
+                                          ),
+                                        ],
+                                      ),
+                                    );
+                                  },
+                                ),
+                              const SizedBox(width: 12),
+                            ],
                           ),
-                          // Separate armor piercing option
-                          // if (combatState.attacker?.hasArmorPiercing() ?? false)
-                          //   CheckboxListTile(
-                          //     title: const Text('Armor Piercing'),
-                          //     value: combatState
-                          //             .specialRulesInEffect['armorPiercing'] ??
-                          //         false,
-                          //     activeColor: AppTheme.claudePrimary,
-                          //     onChanged: combatState.combatMode ==
-                          //                 CombatMode.ranged &&
-                          //             combatState.isVolley
-                          //         ? (value) => combatNotifier.toggleSpecialRule(
-                          //             'armorPiercing', value ?? false)
-                          //         : null,
-                          //     dense: true,
-                          //     controlAffinity: ListTileControlAffinity.leading,
-                          //   ),
-                          CheckboxListTile(
-                            title: const Text('Effective Range'),
-                            value: combatState.isWithinEffectiveRange,
-                            activeColor: AppTheme.claudePrimary,
-                            onChanged: combatState.combatMode ==
-                                        CombatMode.ranged &&
-                                    combatState.isVolley &&
-                                    (combatState.attacker?.hasBarrage() ??
-                                        false)
-                                ? (value) => combatNotifier
-                                    .toggleWithinEffectiveRange(value ?? false)
-                                : null,
-                            dense: true,
-                            controlAffinity: ListTileControlAffinity.leading,
+                          // Effective Range checkbox with info icon
+                          Row(
+                            children: [
+                              Expanded(
+                                child: CheckboxListTile(
+                                  title: const Text('Effective Range'),
+                                  value: combatState.isWithinEffectiveRange,
+                                  activeColor: AppTheme.claudePrimary,
+                                  onChanged: combatState.combatMode ==
+                                              CombatMode.ranged &&
+                                          combatState.isVolley &&
+                                          (combatState.attacker?.hasBarrage() ??
+                                              false)
+                                      ? (value) => combatNotifier
+                                          .toggleWithinEffectiveRange(
+                                              value ?? false)
+                                      : null,
+                                  dense: true,
+                                  controlAffinity:
+                                      ListTileControlAffinity.leading,
+                                ),
+                              ),
+                              if (combatState.combatMode == CombatMode.ranged &&
+                                  combatState.isVolley &&
+                                  (combatState.attacker?.hasBarrage() ?? false))
+                                IconButton(
+                                  icon:
+                                      const Icon(Icons.info_outline, size: 18),
+                                  padding: EdgeInsets.zero,
+                                  constraints: const BoxConstraints(),
+                                  tooltip: 'Effective Range Info',
+                                  onPressed: () {
+                                    showDialog(
+                                      context: context,
+                                      builder: (context) => AlertDialog(
+                                        title: const Text('Effective Range'),
+                                        content: const Text(
+                                            '+1 to Barrage Characteristic, per stand'),
+                                        actions: [
+                                          TextButton(
+                                            onPressed: () =>
+                                                Navigator.of(context).pop(),
+                                            child: const Text('Close'),
+                                          ),
+                                        ],
+                                      ),
+                                    );
+                                  },
+                                ),
+                              const SizedBox(width: 12),
+                            ],
                           ),
                         ],
                       ),
@@ -287,25 +470,96 @@ class CombatModifiersPanel extends ConsumerWidget {
                   children: [
                     Text('Position Modifiers',
                         style: Theme.of(context).textTheme.titleSmall),
-                    CheckboxListTile(
-                      title: const Text('Flank/Rear Attack'),
-                      value: combatState.isFlank || combatState.isRear,
-                      activeColor: AppTheme.claudePrimary,
-                      onChanged: (value) {
-                        if (value != null) {
-                          if (value) {
-                            // Enable flank, disable rear
-                            combatNotifier.toggleFlank(true);
-                            combatNotifier.toggleRear(false);
-                          } else {
-                            // Disable both
-                            combatNotifier.toggleFlank(false);
-                            combatNotifier.toggleRear(false);
-                          }
-                        }
-                      },
-                      dense: true,
-                      controlAffinity: ListTileControlAffinity.leading,
+
+                    // Flank/Rear Attack checkbox with info icon
+                    Row(
+                      children: [
+                        Expanded(
+                          child: CheckboxListTile(
+                            title: const Text('Flank/Rear Attack'),
+                            value: combatState.isFlank || combatState.isRear,
+                            activeColor: AppTheme.claudePrimary,
+                            onChanged: (value) {
+                              if (value != null) {
+                                if (value) {
+                                  // Enable flank, disable rear
+                                  combatNotifier.toggleFlank(true);
+                                  combatNotifier.toggleRear(false);
+                                } else {
+                                  // Disable both
+                                  combatNotifier.toggleFlank(false);
+                                  combatNotifier.toggleRear(false);
+                                }
+                              }
+                            },
+                            dense: true,
+                            controlAffinity: ListTileControlAffinity.leading,
+                          ),
+                        ),
+                        IconButton(
+                          icon: const Icon(Icons.info_outline, size: 18),
+                          padding: EdgeInsets.zero,
+                          constraints: const BoxConstraints(),
+                          onPressed: () {
+                            showDialog(
+                              context: context,
+                              builder: (context) => AlertDialog(
+                                title: const Text('Flank/Rear Attack'),
+                                content: const Text(
+                                    'Defender Re-rolls successful resolve checks.'),
+                                actions: [
+                                  TextButton(
+                                    onPressed: () =>
+                                        Navigator.of(context).pop(),
+                                    child: const Text('Close'),
+                                  ),
+                                ],
+                              ),
+                            );
+                          },
+                        ),
+                        const SizedBox(width: 12),
+                      ],
+                    ),
+
+                    // Defender Broken checkbox with info icon
+                    Row(
+                      children: [
+                        Expanded(
+                          child: CheckboxListTile(
+                            title: const Text('Defender Broken'),
+                            value: combatState.isDefenderBroken,
+                            activeColor: AppTheme.claudePrimary,
+                            onChanged: (value) => combatNotifier
+                                .toggleDefenderBroken(value ?? false),
+                            dense: true,
+                            controlAffinity: ListTileControlAffinity.leading,
+                          ),
+                        ),
+                        IconButton(
+                          icon: const Icon(Icons.info_outline, size: 18),
+                          padding: EdgeInsets.zero,
+                          constraints: const BoxConstraints(),
+                          onPressed: () {
+                            showDialog(
+                              context: context,
+                              builder: (context) => AlertDialog(
+                                title: const Text('Defender Broken'),
+                                content: const Text(
+                                    'Uses lowest Resolve with no bonuses'),
+                                actions: [
+                                  TextButton(
+                                    onPressed: () =>
+                                        Navigator.of(context).pop(),
+                                    child: const Text('Close'),
+                                  ),
+                                ],
+                              ),
+                            );
+                          },
+                        ),
+                        const SizedBox(width: 12),
+                      ],
                     ),
                   ],
                 ),

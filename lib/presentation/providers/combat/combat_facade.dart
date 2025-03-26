@@ -55,9 +55,7 @@ class CombatFacade {
   void toggleVolley(bool value) => notifier.toggleVolley(value);
   void toggleWithinEffectiveRange(bool value) =>
       notifier.toggleWithinEffectiveRange(value);
-  //void toggleArmorPiercing(bool value) => notifier.toggleArmorPiercing(value);
-  // void updateArmorPiercingValue(int value) =>
-  //     notifier.updateArmorPiercingValue(value);
+  void toggleDefenderBroken(bool value) => notifier.toggleDefenderBroken(value);
 
   // New specific methods for attacker and defender
   void toggleAttackerCombatModifier(String rule, bool value) =>
@@ -65,10 +63,6 @@ class CombatFacade {
 
   void toggleDefenderCombatModifier(String rule, bool value) =>
       notifier.toggleDefenderCombatModifier(rule, value);
-
-  // Legacy methods - will now call the specific methods
-  // void toggleCombatModifier(String rule, bool value) =>
-  //     notifier.toggleCombatModifier(rule, value);
 
   void updateCombatModifierValue(String rule, int value) =>
       notifier.updateCombatModifierValue(rule, value);

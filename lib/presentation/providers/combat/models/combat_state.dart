@@ -24,13 +24,11 @@ class CombatState {
   final bool isRear;
   final bool isVolley;
   final bool isWithinEffectiveRange;
+  final bool isDefenderBroken; // Added this flag
 
   // Split special rules for attacker and defender
   final Map<String, bool> attackerSpecialRulesInEffect;
   final Map<String, bool> defenderSpecialRulesInEffect;
-
-  // For backward compatibility - will be deprecated
-  //final Map<String, bool> specialRulesInEffect;
 
   final Map<String, int> specialRuleValues;
   final CombatSimulation? simulation;
@@ -55,8 +53,7 @@ class CombatState {
     this.isRear = false,
     this.isVolley = false,
     this.isWithinEffectiveRange = false,
-    //this.specialRulesInEffect = const {},
-    // Initialize with empty maps, not const {} which is immutable
+    this.isDefenderBroken = false, // Initialize with default value
     Map<String, bool>? attackerSpecialRulesInEffect,
     Map<String, bool>? defenderSpecialRulesInEffect,
     this.specialRuleValues = const {},
@@ -92,7 +89,7 @@ class CombatState {
     bool? isRear,
     bool? isVolley,
     bool? isWithinEffectiveRange,
-    //Map<String, bool>? specialRulesInEffect,
+    bool? isDefenderBroken, // Added parameter to copyWith
     Map<String, bool>? attackerSpecialRulesInEffect,
     Map<String, bool>? defenderSpecialRulesInEffect,
     Map<String, int>? specialRuleValues,
@@ -128,7 +125,8 @@ class CombatState {
       isVolley: isVolley ?? this.isVolley,
       isWithinEffectiveRange:
           isWithinEffectiveRange ?? this.isWithinEffectiveRange,
-      //specialRulesInEffect: specialRulesInEffect ?? this.specialRulesInEffect,
+      isDefenderBroken:
+          isDefenderBroken ?? this.isDefenderBroken, // Added this line
       attackerSpecialRulesInEffect:
           attackerSpecialRulesInEffect ?? this.attackerSpecialRulesInEffect,
       defenderSpecialRulesInEffect:

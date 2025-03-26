@@ -545,33 +545,9 @@ class CombatNotifier extends StateNotifier<CombatState> {
     }
   }
 
-  // void toggleArmorPiercing(bool value) {
-  //   // Create a mutable copy of the special rules
-  //   final updatedRules = Map<String, bool>.from(state.attackerSpecialRulesInEffect);
-  //   updatedRules['armorPiercing'] = value;
-
-  //   // Create a mutable copy of the special rule values
-  //   final updatedValues = Map<String, int>.from(state.specialRuleValues);
-
-  //   // If enabling armor piercing, make sure we have the value from the regiment
-  //   if (value && state.attacker != null && state.attacker!.hasArmorPiercing()) {
-  //     updatedValues['armorPiercingValue'] =
-  //         state.attacker!.getArmorPiercingValue();
-  //   }
-
-  //   state = state.copyWith(
-  //       specialRulesInEffect: updatedRules,
-  //       specialRuleValues: updatedValues,
-  //       clearSimulation: true);
-  // }
-
-  // void updateArmorPiercingValue(int value) {
-  //   final updatedValues = Map<String, int>.from(state.specialRuleValues);
-  //   updatedValues['armorPiercingValue'] = value;
-
-  //   state =
-  //       state.copyWith(specialRuleValues: updatedValues, clearSimulation: true);
-  // }
+  void toggleDefenderBroken(bool value) {
+    state = state.copyWith(isDefenderBroken: value, clearSimulation: true);
+  }
 
   // New methods for separate attacker and defender special rules
   void toggleAttackerCombatModifier(String rule, bool value) {
@@ -589,19 +565,6 @@ class CombatNotifier extends StateNotifier<CombatState> {
     state = state.copyWith(
         defenderSpecialRulesInEffect: updatedRules, clearSimulation: true);
   }
-
-  // // Legacy method for backward compatibility
-  // void toggleCombatModifier(String rule, bool value) {
-  //   final updatedRules = Map<String, bool>.from(state.attackerSpecialRulesInEffect);
-  //   updatedRules[rule] = value;
-  //   state = state.copyWith(
-  //       attackerSpecialRulesInEffect: updatedRules, clearSimulation: true);
-  // }
-
-  // // Alias for toggleCombatModifier for backward compatibility
-  // void toggleSpecialRule(String rule, bool value) {
-  //   toggleCombatModifier(rule, value);
-  // }
 
   void updateCombatModifierValue(String rule, int value) {
     final updatedValues = Map<String, int>.from(state.specialRuleValues);

@@ -29,7 +29,7 @@ class CalculateCombat {
     bool isRear = false,
     bool isVolley = false,
     bool isWithinEffectiveRange = false,
-    //Map<String, bool> specialRulesInEffect = const {},
+    bool isDefenderBroken = false, // Added this parameter
     Map<String, bool>? attackerSpecialRulesInEffect,
     Map<String, bool>? defenderSpecialRulesInEffect,
     Map<String, int> impactValues = const {},
@@ -48,7 +48,7 @@ class CalculateCombat {
       isRear: isRear,
       isVolley: isVolley,
       isWithinEffectiveRange: isWithinEffectiveRange,
-      //specialRulesInEffect: specialRulesInEffect,
+      isDefenderBroken: isDefenderBroken, // Pass the parameter to context
       attackerSpecialRulesInEffect: attackerSpecialRulesInEffect,
       defenderSpecialRulesInEffect: defenderSpecialRulesInEffect,
       impactValues: impactValues,
@@ -155,7 +155,7 @@ class CalculateCombat {
       isRear: state.isRear,
       isVolley: state.isVolley,
       isWithinEffectiveRange: state.isWithinEffectiveRange,
-      //specialRulesInEffect: Map<String, bool>.from(state.specialRulesInEffect),
+      isDefenderBroken: state.isDefenderBroken, // Add this line
       attackerSpecialRulesInEffect:
           Map<String, bool>.from(state.attackerSpecialRulesInEffect),
       defenderSpecialRulesInEffect:

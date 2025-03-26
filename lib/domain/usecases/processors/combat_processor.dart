@@ -71,10 +71,37 @@ abstract class CombatProcessor {
   }) {
     int resolveTarget = defender.getResolve();
 
-    // UPDATED: Check for Animate Vessel (auto-pass resolve tests) - use context check
+    // Get character's resolve if present
+    int? characterResolve = context.defenderCharacter?.getResolve();
+
+    // Apply Animate Vessel check
     bool hasAnimateVessel = context.defenderHasRule('animate vessel');
     if (hasAnimateVessel) {
       return 6; // Will always pass resolve tests
+    }
+
+    // Calculate stand count for resolve bonuses
+    int effectiveStands = context.effectiveDefenderStands;
+
+    if (context.isDefenderBroken) {
+      // If broken, use the lowest resolve value and no stand bonuses
+      if (characterResolve != null) {
+        resolveTarget = math.min(resolveTarget, characterResolve);
+      }
+    } else {
+      // Not broken, use the highest resolve and apply stand bonuses
+      if (characterResolve != null) {
+        resolveTarget = math.max(resolveTarget, characterResolve);
+      }
+
+      // Apply stand count bonus to Resolve for non-broken regiments
+      if (effectiveStands >= 10) {
+        resolveTarget += 3;
+      } else if (effectiveStands >= 7) {
+        resolveTarget += 2;
+      } else if (effectiveStands >= 4) {
+        resolveTarget += 1;
+      }
     }
 
     // Apply Terrifying effect if in melee combat (not volley) and rule is active

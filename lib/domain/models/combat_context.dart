@@ -15,13 +15,11 @@ class CombatContext {
   final bool isRear;
   final bool isVolley;
   final bool isWithinEffectiveRange;
+  final bool isDefenderBroken; // Added this flag
 
   // Separate maps for attacker and defender special rules
   final Map<String, bool> attackerSpecialRulesInEffect;
   final Map<String, bool> defenderSpecialRulesInEffect;
-
-  // For backward compatibility - will be deprecated
-  //final Map<String, bool> specialRulesInEffect;
 
   final Map<String, int> impactValues;
 
@@ -43,7 +41,7 @@ class CombatContext {
     required this.isRear,
     required this.isVolley,
     required this.isWithinEffectiveRange,
-    //Map<String, bool> specialRulesInEffect = const {},
+    this.isDefenderBroken = false, // Initialize with default value
     Map<String, bool>? attackerSpecialRulesInEffect,
     Map<String, bool>? defenderSpecialRulesInEffect,
     required this.impactValues,
